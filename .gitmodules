@@ -1,0 +1,6 @@
+[submodule "src/HyperText.Avalonia"]
+	path = src/HyperText.Avalonia
+	url = https://github.com/Project-Babble/HyperText.Avalonia
+[submodule "src/DesktopNotifications"]
+	path = src/DesktopNotifications
+	url = https://github.com/Project-Babble/DesktopNotifications.git

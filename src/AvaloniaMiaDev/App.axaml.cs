@@ -1,90 +1,158 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using AvaloniaMiaDev.Activation;
+using AvaloniaMiaDev.Contracts;
+using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.Services;
 using AvaloniaMiaDev.ViewModels;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using AvaloniaMiaDev.Views;
-using CommunityToolkit.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
+using Jeek.Avalonia.Localization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace AvaloniaMiaDev;
 
 public partial class App : Application
 {
+    public static event Action<NotificationModel> SendNotification;
+
+    private IHost? _host;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        LiveCharts.Configure(config =>
-                config
-                    .AddDarkTheme()
-        );
+
+        // https://github.com/benaclejames/VRCFaceTracking/blob/51405d57cbbd46c92ff176d5211d043ed875ad42/VRCFaceTracking/App.xaml.cs#L61C9-L71C10
+        // Check for a "reset" file in the root of the app directory.
+        // If one is found, wipe all files from inside it and delete the file.
+        var resetFile = Path.Combine(Utils.PersistentDataDirectory, "reset");
+        if (File.Exists(resetFile))
+        {
+            // Delete everything including files and folders in Utils.PersistentDataDirectory
+            foreach (var file in Directory.EnumerateFiles(Utils.PersistentDataDirectory, "*", SearchOption.AllDirectories))
+            {
+                File.Delete(file);
+            }
+        }
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Localizer.SetLocalizer(new JsonLocalizer());
+
         var locator = new ViewLocator();
         DataTemplates.Add(locator);
 
-        var services = new ServiceCollection();
-        ConfigureViewModels(services);
-        ConfigureViews(services);
-        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        var hostBuilder = Host.CreateDefaultBuilder().
+            ConfigureServices((context, services) =>
+            {
+                services.AddLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddDebug();
+                    logging.AddConsole();
+                    logging.AddProvider(new OutputLogProvider(Dispatcher.UIThread));
+                    logging.AddProvider(new LogFileProvider());
+                });
 
-        // Typed-clients
-        // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-8.0#typed-clients
-        services.AddHttpClient<ILoginService, LoginService>(httpClient => httpClient.BaseAddress = new Uri("https://dummyjson.com/"));
+                // Default Activation Handler
+                services.AddTransient<ActivationHandler, DefaultActivationHandler>();
+                services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
-        var provider = services.BuildServiceProvider();
+                services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+                services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+                services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
 
-        Ioc.Default.ConfigureServices(provider);
+                services.AddSingleton<IActivationService, ActivationService>();
+                services.AddSingleton<IDispatcherService, DispatcherService>();
+
+                // Core Services
+                services.AddTransient<IIdentityService, IdentityService>();
+                services.AddTransient<IFileService, FileService>();
+                services.AddSingleton<IOscTarget, OscTarget>();
+                services.AddSingleton<OscRecvService>();
+                services.AddSingleton<OscSendService>();
+                services.AddSingleton<ParameterSenderService>();
+                services.AddTransient<GithubService>();
+                services.AddSingleton<IMainService, MainStandalone>();
+
+                services.AddSingleton<MainViewModel>();
+                services.AddSingleton<MainWindow>();
+
+                services.AddTransient<OutputPageViewModel>();
+                services.AddTransient<SettingsPageViewModel>();
+                services.AddTransient<HomePageViewModel>();
+                services.AddTransient<OutputPageView>();
+                services.AddTransient<SettingsPageView>();
+                services.AddTransient<HomePageView>();
+
+                services.AddHostedService(provider => provider.GetService<OscRecvService>()!);
+                services.AddHostedService(provider => provider.GetService<ParameterSenderService>()!);
+
+                // Configuration
+                IConfiguration config = new ConfigurationBuilder()
+                    .AddJsonFile(LocalSettingsService.DefaultLocalSettingsFile)
+                    .Build();
+                services.Configure<LocalSettingsOptions>(config);
+            });
+
+        if (!File.Exists(LocalSettingsService.DefaultLocalSettingsFile))
+        {
+            // Create the file if it doesn't exist
+            File.Create(LocalSettingsService.DefaultLocalSettingsFile).Dispose();
+        }
+
+        _host = hostBuilder.Build();
+        Ioc.Default.ConfigureServices(_host.Services);
+
+        Task.Run(async () => await _host.StartAsync());
+
+        var activation = Ioc.Default.GetRequiredService<IActivationService>();
+        Task.Run(async () => await activation.ActivateAsync(null));
 
         var vm = Ioc.Default.GetRequiredService<MainViewModel>();
+        switch (ApplicationLifetime)
+        {
+            case IClassicDesktopStyleApplicationLifetime desktop:
+                desktop.MainWindow = new MainWindow(vm);
+                desktop.ShutdownRequested += OnShutdown;
+                break;
+            case ISingleViewApplicationLifetime singleViewPlatform:
+                singleViewPlatform.MainView = new MainView { DataContext = vm };
+                break;
+        }
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindow(vm);
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView { DataContext = vm };
-        }
+        // var notif = new NotificationModel();
+        // notif.Title = "Hello, World!";
+        // notif.Body = "This is a test notification.";
+        // SendNotification?.Invoke(notif);
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    [Singleton(typeof(MainViewModel))]
-    [Transient(typeof(HomePageViewModel))]
-    [Transient(typeof(ButtonPageViewModel))]
-    [Transient(typeof(TextPageViewModel))]
-    [Transient(typeof(ValueSelectionPageViewModel))]
-    [Transient(typeof(ImagePageViewModel))]
-    [Singleton(typeof(GridPageViewModel))]
-    [Singleton(typeof(DragAndDropPageViewModel))]
-    [Singleton(typeof(CustomSplashScreenViewModel))]
-    [Singleton(typeof(LoginPageViewModel))]
-    [Singleton(typeof(SecretViewModel))]
-    [Transient(typeof(ChartsPageViewModel))]
-    [SuppressMessage("CommunityToolkit.Extensions.DependencyInjection.SourceGenerators.InvalidServiceRegistrationAnalyzer", "TKEXDI0004:Duplicate service type registration")]
-    internal static partial void ConfigureViewModels(IServiceCollection services);
+    private void OnShutdown(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
 
-    [Singleton(typeof(MainWindow))]
-    [Transient(typeof(HomePageView))]
-    [Transient(typeof(ButtonPageView))]
-    [Transient(typeof(TextPageView))]
-    [Transient(typeof(ValueSelectionPageView))]
-    [Transient(typeof(ImagePageView))]
-    [Transient(typeof(GridPageView))]
-    [Transient(typeof(DragAndDropPageView))]
-    [Transient(typeof(CustomSplashScreenView))]
-    [Transient(typeof(LoginPageView))]
-    [Transient(typeof(SecretView))]
-    [Transient(typeof(ChartsPageView))]
-    internal static partial void ConfigureViews(IServiceCollection services);
+        var vrcft = Ioc.Default.GetRequiredService<IMainService>();
+        Task.Run(vrcft.Teardown);
+    }
+
+    private void OnTrayShutdownClicked(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
 }

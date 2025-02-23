@@ -1,0 +1,59 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="AvaloniaMiaDev.Controls.WarningBlock"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:HyperText.Avalonia.Controls;assembly=HyperText.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:templates="clr-namespace:AvaloniaMiaDev.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid x:DataType="templates:WarningBlock">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <PathIcon
+            Data="{StaticResource InfoRegular}"
+            Grid.Column="0"
+            Height="30"
+            Margin="30,30,30,30"
+            VerticalAlignment="Center"
+            Width="30" />
+
+        <StackPanel
+            Grid.Column="1"
+            Orientation="Vertical"
+            Spacing="6"
+            VerticalAlignment="Center">
+            <TextBlock
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="{Binding $parent[templates:WarningBlock].Header}" />
+            <TextBlock
+                FontSize="14"
+                Foreground="{DynamicResource SystemChromeGrayColor}"
+                Text="{Binding $parent[templates:WarningBlock].Subheader}" />
+            <controls:Hyperlink
+                Alias="{Binding $parent[templates:WarningBlock].Caption}"
+                Command="{Binding $parent[templates:WarningBlock].NavigateCommand}"
+                FontSize="14"
+                Url="{Binding $parent[templates:WarningBlock].Caption}" />
+        </StackPanel>
+
+        <Button
+            Command="{Binding $parent[templates:WarningBlock].DismissCommand}"
+            Content="Dismiss"
+            Grid.Column="2"
+            Height="48"
+            HorizontalContentAlignment="Center"
+            VerticalAlignment="Center"
+            VerticalContentAlignment="Center"
+            Width="80" />
+    </Grid>
+</UserControl>
+

@@ -1,16 +1,156 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="AvaloniaMiaDev.App"
-             xmlns:avaloniaMiaDev="clr-namespace:AvaloniaMiaDev"
-             RequestedThemeVariant="Dark">
+<Application
+    RequestedThemeVariant="Dark"
+    x:Class="AvaloniaMiaDev.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:avalonia="clr-namespace:HyperText.Avalonia;assembly=HyperText.Avalonia"
+    xmlns:avaloniaMiaDev="clr-namespace:AvaloniaMiaDev"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.DataTemplates>
-        <avaloniaMiaDev:ViewLocator/>
+        <avaloniaMiaDev:ViewLocator />
     </Application.DataTemplates>
-  
+
+    <!--  Made using https://theme.xaml.live/  -->
     <Application.Styles>
-        <FluentTheme />
+        <avalonia:HyperLinkStyle />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources
+                    Accent="#ff0073cf"
+                    AltHigh="White"
+                    AltLow="White"
+                    AltMedium="White"
+                    AltMediumHigh="White"
+                    AltMediumLow="White"
+                    BaseHigh="Black"
+                    BaseLow="#ffcccccc"
+                    BaseMedium="#ff898989"
+                    BaseMediumHigh="#ff5d5d5d"
+                    BaseMediumLow="#ff737373"
+                    ChromeAltLow="#ff5d5d5d"
+                    ChromeBlackHigh="Black"
+                    ChromeBlackLow="#ffcccccc"
+                    ChromeBlackMedium="#ff5d5d5d"
+                    ChromeBlackMediumLow="#ff898989"
+                    ChromeDisabledHigh="#ffcccccc"
+                    ChromeDisabledLow="#ff898989"
+                    ChromeGray="#ff737373"
+                    ChromeHigh="#ffcccccc"
+                    ChromeLow="#ffececec"
+                    ChromeMedium="White"
+                    ChromeMediumLow="#ffececec"
+                    ChromeWhite="White"
+                    ListLow="#ffe6e6e6"
+                    ListMedium="#ffcccccc"
+                    RegionColor="White"
+                    x:Key="Light" />
+                <ColorPaletteResources
+                    Accent="#ff0073cf"
+                    AltHigh="Black"
+                    AltLow="Black"
+                    AltMedium="Black"
+                    AltMediumHigh="Black"
+                    AltMediumLow="Black"
+                    BaseHigh="White"
+                    BaseLow="#ff343434"
+                    BaseMedium="#ff9d9d9d"
+                    BaseMediumHigh="#ffb6b6b6"
+                    BaseMediumLow="#ff6b6b6b"
+                    ChromeAltLow="#ffb6b6b6"
+                    ChromeBlackHigh="Black"
+                    ChromeBlackLow="#ffb6b6b6"
+                    ChromeBlackMedium="Black"
+                    ChromeBlackMediumLow="Black"
+                    ChromeDisabledHigh="#ff343434"
+                    ChromeDisabledLow="#ff9d9d9d"
+                    ChromeGray="#ff848484"
+                    ChromeHigh="#ff848484"
+                    ChromeLow="#ff181818"
+                    ChromeMedium="#ff202020"
+                    ChromeMediumLow="#ff292929"
+                    ChromeWhite="White"
+                    ListLow="#ff292929"
+                    ListMedium="#ff343434"
+                    RegionColor="#ff1e1e1e"
+                    x:Key="Dark" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource SystemChromeMediumColor}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource SystemChromeMediumColor}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="30" />
+        </Style>
+
+        <Style Selector="Expander">
+            <Setter Property="BorderThickness" Value="6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="2" />
+        </Style>
+
+        <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
+            <Setter Property="Background" Value="{DynamicResource SystemChromeMediumLowColor}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="Expander:expanded /template/ ToggleButton#ExpanderHeader">
+            <Setter Property="Background" Value="{DynamicResource SystemChromeMediumLowColor}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="Expander:down /template/ Border#ExpanderContent">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="Expander /template/ ToggleButton:pointerover /template/ Border#ToggleButtonBackground">
+            <Setter Property="Background" Value="{DynamicResource SystemChromeMediumLowColor}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="TextBlock.Header">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0 10 0 10" />
+        </Style>
+
+        <Style Selector="StackPanel.Page">
+            <Setter Property="Margin" Value="25" />
+            <Setter Property="Spacing" Value="15" />
+        </Style>
+
         <StyleInclude Source="avares://AvaloniaMiaDev/Assets/Icons.axaml" />
-        <StyleInclude Source="avares://AvaloniaMiaDev/Templates/ContentExample.axaml" />
+        <StyleInclude Source="avares://AvaloniaMiaDev/Controls/ContentExample.axaml" />
+
     </Application.Styles>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Assets/WindowIcon.ico" ToolTipText="Right click to see VRCFaceTracking options">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Click="OnTrayShutdownClicked" Header="Exit" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+
 </Application>

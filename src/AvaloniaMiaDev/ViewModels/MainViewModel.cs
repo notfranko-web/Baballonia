@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls;
-using AvaloniaMiaDev.Messages;
 using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Jeek.Avalonia.Localization;
 
 namespace AvaloniaMiaDev.ViewModels;
 
@@ -17,11 +17,6 @@ public partial class MainViewModel : ViewModelBase
 {
     public MainViewModel(IMessenger messenger)
     {
-        messenger.Register<MainViewModel, LoginSuccessMessage>(this, (_, message) =>
-        {
-            CurrentPage = new SecretViewModel(message.Value);
-        });
-
         Items = new ObservableCollection<ListItemTemplate>(_templates);
 
         SelectedListItem = Items.First(vm => vm.ModelType == typeof(HomePageViewModel));
@@ -29,15 +24,9 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly List<ListItemTemplate> _templates =
     [
-        new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", "Home"),
-        new ListItemTemplate(typeof(ButtonPageViewModel), "CursorHoverRegular", "Buttons"),
-        new ListItemTemplate(typeof(TextPageViewModel), "TextNumberFormatRegular", "Text"),
-        new ListItemTemplate(typeof(ValueSelectionPageViewModel), "CalendarCheckmarkRegular", "Value Selection"),
-        new ListItemTemplate(typeof(ImagePageViewModel), "ImageRegular", "Images"),
-        new ListItemTemplate(typeof(GridPageViewModel), "GridRegular", "Grids"),
-        new ListItemTemplate(typeof(DragAndDropPageViewModel), "TapDoubleRegular", "Drang And Drop"),
-        new ListItemTemplate(typeof(LoginPageViewModel), "LockRegular", "Login Form"),
-        new ListItemTemplate(typeof(ChartsPageViewModel), "PollRegular", "Charts"),
+        new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", Localizer.Get("Shell_Main.Content")),
+        new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", Localizer.Get("Shell_Output.Content")),
+        new ListItemTemplate(typeof(SettingsPageViewModel), "SettingsRegular", "Settings"),
     ];
 
     public MainViewModel() : this(new WeakReferenceMessenger()) { }

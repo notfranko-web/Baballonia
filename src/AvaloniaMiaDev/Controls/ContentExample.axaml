@@ -1,0 +1,19 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="controls|ContentExample">
+        <Setter Property="Padding" Value="15" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{DynamicResource SystemChromeMediumLowColor}"
+                    CornerRadius="3"
+                    Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding Template}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

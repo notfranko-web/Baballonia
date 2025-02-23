@@ -12,12 +12,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Desktop" Version="11.2.4" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)"/>
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.4" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\AvaloniaMiaDev\AvaloniaMiaDev.csproj"/>
+        <ProjectReference Include="..\DesktopNotifications\DesktopNotifications.Apple\DesktopNotifications.Apple.csproj" />
+        <ProjectReference Include="..\DesktopNotifications\DesktopNotifications.Avalonia\DesktopNotifications.Avalonia.csproj" />
+        <ProjectReference Include="..\DesktopNotifications\DesktopNotifications.FreeDesktop\DesktopNotifications.FreeDesktop.csproj" />
+        <ProjectReference Include="..\DesktopNotifications\DesktopNotifications.Windows\DesktopNotifications.Windows.csproj" />
+        <ProjectReference Include="..\DesktopNotifications\DesktopNotifications\DesktopNotifications.csproj" />
     </ItemGroup>
 </Project>
