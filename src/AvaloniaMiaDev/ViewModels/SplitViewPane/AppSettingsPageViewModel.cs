@@ -15,14 +15,18 @@ using Vector = Avalonia.Vector;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class SettingsPageViewModel : ViewModelBase
+public partial class AppSettingsPageViewModel : ViewModelBase
 {
     public IOscTarget OscTarget { get; private set;}
     public ILocalSettingsService SettingsService { get; private set;}
     public GithubService GithubService { get; private set;}
     public ParameterSenderService ParameterSenderService { get; private set;}
 
-    public SettingsPageViewModel()
+    [ObservableProperty] public string _recalibrateAddress;
+
+    [ObservableProperty] public string _recenterAddress;
+
+    public AppSettingsPageViewModel()
     {
         // General/Calibration Settings
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;

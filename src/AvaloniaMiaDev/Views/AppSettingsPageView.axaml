@@ -1,0 +1,92 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="AvaloniaMiaDev.Views.AppSettingsPageView"
+    x:DataType="splitViewPane:AppSettingsPageViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:l="using:Jeek.Avalonia.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Classes="Page">
+            <TextBlock Classes="Header" Text="App Settings" />
+
+            <controls:SettingsBlock
+                Description="{l:Localize ThemeSettings.Description}"
+                IconPath="DarkLightTheme"
+                Title="{l:Localize ThemeSettings.Header}">
+                <controls:SettingsBlock.SettingsContent>
+                    <ComboBox VerticalAlignment="Center" x:Name="ThemeCombo" />
+                </controls:SettingsBlock.SettingsContent>
+            </controls:SettingsBlock>
+
+            <controls:SettingsBlock
+                Description="Set the app's language."
+                IconPath="LanguageRegular"
+                Title="Language">
+                <controls:SettingsBlock.SettingsContent>
+                    <ComboBox VerticalAlignment="Center" x:Name="LangCombo">
+                        <ComboBoxItem Content="Default" x:Name="DefaultLanguage" />
+                        <ComboBoxItem Content="English" x:Name="en" />
+                        <ComboBoxItem Content="Español" x:Name="es" />
+                        <ComboBoxItem Content="日本語" x:Name="ja" />
+                        <ComboBoxItem Content="Polski" x:Name="pl" />
+                        <ComboBoxItem Content="中文" x:Name="zh" />
+                    </ComboBox>
+                </controls:SettingsBlock.SettingsContent>
+            </controls:SettingsBlock>
+
+            <controls:SettingsExpander
+                Description="{l:Localize OscSettings.Description}"
+                IconPath="WirelessRegular"
+                Title="{l:Localize OscSettings.Header}">
+                <controls:SettingsExpander.ExpanderContent>
+                    <StackPanel HorizontalAlignment="Left" Spacing="12">
+                        <TextBlock FontSize="15">Receive Port</TextBlock>
+                        <TextBox
+                            Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
+                            Watermark="Input the receive port..."
+                            x:Name="OscTargetInPort" />
+
+                        <TextBlock FontSize="15">IP Address</TextBlock>
+                        <TextBox
+                            Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
+                            Watermark="Input the target IP..."
+                            x:Name="OscTargetIpAddress" />
+
+
+                        <TextBlock FontSize="15">Send Port</TextBlock>
+                        <TextBox
+                            Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
+                            Watermark="Input the send port..."
+                            x:Name="OscTargetOutPort" />
+
+                        <TextBlock FontSize="15">Recalibrate Address</TextBlock>
+                        <TextBox
+                            Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
+                            Watermark="Input the recalibrate address..."
+                            x:Name="RecalibrateAddress" />
+
+                        <TextBlock FontSize="15">Recenter Address</TextBlock>
+                        <TextBox
+                            Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
+                            Watermark="Input the recenter address..."
+                            x:Name="RecenterAddress" />
+
+                    </StackPanel>
+                </controls:SettingsExpander.ExpanderContent>
+            </controls:SettingsExpander>
+
+            <controls:SettingsToggle
+                Description="Should the app check for updates on start?"
+                IconPath="ArrowSyncRegular"
+                Title="Check For Updates" />
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

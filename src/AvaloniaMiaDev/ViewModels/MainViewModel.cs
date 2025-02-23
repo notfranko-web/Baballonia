@@ -26,7 +26,9 @@ public partial class MainViewModel : ViewModelBase
     [
         new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", Localizer.Get("Shell_Main.Content")),
         new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", Localizer.Get("Shell_Output.Content")),
-        new ListItemTemplate(typeof(SettingsPageViewModel), "SettingsRegular", "Settings"),
+        new ListItemTemplate(typeof(TrackingSettingsPageViewModel), "EditRegular", "Tracking Settings"),
+        new ListItemTemplate(typeof(ModuleSettingsPageViewModel), "HeadsetVrRegular", "VRChat Module Settings"),
+        new ListItemTemplate(typeof(AppSettingsPageViewModel), "SettingsRegular", "App Settings"),
     ];
 
     public MainViewModel() : this(new WeakReferenceMessenger()) { }

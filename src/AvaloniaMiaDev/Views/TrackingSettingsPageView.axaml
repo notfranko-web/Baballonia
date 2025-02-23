@@ -1,0 +1,279 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="AvaloniaMiaDev.Views.TrackingSettingsPageView"
+    x:DataType="splitViewPane:TrackingSettingsPageViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:l="using:Jeek.Avalonia.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:AvaloniaMiaDev.Models"
+    xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Styles>
+        <StyleInclude Source="avares://Avalonia.Xaml.Interactions.Draggable/Styles.axaml" />
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Classes="Page">
+            <TextBlock Classes="Header" Text="Tracking Settings" />
+
+            <controls:SettingsExpander
+                Description="Prioritize how gaze-tracking methods should be utilized"
+                IconPath="TextNumberListLtrRegular"
+                Title="Gaze Method Order">
+                <controls:SettingsExpander.ExpanderContent>
+                    <ListBox
+                        Classes="draggable"
+                        ItemsSource="{Binding TrackingAlgorithms}"
+                        SelectionChanged="OnLocalModuleSelected"
+                        x:Name="LocalModuleList">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:TrackingAlgorithm">
+                                <Grid
+                                    ColumnDefinitions="Auto, Auto, *, Auto"
+                                    Margin="5"
+                                    VerticalAlignment="Center">
+
+                                    <!--  ShouldUse Checkbox  -->
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        IsChecked="{Binding ShouldUse, Mode=TwoWay}"
+                                        Margin="5,0"
+                                        VerticalAlignment="Center" />
+
+                                    <!--  Order Display  -->
+                                    <Grid
+                                        ColumnDefinitions="Auto,Auto"
+                                        Grid.Column="0"
+                                        Margin="5,0">
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Text="{Binding Order}"
+                                            VerticalAlignment="Center" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="."
+                                            VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <!--  Module Information  -->
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        Margin="10,0,5,0"
+                                        Orientation="Vertical">
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{DynamicResource SystemChromeGrayColor}"
+                                            Text="{Binding Description}" />
+                                    </StackPanel>
+
+                                    <!--  Up/Down Buttons  -->
+                                    <StackPanel
+                                        Grid.Column="3"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="2">
+                                        <Button
+                                            Click="DecrementOrder"
+                                            Content="↑"
+                                            Name="LocalModuleUpButton"
+                                            Padding="3" />
+                                        <Button
+                                            Click="IncrementOrder"
+                                            Content="↓"
+                                            Name="LocalModuleDownButton"
+                                            Padding="3" />
+                                    </StackPanel>
+
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </controls:SettingsExpander.ExpanderContent>
+            </controls:SettingsExpander>
+
+            <controls:SettingsExpander
+                Description="Fine-tune blink detection"
+                IconPath="EyeTrackingRegular"
+                Title="Blink Detection">
+                <controls:SettingsExpander.ExpanderContent>
+                    <StackPanel Spacing="8">
+                        <!--  Checkboxes for algorithm options  -->
+                        <CheckBox Content="Intensity Based Openness" />
+                        <CheckBox Content="RANSAC Quick Blink Algo" />
+                        <CheckBox Content="Binary Blink Algo" />
+                        <CheckBox Content="LEAP Lid" IsChecked="True" />
+
+                        <TextBlock Text="LEAP Calibration Samples" VerticalAlignment="Center" />
+                        <NumericUpDown Value="2000" />
+
+                        <TextBlock Text="IBO Filter Sample Size" VerticalAlignment="Center" />
+                        <NumericUpDown Value="400" />
+
+                        <TextBlock Text="Calibration Samples" VerticalAlignment="Center" />
+                        <NumericUpDown Value="600" />
+
+                        <TextBlock Text="IBO Close Threshold" VerticalAlignment="Center" />
+                        <NumericUpDown Increment="0.1" Value="0.3" />
+
+                        <CheckBox Content="Left Eye Circle crop" />
+                        <CheckBox Content="Right Eye Circle crop" />
+                    </StackPanel>
+                </controls:SettingsExpander.ExpanderContent>
+            </controls:SettingsExpander>
+
+            <controls:SettingsToggle
+                Description="Use eclipse-based dilation?"
+                IconPath="ArrowMaximizeRegular"
+                Title="Pupil Dilation" />
+
+            <controls:SettingsExpander
+                Description="Low-level algorithm stuff here!"
+                IconPath="DeveloperBoardRegular"
+                Title="Advanced Controls">
+                <controls:SettingsExpander.ExpanderContent>
+                    <StackPanel Margin="10">
+
+                        <CheckBox Content="HSF: Skip Auto Radius" />
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Left HSF Radius:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="10"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="10"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Right HSF Radius:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="10"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="10"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="RANSAC Thresh Add"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="11"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="11"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Blob Threshold"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="65"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="65"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Min Blob Size:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="10"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="10"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Max Blob Size:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="25"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="25"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Right Eye Thresh:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="80"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="80"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Text="Left Eye Thresh:"
+                                VerticalAlignment="Center"
+                                Width="120" />
+                            <Slider
+                                Maximum="100"
+                                Minimum="0"
+                                Value="80"
+                                Width="300" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                Text="80"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </controls:SettingsExpander.ExpanderContent>
+            </controls:SettingsExpander>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

@@ -10,7 +10,7 @@ using Jeek.Avalonia.Localization;
 
 namespace AvaloniaMiaDev.Views;
 
-public partial class SettingsPageView : UserControl
+public partial class AppSettingsPageView : UserControl
 {
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ILanguageSelectorService _languageSelectorService;
@@ -18,7 +18,7 @@ public partial class SettingsPageView : UserControl
     private readonly ComboBox _themeComboBox;
     private readonly ComboBox _langComboBox;
 
-    public SettingsPageView()
+    public AppSettingsPageView()
     {
         InitializeComponent();
 
@@ -68,7 +68,7 @@ public partial class SettingsPageView : UserControl
         _langComboBox.SelectedIndex = index;
     }
 
-    ~SettingsPageView()
+    ~AppSettingsPageView()
     {
         _themeComboBox.SelectionChanged -= ThemeComboBox_SelectionChanged;
     }
@@ -108,24 +108,6 @@ public partial class SettingsPageView : UserControl
         _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Light.Content"), Name="Light" });
         _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Dark.Content"), Name="Dark" });
         _themeComboBox.SelectedIndex = selectedIndex;
-    }
-
-    private void Calibration_OnClick(object? sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void ReInit_OnClick(object? sender, RoutedEventArgs e)
-    {
-        _mainService.Teardown();
-        _mainService.InitializeAsync();
-    }
-
-    private void Reset_OnClick(object? sender, RoutedEventArgs e)
-    {
-        // Create a file in the VRCFT folder called "reset"
-        // This will cause the app to reset on the next launch
-        File.Create(Path.Combine(Utils.PersistentDataDirectory, "reset"));
     }
 }
 

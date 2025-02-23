@@ -1,0 +1,62 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="AvaloniaMiaDev.Views.ModuleSettingsPageView"
+    x:DataType="splitViewPane:ModuleSettingsPageViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:localization="clr-namespace:Jeek.Avalonia.Localization;assembly=Jeek.Avalonia.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
+    xmlns:twoRangeSlider="https://github.com/DmitryNizhebovsky/Avalonia.RangeSlider"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Styles>
+        <StyleInclude Source="avares://Avalonia.Xaml.Interactions.Draggable/Styles.axaml" />
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Classes="Page">
+            <TextBlock Classes="Header" Text="Module Settings" />
+
+            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eye Widen">
+                <controls:SettingsExpanderToggle.ExpanderContent>
+                    <StackPanel>
+                        <TextBlock FontSize="15">Eye Widen Threshold</TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01" />
+                    </StackPanel>
+                </controls:SettingsExpanderToggle.ExpanderContent>
+            </controls:SettingsExpanderToggle>
+
+            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eye Squint">
+                <controls:SettingsExpanderToggle.ExpanderContent>
+                    <StackPanel>
+                        <TextBlock FontSize="15">Eye Squint Threshold</TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01" />
+                    </StackPanel>
+                </controls:SettingsExpanderToggle.ExpanderContent>
+            </controls:SettingsExpanderToggle>
+
+            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eyebrows">
+                <controls:SettingsExpanderToggle.ExpanderContent>
+                    <StackPanel>
+                        <TextBlock FontSize="15">Rising</TextBlock>
+                        <Slider Maximum="1" Minimum="0" />
+                        <TextBlock FontSize="15">Lowering</TextBlock>
+                        <Slider Maximum="1" Minimum="0" />
+                    </StackPanel>
+                </controls:SettingsExpanderToggle.ExpanderContent>
+            </controls:SettingsExpanderToggle>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+
