@@ -25,4 +25,7 @@ public partial class ModuleSettingsPageViewModel : ViewModelBase
     {
 
     }
+
+    [ObservableProperty] private float lowerSelectedValue = 0;
+    [ObservableProperty] private float upperSelectedValue = 1;
 }

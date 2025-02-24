@@ -25,8 +25,8 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
 
     public TrackingSettingsPageViewModel()
     {
-        trackingAlgorithms = new ObservableCollection<TrackingAlgorithm>()
-        {
+        trackingAlgorithms =
+        [
             new TrackingAlgorithm(1, true, "ASHSFRAC", "Description"),
             new TrackingAlgorithm(2, false, "ASHSF", "Description"),
             new TrackingAlgorithm(3, false, "HSRAC", "Description"),
@@ -34,8 +34,8 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
             new TrackingAlgorithm(5, false, "DADDY", "Description"),
             new TrackingAlgorithm(6, false, "RANSAC 3D", "Description"),
             new TrackingAlgorithm(7, false, "Blob", "Description"),
-            new TrackingAlgorithm(8, false, "LEAP", "Description"),
-        };
+            new TrackingAlgorithm(8, false, "LEAP", "Description")
+        ];
         trackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
     }
 

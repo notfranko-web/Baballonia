@@ -4,6 +4,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:avalonia="clr-namespace:HyperText.Avalonia;assembly=HyperText.Avalonia"
     xmlns:avaloniaMiaDev="clr-namespace:AvaloniaMiaDev"
+    xmlns:themes="using:RangeSlider.Avalonia.Themes.Fluent"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.DataTemplates>
@@ -138,6 +139,7 @@
 
         <StyleInclude Source="avares://AvaloniaMiaDev/Assets/Icons.axaml" />
         <StyleInclude Source="avares://AvaloniaMiaDev/Controls/ContentExample.axaml" />
+        <themes:RangeSliderTheme />
 
     </Application.Styles>
 

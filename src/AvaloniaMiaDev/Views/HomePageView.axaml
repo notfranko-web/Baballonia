@@ -19,10 +19,11 @@
     <ScrollViewer>
         <StackPanel Classes="Page">
             <TextBlock Classes="Header" Text="{l:Localize Shell_Main.Content}" />
-
             <CheckBox Content="Flip Left Eye X-Axis" />
             <CheckBox Content="Flip Right Eye Y-Axis" />
             <CheckBox Content="Flip Eye Y-Axis" />
+            <CheckBox Content="Left Eye Circle crop" />
+            <CheckBox Content="Right Eye Circle crop" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -21,41 +21,87 @@
         <StackPanel Classes="Page">
             <TextBlock Classes="Header" Text="Module Settings" />
 
-            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eye Widen">
+            <controls:SettingsExpanderToggle
+                Description="Description"
+                IconPath="EyeTrackingRegular"
+                Title="Emulate Eye Widen">
                 <controls:SettingsExpanderToggle.ExpanderContent>
                     <StackPanel>
-                        <TextBlock FontSize="15">Eye Widen Threshold</TextBlock>
-                        <twoRangeSlider:RangeSlider
-                            Maximum="1"
-                            Minimum="0"
-                            TickFrequency="0.01" />
+                        <DockPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run FontWeight="DemiBold" Text="Eye Widen Threshold: " />
+                                <Run Text="{Binding #LeftHSFSlider.LowerSelectedValue, StringFormat={}{0:0}}" />
+                                <Run Text="-" />
+                                <Run Text="{Binding #LeftHSFSlider.UpperSelectedValue, StringFormat={}{0:0}}" />
+                            </TextBlock>
+                            <twoRangeSlider:RangeSlider
+                                Margin="10,0"
+                                Maximum="100"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                x:Name="LeftHSFSlider" />
+                        </DockPanel>
                     </StackPanel>
                 </controls:SettingsExpanderToggle.ExpanderContent>
             </controls:SettingsExpanderToggle>
 
-            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eye Squint">
+            <controls:SettingsExpanderToggle
+                Description="Description"
+                IconPath="EyeTrackingRegular"
+                Title="Emulate Eye Squint">
                 <controls:SettingsExpanderToggle.ExpanderContent>
                     <StackPanel>
-                        <TextBlock FontSize="15">Eye Squint Threshold</TextBlock>
-                        <twoRangeSlider:RangeSlider
-                            Maximum="1"
-                            Minimum="0"
-                            TickFrequency="0.01" />
+                        <DockPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run FontWeight="DemiBold" Text="Eye Squint Threshold:" />
+                                <Run Text="{Binding #RightHSFSlider.LowerSelectedValue, StringFormat={}{0:0}}" />
+                                <Run Text="-" />
+                                <Run Text="{Binding #RightHSFSlider.UpperSelectedValue, StringFormat={}{0:0}}" />
+                            </TextBlock>
+                            <twoRangeSlider:RangeSlider
+                                Margin="10,0"
+                                Maximum="100"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                x:Name="RightHSFSlider" />
+                        </DockPanel>
                     </StackPanel>
                 </controls:SettingsExpanderToggle.ExpanderContent>
             </controls:SettingsExpanderToggle>
 
-            <controls:SettingsExpanderToggle Description="Words" Title="Emulate Eyebrows">
+            <controls:SettingsExpanderToggle
+                Description="Description"
+                IconPath="EyeTrackingRegular"
+                Title="Emulate Eyebrows">
                 <controls:SettingsExpanderToggle.ExpanderContent>
                     <StackPanel>
-                        <TextBlock FontSize="15">Rising</TextBlock>
-                        <Slider Maximum="1" Minimum="0" />
-                        <TextBlock FontSize="15">Lowering</TextBlock>
-                        <Slider Maximum="1" Minimum="0" />
+                        <DockPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run FontWeight="DemiBold" Text="Lowering:" />
+                                <Run Text="{Binding #LoweringSlider.Value, StringFormat={}{0:0}}" />
+                            </TextBlock>
+                            <Slider
+                                Margin="10,0"
+                                Maximum="100"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                x:Name="LoweringSlider" />
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run FontWeight="DemiBold" Text="Rising:" />
+                                <Run Text="{Binding #RisingSlider.Value, StringFormat={}{0:0}}" />
+                            </TextBlock>
+                            <Slider
+                                Margin="10,0"
+                                Maximum="100"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                x:Name="RisingSlider" />
+                        </DockPanel>
                     </StackPanel>
                 </controls:SettingsExpanderToggle.ExpanderContent>
             </controls:SettingsExpanderToggle>
-
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -45,39 +45,77 @@
                 IconPath="WirelessRegular"
                 Title="{l:Localize OscSettings.Header}">
                 <controls:SettingsExpander.ExpanderContent>
-                    <StackPanel HorizontalAlignment="Left" Spacing="12">
-                        <TextBlock FontSize="15">Receive Port</TextBlock>
+                    <Grid
+                        ColumnDefinitions="Auto,Auto"
+                        Margin="0,4"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <Grid.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Margin" Value="0,0,16,0" />
+                                <Setter Property="FontSize" Value="15" />
+                            </Style>
+                            <Style Selector="TextBox">
+                                <Setter Property="Margin" Value="0,8" />
+                                <Setter Property="MinWidth" Value="800" />
+                            </Style>
+                        </Grid.Styles>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Text="Receive Port" />
                         <TextBox
+                            Grid.Column="1"
+                            Grid.Row="0"
                             Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
                             Watermark="Input the receive port..."
                             x:Name="OscTargetInPort" />
 
-                        <TextBlock FontSize="15">IP Address</TextBlock>
+                        <TextBlock
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Text="IP Address" />
                         <TextBox
+                            Grid.Column="1"
+                            Grid.Row="1"
                             Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
                             Watermark="Input the target IP..."
                             x:Name="OscTargetIpAddress" />
 
-
-                        <TextBlock FontSize="15">Send Port</TextBlock>
+                        <TextBlock
+                            Grid.Column="0"
+                            Grid.Row="2"
+                            Text="Send Port" />
                         <TextBox
+                            Grid.Column="1"
+                            Grid.Row="2"
                             Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
                             Watermark="Input the send port..."
                             x:Name="OscTargetOutPort" />
 
-                        <TextBlock FontSize="15">Recalibrate Address</TextBlock>
+                        <TextBlock
+                            Grid.Column="0"
+                            Grid.Row="3"
+                            Text="Recalibrate Address" />
                         <TextBox
+                            Grid.Column="1"
+                            Grid.Row="3"
                             Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
                             Watermark="Input the recalibrate address..."
                             x:Name="RecalibrateAddress" />
 
-                        <TextBlock FontSize="15">Recenter Address</TextBlock>
+                        <TextBlock
+                            Grid.Column="0"
+                            Grid.Row="4"
+                            Text="Recenter Address" />
                         <TextBox
+                            Grid.Column="1"
+                            Grid.Row="4"
                             Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
                             Watermark="Input the recenter address..."
                             x:Name="RecenterAddress" />
-
-                    </StackPanel>
+                    </Grid>
                 </controls:SettingsExpander.ExpanderContent>
             </controls:SettingsExpander>
 
