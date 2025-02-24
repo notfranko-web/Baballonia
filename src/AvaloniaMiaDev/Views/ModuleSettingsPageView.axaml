@@ -35,10 +35,12 @@
                                 <Run Text="{Binding #LeftHSFSlider.UpperSelectedValue, StringFormat={}{0:0}}" />
                             </TextBlock>
                             <twoRangeSlider:RangeSlider
+                                LowerSelectedValue="{Binding EyeWidenLower, Mode=TwoWay}"
                                 Margin="10,0"
                                 Maximum="100"
                                 Minimum="0"
                                 TickFrequency="0.01"
+                                UpperSelectedValue="{Binding EyeWidenUpper, Mode=TwoWay}"
                                 x:Name="LeftHSFSlider" />
                         </DockPanel>
                     </StackPanel>
@@ -47,6 +49,7 @@
 
             <controls:SettingsExpanderToggle
                 Description="Description"
+                ExpanderContentToggle="{Binding EmulateEyeSquint, Mode=TwoWay}"
                 IconPath="EyeTrackingRegular"
                 Title="Emulate Eye Squint">
                 <controls:SettingsExpanderToggle.ExpanderContent>
@@ -59,10 +62,12 @@
                                 <Run Text="{Binding #RightHSFSlider.UpperSelectedValue, StringFormat={}{0:0}}" />
                             </TextBlock>
                             <twoRangeSlider:RangeSlider
+                                LowerSelectedValue="{Binding EyeSquintLower, Mode=TwoWay}"
                                 Margin="10,0"
                                 Maximum="100"
                                 Minimum="0"
                                 TickFrequency="0.01"
+                                UpperSelectedValue="{Binding EyeSquintUpper, Mode=TwoWay}"
                                 x:Name="RightHSFSlider" />
                         </DockPanel>
                     </StackPanel>
@@ -71,6 +76,7 @@
 
             <controls:SettingsExpanderToggle
                 Description="Description"
+                ExpanderContentToggle="{Binding EmulateEyebrows, Mode=TwoWay}"
                 IconPath="EyeTrackingRegular"
                 Title="Emulate Eyebrows">
                 <controls:SettingsExpanderToggle.ExpanderContent>
@@ -85,6 +91,7 @@
                                 Maximum="100"
                                 Minimum="0"
                                 TickFrequency="0.01"
+                                Value="{Binding EyeBrowsLower}"
                                 x:Name="LoweringSlider" />
                         </DockPanel>
                         <DockPanel>
@@ -97,6 +104,7 @@
                                 Maximum="100"
                                 Minimum="0"
                                 TickFrequency="0.01"
+                                Value="{Binding EyeBrowsRaise}"
                                 x:Name="RisingSlider" />
                         </DockPanel>
                     </StackPanel>

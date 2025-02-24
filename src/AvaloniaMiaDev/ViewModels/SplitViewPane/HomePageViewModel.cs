@@ -22,6 +22,26 @@ public partial class HomePageViewModel : ViewModelBase
     private int _messagesSent;
     [ObservableProperty] private string _messagesOutPerSecCount;
 
+    [ObservableProperty]
+    [SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
+    private bool _flipLeftEyeXAxis;
+
+    [ObservableProperty]
+    [SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
+    private bool _flipRightEyeYAxis;
+
+    [ObservableProperty]
+    [SavedSetting("EyeSettings_FlipEyeYAxis", false)]
+    private bool _flipEyeYAxis;
+
+    [ObservableProperty]
+    [SavedSetting("EyeSettings_LeftEyeCircleCrop", false)]
+    private bool _leftEyeCircleCrop;
+
+    [ObservableProperty]
+    [SavedSetting("EyeSettings_RightEyeCircleCrop", false)]
+    private bool _rightEyeCircleCrop;
+
     private readonly DispatcherTimer _msgCounterTimer;
 
     public HomePageViewModel()

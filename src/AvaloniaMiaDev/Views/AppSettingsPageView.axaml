@@ -122,6 +122,7 @@
             <controls:SettingsToggle
                 Description="Should the app check for updates on start?"
                 IconPath="ArrowSyncRegular"
+                SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}"
                 Title="Check For Updates" />
 
         </StackPanel>

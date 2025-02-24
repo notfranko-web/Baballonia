@@ -113,7 +113,7 @@
                             Grid.Row="0"
                             Margin="0,8"
                             TextAlignment="Center"
-                            Value="0.0004"
+                            Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}"
                             Width="300" />
 
                         <StackPanel
@@ -128,7 +128,7 @@
                             Grid.Row="1"
                             Margin="0,8"
                             TextAlignment="Center"
-                            Value="0.9"
+                            Value="{Binding OneEuroSpeedCutoff}"
                             Width="300" />
                     </Grid>
                 </controls:SettingsExpander.ExpanderContent>
@@ -149,7 +149,10 @@
                                 <TextBlock FontWeight="Bold" Text="Outer Eye Falloff" />
                                 <TextBlock Text="Description" />
                             </StackPanel>
-                            <CheckBox Grid.Column="2" Grid.Row="0" />
+                            <CheckBox
+                                Grid.Column="2"
+                                Grid.Row="0"
+                                IsChecked="{Binding OuterEyeFalloff}" />
 
                             <StackPanel
                                 Grid.Column="0"
@@ -162,7 +165,7 @@
                                 Grid.Column="2"
                                 Grid.Row="1"
                                 Margin="0,8"
-                                SelectedIndex="0"
+                                SelectedIndex="{Binding EyeDominantIndex, Mode=TwoWay}"
                                 Width="300">
                                 <ComboBoxItem>None</ComboBoxItem>
                                 <ComboBoxItem>Left Eye</ComboBoxItem>
@@ -177,7 +180,7 @@
                                 Grid.Column="2"
                                 Grid.Row="2"
                                 TextAlignment="Center"
-                                Value="0.3" />
+                                Value="{Binding EyeDifferenceThreshold, Mode=TwoWay}" />
                         </Grid>
 
                     </StackPanel>
@@ -215,7 +218,7 @@
                                 Grid.Column="2"
                                 Grid.Row="0"
                                 Margin="0,8"
-                                SelectedIndex="0"
+                                SelectedIndex="{Binding BlinkDetectionAlgorithmIndex, Mode=TwoWay}"
                                 Width="300">
                                 <ComboBoxItem>Intensity Based Openness</ComboBoxItem>
                                 <ComboBoxItem>RANSAC Quick Blink Algo</ComboBoxItem>
@@ -235,7 +238,7 @@
                                 Grid.Row="1"
                                 Margin="0,8"
                                 TextAlignment="Center"
-                                Value="2000"
+                                Value="{Binding LeapCalibrationSamples, Mode=TwoWay}"
                                 Width="300" />
 
                             <StackPanel
@@ -250,7 +253,7 @@
                                 Grid.Row="2"
                                 Margin="0,8"
                                 TextAlignment="Center"
-                                Value="400"
+                                Value="{Binding IboFilterSampleSize, Mode=TwoWay}"
                                 Width="300" />
 
                             <StackPanel
@@ -265,7 +268,7 @@
                                 Grid.Row="3"
                                 Margin="0,8"
                                 TextAlignment="Center"
-                                Value="600"
+                                Value="{Binding CalibrationSamples, Mode=TwoWay}"
                                 Width="300" />
 
                             <StackPanel
@@ -281,7 +284,7 @@
                                 Increment="0.1"
                                 Margin="0,8"
                                 TextAlignment="Center"
-                                Value="0.3"
+                                Value="{Binding IboCloseThreshold, Mode=TwoWay}"
                                 Width="300" />
                         </Grid>
                     </StackPanel>
@@ -291,6 +294,7 @@
             <controls:SettingsToggle
                 Description="Use eclipse-based dilation?"
                 IconPath="ArrowMaximizeRegular"
+                SettingToggled="{Binding EclipseBasedDilation, Mode=TwoWay}"
                 Title="Pupil Dilation" />
 
             <controls:SettingsExpander
@@ -299,7 +303,10 @@
                 Title="Advanced Controls">
                 <controls:SettingsExpander.ExpanderContent>
                     <StackPanel Margin="10">
-                        <CheckBox Content="HSF: Skip Auto Radius" Margin="0,0,0,10" />
+                        <CheckBox
+                            Content="HSF: Skip Auto Radius"
+                            IsChecked="{Binding SkipAutoRadius, Mode=TwoWay}"
+                            Margin="0,0,0,10" />
 
                         <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,Auto,Auto,Auto">
                             <StackPanel Grid.Column="0" Grid.Row="0">
@@ -311,13 +318,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #LeftHSFSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding LeftHSFRadius, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="LeftHSFSlider"
-                                        Value="10" />
+                                        Value="{Binding LeftHSFRadius, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -330,13 +336,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #RightHSFSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding RightHSFRadius, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="RightHSFSlider"
-                                        Value="10" />
+                                        Value="{Binding RightHSFRadius, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -349,13 +354,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #RansacSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding RansacThreshAdd, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="RansacSlider"
-                                        Value="11" />
+                                        Value="{Binding RansacThreshAdd, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -368,13 +372,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #BlobThreshSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding BlobThreshold, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="BlobThreshSlider"
-                                        Value="65" />
+                                        Value="{Binding BlobThreshold, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -387,13 +390,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #MinBlobSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding MinBlobSize, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="MinBlobSlider"
-                                        Value="10" />
+                                        Value="{Binding MinBlobSize, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -406,13 +408,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #MaxBlobSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding MaxBlobSize, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="MaxBlobSlider"
-                                        Value="25" />
+                                        Value="{Binding MaxBlobSize, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -425,13 +426,12 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #RightEyeSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding RightEyeThresh, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="RightEyeSlider"
-                                        Value="80" />
+                                        Value="{Binding RightEyeThresh, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
@@ -444,17 +444,15 @@
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding #LeftEyeSlider.Value, StringFormat={}{0:0}}"
+                                        Text="{Binding LeftEyeThresh, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Name="LeftEyeSlider"
-                                        Value="80" />
+                                        Value="{Binding LeftEyeThresh, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
                         </Grid>
-
                     </StackPanel>
                 </controls:SettingsExpander.ExpanderContent>
             </controls:SettingsExpander>

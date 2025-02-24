@@ -19,11 +19,11 @@
     <ScrollViewer>
         <StackPanel Classes="Page">
             <TextBlock Classes="Header" Text="{l:Localize Shell_Main.Content}" />
-            <CheckBox Content="Flip Left Eye X-Axis" />
-            <CheckBox Content="Flip Right Eye Y-Axis" />
-            <CheckBox Content="Flip Eye Y-Axis" />
-            <CheckBox Content="Left Eye Circle crop" />
-            <CheckBox Content="Right Eye Circle crop" />
+            <CheckBox Content="Flip Left Eye X-Axis" IsChecked="{Binding FlipLeftEyeXAxis, Mode=TwoWay}" />
+            <CheckBox Content="Flip Right Eye Y-Axis" IsChecked="{Binding FlipRightEyeYAxis, Mode=TwoWay}" />
+            <CheckBox Content="Flip Eye Y-Axis" IsChecked="{Binding FlipEyeYAxis, Mode=TwoWay}" />
+            <CheckBox Content="Left Eye Circle crop" IsChecked="{Binding LeftEyeCircleCrop, Mode=TwoWay}" />
+            <CheckBox Content="Right Eye Circle crop" IsChecked="{Binding RightEyeCircleCrop, Mode=TwoWay}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

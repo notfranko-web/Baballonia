@@ -22,9 +22,16 @@ public partial class AppSettingsPageViewModel : ViewModelBase
     public GithubService GithubService { get; private set;}
     public ParameterSenderService ParameterSenderService { get; private set;}
 
-    [ObservableProperty] public string _recalibrateAddress;
+    [ObservableProperty]
+    [SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recalibrate")]
+    private string _recalibrateAddress;
 
-    [ObservableProperty] public string _recenterAddress;
+    [ObservableProperty]
+    [SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recenter")]
+    private string _recenterAddress;
+
+    [ObservableProperty] [SavedSetting("AppSettings_CheckForUpdates", false)]
+    private bool checkForUpdates;
 
     public AppSettingsPageViewModel()
     {
