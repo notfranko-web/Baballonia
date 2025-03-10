@@ -6,24 +6,179 @@
     x:DataType="splitViewPane:HomePageViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="clr-namespace:AvaloniaMiaDev.Helpers"
-    xmlns:l="using:Jeek.Avalonia.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <UserControl.Resources>
-        <helpers:StreamToBitmapConverter x:Key="ImageConverter" />
-    </UserControl.Resources>
+    <Grid ColumnDefinitions="*,*">
+        <!--  Left Panel  -->
+        <ScrollViewer Grid.Column="0">
+            <StackPanel Classes="Page">
+                <Border
+                    CornerRadius="3"
+                    Margin="10,0,5,0"
+                    Padding="10">
+                    <StackPanel Margin="0,0,0,0" Spacing="5">
+                        <TextBlock Text="Left Camera Address" x:Name="LeftCameraAddressText" />
+                        <AutoCompleteBox
+                            FilterMode="Contains"
+                            Text="Camera Address"
+                            Watermark="Start typing to see detected devices..."
+                            x:Name="LeftCameraAddressEntry" />
+                        <Button
+                            Click="LeftCameraAddressClicked"
+                            Content="Save And Restart Tracking"
+                            x:Name="LeftSaveAndRestartTrackingText" />
+                        <Button
+                            Click="LeftSelectEntireFrameClicked"
+                            Content="Select entire frame"
+                            ToolTip.Tip=""
+                            x:Name="LeftSelectEntireFrame" />
 
-    <ScrollViewer>
-        <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="{l:Localize Shell_Main.Content}" />
-            <CheckBox Content="Flip Left Eye X-Axis" IsChecked="{Binding FlipLeftEyeXAxis, Mode=TwoWay}" />
-            <CheckBox Content="Flip Right Eye Y-Axis" IsChecked="{Binding FlipRightEyeYAxis, Mode=TwoWay}" />
-            <CheckBox Content="Flip Eye Y-Axis" IsChecked="{Binding FlipEyeYAxis, Mode=TwoWay}" />
-            <CheckBox Content="Left Eye Circle crop" IsChecked="{Binding LeftEyeCircleCrop, Mode=TwoWay}" />
-            <CheckBox Content="Right Eye Circle crop" IsChecked="{Binding RightEyeCircleCrop, Mode=TwoWay}" />
-        </StackPanel>
-    </ScrollViewer>
+                        <StackPanel
+                            Margin="0,0,0,0"
+                            Orientation="Horizontal"
+                            Spacing="10">
+                            <RadioButton
+                                Click="LeftOnTrackingModeClicked"
+                                Content="Tracking Mode"
+                                GroupName="LeftImageControlGroup"
+                                x:Name="LeftTrackingModeButton" />
+                            <RadioButton
+                                Click="LeftOnCroppingModeClicked"
+                                Content="Cropping Mode"
+                                GroupName="LeftImageControlGroup"
+                                x:Name="LeftCroppingModeButton" />
+                        </StackPanel>
+
+                        <Grid>
+                            <Image
+                                IsHitTestVisible="True"
+                                Source="{Binding LeftEyeBitmap}"
+                                Stretch="None"
+                                x:Name="LeftMouthWindow" />
+                            <Canvas
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                x:Name="LeftCanvasWindow">
+                                <Rectangle
+                                    Canvas.Left="{Binding LeftOverlayRectangleCanvasX}"
+                                    Canvas.Top="{Binding LeftOverlayRectangleCanvasY}"
+                                    Fill="Transparent"
+                                    IsHitTestVisible="False"
+                                    x:Name="LeftRectangleWindow" />
+                            </Canvas>
+                        </Grid>
+
+                        <StackPanel Margin="0,5,0,0" Spacing="5">
+                            <TextBlock Text="" x:Name="LeftPerfText" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5,0,0" Spacing="5">
+                            <TextBlock Text="Rotation" x:Name="LeftRotationText" />
+                            <Slider
+                                Maximum="360"
+                                Minimum="0"
+                                Value="{Binding LeftEyeRotation}"
+                                x:Name="LeftRotationSlider" />
+                        </StackPanel>
+
+                        <CheckBox
+                            Content="Vertical Flip"
+                            IsChecked="{Binding FlipEyeYAxis}"
+                            x:Name="LeftVerticalFlip" />
+                        <CheckBox
+                            Content="Horizontal Flip"
+                            IsChecked="{Binding FlipLeftEyeXAxis}"
+                            x:Name="LeftHorizontalFlip" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  Right Panel  -->
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Classes="Page">
+                <Border
+                    CornerRadius="3"
+                    Margin="5,0,10,0"
+                    Padding="10">
+                    <StackPanel Margin="0,0,0,0" Spacing="5">
+                        <TextBlock Text="Right Camera Address" x:Name="RightCameraAddressText" />
+                        <AutoCompleteBox
+                            FilterMode="Contains"
+                            Text="Camera Address"
+                            Watermark="Start typing to see detected devices..."
+                            x:Name="RightCameraAddressEntry" />
+                        <Button
+                            Click="RightCameraAddressClicked"
+                            Content="Save And Restart Tracking"
+                            x:Name="RightSaveAndRestartTrackingText" />
+                        <Button
+                            Click="RightSelectEntireFrameClicked"
+                            Content="Select entire frame"
+                            ToolTip.Tip=""
+                            x:Name="RightSelectEntireFrame" />
+
+                        <StackPanel
+                            Margin="0,0,0,0"
+                            Orientation="Horizontal"
+                            Spacing="10">
+                            <RadioButton
+                                Click="RightOnTrackingModeClicked"
+                                Content="Tracking Mode"
+                                GroupName="RightImageControlGroup"
+                                x:Name="RightTrackingModeButton" />
+                            <RadioButton
+                                Click="RightOnCroppingModeClicked"
+                                Content="Cropping Mode"
+                                GroupName="RightImageControlGroup"
+                                x:Name="RightCroppingModeButton" />
+                        </StackPanel>
+
+                        <Grid>
+                            <Image
+                                IsHitTestVisible="True"
+                                Source="{Binding RightEyeBitmap}"
+                                Stretch="None"
+                                x:Name="RightMouthWindow" />
+                            <Canvas
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                x:Name="RightCanvasWindow">
+                                <Rectangle
+                                    Canvas.Left="{Binding RightOverlayRectangleCanvasX}"
+                                    Canvas.Top="{Binding RightOverlayRectangleCanvasY}"
+                                    Fill="Transparent"
+                                    IsHitTestVisible="False"
+                                    x:Name="RightRectangleWindow" />
+                            </Canvas>
+                        </Grid>
+
+                        <StackPanel Margin="0,5,0,0" Spacing="5">
+                            <TextBlock Text="" x:Name="RightPerfText" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5,0,0" Spacing="5">
+                            <TextBlock Text="Rotation" x:Name="RightRotationText" />
+                            <Slider
+                                Maximum="360"
+                                Minimum="0"
+                                Value="{Binding RightEyeRotation}"
+                                x:Name="RightRotationSlider" />
+                        </StackPanel>
+
+                        <CheckBox
+                            Content="Vertical Flip"
+                            IsChecked="{Binding FlipEyeYAxis}"
+                            x:Name="RightVerticalFlip" />
+                        <CheckBox
+                            Content="Horizontal Flip"
+                            IsChecked="{Binding FlipRightEyeXAxis}"
+                            x:Name="RightHorizontalFlip" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

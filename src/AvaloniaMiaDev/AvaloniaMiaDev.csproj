@@ -4,10 +4,15 @@
         <LangVersion>latest</LangVersion>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <ApplicationIcon>./Assets/logo_big_no_bg.ico</ApplicationIcon>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
+        <None Remove="model.onnx" />
+        <AvaloniaResource Include="model.onnx">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AvaloniaResource>
     </ItemGroup>
 
 
@@ -24,10 +29,16 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+        <PackageReference Include="Microsoft.ML" Version="4.0.2" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.21.0" />
+        <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="4.0.2" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
         <PackageReference Include="pythonnet" Version="3.0.5" />
         <PackageReference Include="RangeSlider.Avalonia" Version="2.1.0" />
         <PackageReference Include="SoundFlow" Version="1.0.3" />
+        <PackageReference Include="System.IO.Ports" Version="9.0.2" />
     </ItemGroup>
 
 
@@ -67,5 +78,10 @@
         <DependentUpon>ModuleSettingsPageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="Services\Camera\Platforms\" />
     </ItemGroup>
 </Project>

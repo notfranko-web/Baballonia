@@ -25,11 +25,11 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
     private ObservableCollection<TrackingAlgorithm> trackingAlgorithms;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuro", 0.0004f)]
+    [property: SavedSetting("TrackingSettings_OneEuroMinFreqCutoff", 0.0004f)]
     private float _oneEuroMinFreqCutoff;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuro", 0.9f)]
+    [property: SavedSetting("TrackingSettings_OneEuroSpeedCutoff", 0.9f)]
     private float _oneEuroSpeedCutoff;
 
     [ObservableProperty]
