@@ -25,84 +25,86 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
     private ObservableCollection<TrackingAlgorithm> trackingAlgorithms;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_OneEuro", 0.0004f)]
+    [property: SavedSetting("TrackingSettings_OneEuro", 0.0004f)]
     private float _oneEuroMinFreqCutoff;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_OneEuro", 0.9f)]
+    [property: SavedSetting("TrackingSettings_OneEuro", 0.9f)]
     private float _oneEuroSpeedCutoff;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_OuterEyeFalloff", false)]
+    [property: SavedSetting("TrackingSettings_OuterEyeFalloff", false)]
     private float _outerEyeFalloff;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_EyeDominantIndex", 0)]
+    [property: SavedSetting("TrackingSettings_EyeDominantIndex", 0)]
     private int _eyeDominantIndex;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_EyeDifferenceThreshold", 0.3f)]
+    [property: SavedSetting("TrackingSettings_EyeDifferenceThreshold", 0.3f)]
     private int _eyeDifferenceThreshold;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_BlinkDetectionAlgorithmIndex", 0)]
+    [property: SavedSetting("TrackingSettings_BlinkDetectionAlgorithmIndex", 0)]
     private int _blinkDetectionAlgorithmIndex;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_LEAPCalibrationSamples", 2000f)]
+    [property: SavedSetting("TrackingSettings_LEAPCalibrationSamples", 2000f)]
     private float _leapCalibrationSamples;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_IBOFilterSampleSize", 400f)]
+    [property: SavedSetting("TrackingSettings_IBOFilterSampleSize", 400f)]
     private float _iboFilterSampleSize;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_CalibrationSamples", 600f)]
+    [property: SavedSetting("TrackingSettings_CalibrationSamples", 600f)]
     private float _calibrationSamples;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_IBOCloseThreshold", 0.3f)]
+    [property: SavedSetting("TrackingSettings_IBOCloseThreshold", 0.3f)]
     private float _iboCloseThreshold;
 
     [ObservableProperty]
-    [SavedSetting("TrackingSettings_EclipseBasedDilation?", false)]
+    [property: SavedSetting("TrackingSettings_EclipseBasedDilation?", false)]
     private bool _eclipseBasedDilation;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_SkipAutoRadius", false)]
+    [property: SavedSetting("AdvancedControls_SkipAutoRadius", false)]
     private bool _skipAutoRadius;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_LeftHSFRadius", 10f)]
+    [property: SavedSetting("AdvancedControls_LeftHSFRadius", 10f)]
     private float _leftHSFRadius;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_RightHSFRadius", 10f)]
+    [property: SavedSetting("AdvancedControls_RightHSFRadius", 10f)]
     private float _rightHSFRadius;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_RansacThreshAdd", 11f)]
+    [property: SavedSetting("AdvancedControls_RansacThreshAdd", 11f)]
     private float _ransacThreshAdd;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_BlobThreshold", 65f)]
+    [property: SavedSetting("AdvancedControls_BlobThreshold", 65f)]
     private float _blobThreshold;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_MinBlobSize", 10f)]
+    [property: SavedSetting("AdvancedControls_MinBlobSize", 10f)]
     private float _minBlobSize;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_MaxBlobSize", 25f)]
+    [property: SavedSetting("AdvancedControls_MaxBlobSize", 25f)]
     private float _maxBlobSize;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_RightEyeThresh", 80f)]
+    [property: SavedSetting("AdvancedControls_RightEyeThresh", 80f)]
     private float _rightEyeThresh;
 
     [ObservableProperty]
-    [SavedSetting("AdvancedControls_LeftEyeThresh", 80f)]
+    [property: SavedSetting("AdvancedControls_LeftEyeThresh", 80f)]
     private float _leftEyeThresh;
+
+    public ILocalSettingsService SettingsService { get; private set;}
 
     public TrackingSettingsPageViewModel()
     {
@@ -118,6 +120,14 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
             new TrackingAlgorithm(8, false, "LEAP", "Description")
         ];
         trackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
+
+        SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        SettingsService.Load(this);
+
+        PropertyChanged += (_, _) =>
+        {
+            SettingsService.Save(this);
+        };
     }
 
     private async void OnTrackingAlgorithmCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

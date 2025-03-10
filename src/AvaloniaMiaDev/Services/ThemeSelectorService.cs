@@ -34,7 +34,7 @@ public class ThemeSelectorService(ILocalSettingsService localSettingsService) : 
 
     private async Task<ThemeVariant> LoadThemeFromSettingsAsync()
     {
-        return await localSettingsService.ReadSettingAsync<ThemeVariant>(SettingsKey);;
+        return await localSettingsService.ReadSettingAsync<ThemeVariant>(SettingsKey);
     }
 
     private async Task SaveThemeInSettingsAsync(ThemeVariant theme)

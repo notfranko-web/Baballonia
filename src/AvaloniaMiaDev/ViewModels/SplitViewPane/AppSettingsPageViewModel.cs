@@ -23,15 +23,16 @@ public partial class AppSettingsPageViewModel : ViewModelBase
     public ParameterSenderService ParameterSenderService { get; private set;}
 
     [ObservableProperty]
-    [SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recalibrate")]
+    [property: SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recalibrate")]
     private string _recalibrateAddress;
 
     [ObservableProperty]
-    [SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recenter")]
+    [property: SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recenter")]
     private string _recenterAddress;
 
-    [ObservableProperty] [SavedSetting("AppSettings_CheckForUpdates", false)]
-    private bool checkForUpdates;
+    [ObservableProperty]
+    [property: SavedSetting("AppSettings_CheckForUpdates", false)]
+    private bool _checkForUpdates;
 
     public AppSettingsPageViewModel()
     {

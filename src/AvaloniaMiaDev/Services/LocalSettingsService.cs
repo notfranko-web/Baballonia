@@ -11,7 +11,7 @@ namespace AvaloniaMiaDev.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {
-    public string DefaultApplicationDataFolder => Path.Combine("VRCFaceTracking", "ApplicationData");
+    public const string DefaultApplicationDataFolder = "ApplicationData";
     public const string DefaultLocalSettingsFile = "LocalSettings.json";
 
     private readonly IFileService _fileService;
