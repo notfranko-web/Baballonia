@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Services.Camera.Enums;
 using AvaloniaMiaDev.Services.Camera.Filters;
 using AvaloniaMiaDev.Services.Camera.Platforms;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -16,16 +14,17 @@ using OpenCvSharp;
 
 namespace AvaloniaMiaDev.Services;
 
-public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService settingsService, int cameraID)
+public class InferenceService : IInferenceService
 {
+    public PlatformConnector[] PlatformConnectors = new PlatformConnector[2];
+    public int FPS => (int) MathF.Floor(1000f / MS);
+    public float MS { get; set; }
     public bool IsRunning { get; private set; }
-    public float MS { get; private set; }
-    public int FPS => (int)MathF.Floor(1000f / MS);
-
-    public PlatformConnector? PlatformConnector;
 
     private readonly DenseTensor<float> _inputTensor = new DenseTensor<float>([1, 1, 256, 256]);
     private readonly Stopwatch _sw = Stopwatch.StartNew();
+    private readonly ILogger<InferenceService> _logger;
+    private readonly ILocalSettingsService _localSettingsService;
 
     private Size _inputSize = new Size(256, 256);
     private InferenceSession? _session;
@@ -33,31 +32,33 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
     private float _lastTime = 0;
     private string? _inputName;
 
-    private const string CameraKey = "CameraIndex";
-
-    public async Task ExecuteAsync()
+    public InferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
     {
-        logger.LogInformation($"Starting ETVRService {cameraID}...");
+        _logger = logger;
+        _localSettingsService = settingsService;
 
-        SessionOptions sessionOptions = SetupSessionOptions();
-        ConfigurePlatformSpecificGPU(sessionOptions);
+        Task.Run(async () =>
+        {
+            logger.LogInformation("Starting Inference Service...");
 
-        await ConfigurePlatformConnector();
+            SessionOptions sessionOptions = SetupSessionOptions();
+            ConfigurePlatformSpecificGPU(sessionOptions);
 
-        var minCutoff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroMinFreqCutoff");
-        var speedCoeff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroSpeedCutoff");
-        _floatFilter = new OneEuroFilter(
-            minCutoff: minCutoff,
-            beta: speedCoeff
-        );
+            var minCutoff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroMinFreqCutoff");
+            var speedCoeff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroSpeedCutoff");
+            _floatFilter = new OneEuroFilter(
+                minCutoff: minCutoff,
+                beta: speedCoeff
+            );
 
-        _session = new InferenceSession("model.onnx", sessionOptions);
-        _inputName = _session.InputMetadata.Keys.First();
-        int[] dimensions = _session.InputMetadata.Values.First().Dimensions;
-        _inputSize = new(dimensions[2], dimensions[3]);
-        IsRunning = true;
+            _session = new InferenceSession("model.onnx", sessionOptions);
+            _inputName = _session.InputMetadata.Keys.First();
+            int[] dimensions = _session.InputMetadata.Values.First().Dimensions;
+            _inputSize = new(dimensions[2], dimensions[3]);
+            IsRunning = true;
 
-        logger.LogInformation($"ETVRService {cameraID} started!");
+            logger.LogInformation("Inference started!");
+        });
     }
 
     /// <summary>
@@ -65,7 +66,7 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
     /// </summary>
     /// <param name="ARKitExpressions"></param>
     /// <returns></returns>
-    public bool GetExpressionData(out float[] ARKitExpressions)
+    public bool GetExpressionData(Chirality cameraIndex, out float[] ARKitExpressions)
     {
         ARKitExpressions = null;
         if (!IsRunning)
@@ -74,7 +75,7 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
         }
 
         // Test if the camera is not ready or connecting to new source
-        if (!PlatformConnector.ExtractFrameData(_inputTensor.Buffer.Span, _inputSize).Result) return false;
+        if (!PlatformConnectors[(int)cameraIndex].ExtractFrameData(_inputTensor.Buffer.Span, _inputSize).Result) return false;
 
         // Camera ready, prepare Mat as DenseTensor
         var inputs = new List<NamedOnnxValue>
@@ -105,24 +106,31 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public bool GetRawImage(ColorType color, out byte[] image, out (int width, int height) dimensions)
+    public bool GetRawImage(Chirality cameraIndex, ColorType color, out byte[] image, out (int width, int height) dimensions)
     {
-        if (PlatformConnector?.Capture!.RawMat is null)
+        if (PlatformConnectors is null)
         {
             dimensions = (0, 0);
             image = Array.Empty<byte>();
             return false;
         }
 
-        dimensions = PlatformConnector.Capture.Dimensions;
-        if (color == ((PlatformConnector.Capture.RawMat.Channels() == 1) ? ColorType.GRAY_8 : ColorType.BGR_24))
+        if (PlatformConnectors[(int)cameraIndex]?.Capture!.RawMat is null)
         {
-            image = PlatformConnector.Capture.RawMat.AsSpan<byte>().ToArray();
+            dimensions = (0, 0);
+            image = Array.Empty<byte>();
+            return false;
+        }
+
+        dimensions = PlatformConnectors[(int)cameraIndex].Capture.Dimensions;
+        if (color == ((PlatformConnectors[(int)cameraIndex].Capture.RawMat.Channels() == 1) ? ColorType.GRAY_8 : ColorType.BGR_24))
+        {
+            image = PlatformConnectors[(int)cameraIndex].Capture.RawMat.AsSpan<byte>().ToArray();
         }
         else
         {
             using var convertedMat = new Mat();
-            Cv2.CvtColor(PlatformConnector.Capture.RawMat, convertedMat, (PlatformConnector.Capture.RawMat.Channels() == 1) ? color switch
+            Cv2.CvtColor(PlatformConnectors[(int)cameraIndex].Capture.RawMat, convertedMat, (PlatformConnectors[(int)cameraIndex].Capture.RawMat.Channels() == 1) ? color switch
             {
                 ColorType.BGR_24 => ColorConversionCodes.GRAY2BGR,
                 ColorType.RGB_24 => ColorConversionCodes.GRAY2RGB,
@@ -146,14 +154,15 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public unsafe bool GetImage(out byte[]? image, out (int width, int height) dimensions)
+    public bool GetImage(Chirality cameraIndex, out byte[]? image, out (int width, int height) dimensions)
     {
         image = null;
         dimensions = (0, 0);
+        if (PlatformConnectors is null) return false;
 
         byte[] data = new byte[_inputSize.Width * _inputSize.Height];
         using var imageMat = Mat<byte>.FromPixelData(_inputSize.Height, _inputSize.Width, data);
-        if (PlatformConnector?.TransformRawImage(imageMat).Result != true) return false;
+        if (PlatformConnectors[(int)cameraIndex]?.TransformRawImage(imageMat).Result != true) return false;
 
         image = data;
         dimensions = (imageMat.Width, imageMat.Height);
@@ -187,27 +196,20 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
     /// We have a custom implementations for IP Cameras, the de-facto use case on mobile
     /// As well as SerialCameras (not tested on mobile yet)
     /// </summary>
-    private async Task ConfigurePlatformConnector()
+    public void ConfigurePlatformConnectors(Chirality chirality, string cameraIndex)
     {
-        var index = await settingsService.ReadSettingAsync<string>(CameraKey);
-
-        // We should never change from Android to Desktop or vice versa during
-        // the applications runtime. Only run these once!
-        if (PlatformConnector is null)
+        if (OperatingSystem.IsAndroid())
         {
-            if (OperatingSystem.IsAndroid())
-            {
-                PlatformConnector = new AndroidConnector(index, logger, settingsService);
-            }
-            else
-            {
-                // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
-                // Use the standard EmguCV VideoCapture backend
-                PlatformConnector = new DesktopConnector(index, logger, settingsService);
-            }
+            PlatformConnectors[(int)chirality] = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)chirality].Initialize(cameraIndex);
         }
-
-        PlatformConnector.Initialize(index);
+        else
+        {
+            // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
+            // Use the standard EmguCV VideoCapture backend
+            PlatformConnectors[(int)chirality] = new DesktopConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)chirality].Initialize(cameraIndex);
+        }
     }
 
     /// <summary>
@@ -226,7 +228,7 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
             !OperatingSystem.IsAndroidVersionAtLeast(15))          // At most 15
         {
             sessionOptions.AppendExecutionProvider_Nnapi();
-            logger.LogInformation("Initialized ExecutionProvider: nnAPI");
+            _logger.LogInformation("Initialized ExecutionProvider: nnAPI");
             return;
         }
 
@@ -237,7 +239,7 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
             OperatingSystem.IsTvOS())
         {
             sessionOptions.AppendExecutionProvider_CoreML();
-            logger.LogInformation("Initialized ExecutionProvider: CoreML");
+            _logger.LogInformation("Initialized ExecutionProvider: CoreML");
             return;
         }
 
@@ -248,13 +250,13 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
             try
             {
                 sessionOptions.AppendExecutionProvider_DML();
-                logger.LogInformation("Initialized ExecutionProvider: DirectML");
+                _logger.LogInformation("Initialized ExecutionProvider: DirectML");
                 return;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to configure Gpu.");
-                logger.LogWarning("Failed to create DML Execution Provider on Windows. Falling back to CUDA...");
+                _logger.LogError(ex, "Failed to configure Gpu.");
+                _logger.LogWarning("Failed to create DML Execution Provider on Windows. Falling back to CUDA...");
             }
         }
 
@@ -265,15 +267,15 @@ public class ETVRService(ILogger<ETVRService> logger, ILocalSettingsService sett
         try
         {
             sessionOptions.AppendExecutionProvider_CUDA();
-            logger.LogInformation("Initialized ExecutionProvider: CUDA");
+            _logger.LogInformation("Initialized ExecutionProvider: CUDA");
             return;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to configure Gpu.");
-            logger.LogWarning("Failed to create CUDA Execution Provider on Windows.");
+            _logger.LogError(ex, "Failed to configure Gpu.");
+            _logger.LogWarning("Failed to create CUDA Execution Provider on Windows.");
         }
 
-        logger.LogWarning("No GPU acceleration will be applied.");
+        _logger.LogWarning("No GPU acceleration will be applied.");
     }
 }

@@ -22,7 +22,7 @@
                         <TextBlock Text="Left Camera Address" x:Name="LeftCameraAddressText" />
                         <AutoCompleteBox
                             FilterMode="Contains"
-                            Text="Camera Address"
+                            Text="{Binding LeftCameraAddress}"
                             Watermark="Start typing to see detected devices..."
                             x:Name="LeftCameraAddressEntry" />
                         <Button
@@ -43,6 +43,7 @@
                                 Click="LeftOnTrackingModeClicked"
                                 Content="Tracking Mode"
                                 GroupName="LeftImageControlGroup"
+                                IsChecked="True"
                                 x:Name="LeftTrackingModeButton" />
                             <RadioButton
                                 Click="LeftOnCroppingModeClicked"
@@ -85,7 +86,7 @@
 
                         <CheckBox
                             Content="Vertical Flip"
-                            IsChecked="{Binding FlipEyeYAxis}"
+                            IsChecked="{Binding FlipLeftEyeYAxis}"
                             x:Name="LeftVerticalFlip" />
                         <CheckBox
                             Content="Horizontal Flip"
@@ -107,7 +108,7 @@
                         <TextBlock Text="Right Camera Address" x:Name="RightCameraAddressText" />
                         <AutoCompleteBox
                             FilterMode="Contains"
-                            Text="Camera Address"
+                            Text="{Binding RightCameraAddress}"
                             Watermark="Start typing to see detected devices..."
                             x:Name="RightCameraAddressEntry" />
                         <Button
@@ -128,6 +129,7 @@
                                 Click="RightOnTrackingModeClicked"
                                 Content="Tracking Mode"
                                 GroupName="RightImageControlGroup"
+                                IsChecked="True"
                                 x:Name="RightTrackingModeButton" />
                             <RadioButton
                                 Click="RightOnCroppingModeClicked"
@@ -170,7 +172,7 @@
 
                         <CheckBox
                             Content="Vertical Flip"
-                            IsChecked="{Binding FlipEyeYAxis}"
+                            IsChecked="{Binding FlipRightEyeYAxis}"
                             x:Name="RightVerticalFlip" />
                         <CheckBox
                             Content="Horizontal Flip"

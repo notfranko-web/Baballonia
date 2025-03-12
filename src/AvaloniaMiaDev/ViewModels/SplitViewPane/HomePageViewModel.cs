@@ -8,8 +8,6 @@ using AvaloniaMiaDev.OSC;
 using AvaloniaMiaDev.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
@@ -20,26 +18,34 @@ public partial class HomePageViewModel : ViewModelBase
     private WriteableBitmap _leftEyeBitmap;
 
     [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
+    private string _leftCameraAddress;
+
+    [ObservableProperty]
     private int _leftOverlayRectangleCanvasX;
 
     [ObservableProperty]
     private int _leftOverlayRectangleCanvasY;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
+    [property: SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
     private bool _flipLeftEyeXAxis;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_LeftEyeCircleCrop", false)]
-    private bool _leftEyeCircleCrop;
+    [property: SavedSetting("EyeSettings_FlipLeftEyeYAxis", false)]
+    private bool _flipLeftEyeYAxis;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
+    [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
     private float _leftEyeRotation;
 
     // Right eye properties
     [ObservableProperty]
     private WriteableBitmap _rightEyeBitmap;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_IndexCameraIndex", "0")]
+    private string _rightCameraAddress;
 
     [ObservableProperty]
     private int _rightOverlayRectangleCanvasX;
@@ -48,15 +54,15 @@ public partial class HomePageViewModel : ViewModelBase
     private int _rightOverlayRectangleCanvasY;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
+    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
     private bool _flipRightEyeXAxis;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_RightEyeCircleCrop", false)]
-    private bool _rightEyeCircleCrop;
+    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
+    private bool _flipRightEyeYAxis;
 
     [ObservableProperty]
-    [SavedSetting("EyeSettings_RightEyeRotation", 0f)]
+    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
     private float _rightEyeRotation;
 
     // Shared properties
@@ -65,10 +71,6 @@ public partial class HomePageViewModel : ViewModelBase
 
     [ObservableProperty]
     private Rect _overlayRectangle;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipEyeYAxis", false)]
-    private bool _flipEyeYAxis;
 
     // Services and other properties
     public IOscTarget OscTarget { get; }

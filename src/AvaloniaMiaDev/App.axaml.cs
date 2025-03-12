@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
@@ -72,6 +73,7 @@ public partial class App : Application
                 services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
+                services.AddSingleton<IInferenceService, InferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();

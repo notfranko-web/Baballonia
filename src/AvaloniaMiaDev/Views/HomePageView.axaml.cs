@@ -19,8 +19,7 @@ namespace AvaloniaMiaDev.Views;
 
 public partial class HomePageView : UserControl
 {
-    private readonly ETVRService _leftEtvrService;
-    private readonly ETVRService _rightEtvrService;
+    private readonly IInferenceService _inferenceService;
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -44,14 +43,9 @@ public partial class HomePageView : UserControl
         Loaded += CamView_OnLoaded;
         Unloaded += CamView_Unloaded;
 
-        var cameras = Ioc.Default.GetRequiredService<Dictionary<int, ETVRService>>();
-        _leftEtvrService = cameras[0];
-        _rightEtvrService = cameras[1];
-        _leftEtvrService.ExecuteAsync();
-        _rightEtvrService.ExecuteAsync();
-
-        _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>();
-        _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>();
+        _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
+        _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
+        _inferenceService = Ioc.Default.GetService<IInferenceService>()!;
         _localSettingsService.Load(this);
 
         StartImageUpdates();
@@ -198,12 +192,12 @@ public partial class HomePageView : UserControl
             case CamViewMode.Tracking:
                 useColor = false;
                 LeftPerfText.IsVisible = true;
-                valid = _leftEtvrService.GetImage(out image, out dims);
+                valid = _inferenceService.GetImage(Chirality.Left, out image, out dims);
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
                 LeftPerfText.IsVisible = false;
-                valid = _leftEtvrService.GetRawImage(ColorType.BGR_24, out image, out dims);
+                valid = _inferenceService.GetRawImage(Chirality.Left, ColorType.BGR_24, out image, out dims);
                 break;
             default:
                 return;
@@ -237,9 +231,9 @@ public partial class HomePageView : UserControl
                     AlphaFormat.Opaque);
             }
 
-            if (_leftEtvrService.MS > 0)
+            if (_inferenceService.MS > 0)
             {
-                LeftPerfText.Text = $"FPS: {_leftEtvrService.FPS} MS: {_leftEtvrService.MS:F2}";
+                LeftPerfText.Text = $"FPS: {_inferenceService.FPS} MS: {_inferenceService.MS:F2}";
             }
             else
             {
@@ -304,12 +298,12 @@ public partial class HomePageView : UserControl
             case CamViewMode.Tracking:
                 useColor = false;
                 RightPerfText.IsVisible = true;
-                valid = _rightEtvrService.GetImage(out image, out dims);
+                valid = _inferenceService.GetImage(Chirality.Right, out image, out dims);
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
                 RightPerfText.IsVisible = false;
-                valid = _rightEtvrService.GetRawImage(ColorType.BGR_24, out image, out dims);
+                valid = _inferenceService.GetRawImage(Chirality.Right, ColorType.BGR_24, out image, out dims);
                 break;
             default:
                 return;
@@ -343,9 +337,9 @@ public partial class HomePageView : UserControl
                     AlphaFormat.Opaque);
             }
 
-            if (_rightEtvrService.MS > 0)
+            if (_inferenceService.MS > 0)
             {
-                RightPerfText.Text = $"FPS: {_rightEtvrService.FPS} MS: {_rightEtvrService.MS:F2}";
+                RightPerfText.Text = $"FPS: {_inferenceService.FPS} MS: {_inferenceService.MS:F2}";
             }
             else
             {
@@ -397,7 +391,7 @@ public partial class HomePageView : UserControl
     #region Left Panel Button Events
     public void LeftCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _localSettingsService.SaveSettingAsync("LeftCameraKey", 0); // Content
+        _inferenceService.ConfigurePlatformConnectors(Chirality.Left, _viewModel.LeftCameraAddress);
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -428,7 +422,7 @@ public partial class HomePageView : UserControl
     #region Right Panel Button Events
     public void RightCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _localSettingsService.SaveSettingAsync("RightCameraKey", 0); // Content
+        _inferenceService.ConfigurePlatformConnectors(Chirality.Right, _viewModel.RightCameraAddress);
     }
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
