@@ -23,17 +23,17 @@ public partial class HomePageView : UserControl
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
-    private CamViewMode leftCamViewMode = CamViewMode.Tracking;
-    private CamViewMode rightCamViewMode = CamViewMode.Tracking;
+    private CamViewMode _leftCamViewMode = CamViewMode.Tracking;
+    private CamViewMode _rightCamViewMode = CamViewMode.Tracking;
 
-    private Point? leftCropStartPoint;
-    private Point? rightCropStartPoint;
+    private Point? _leftCropStartPoint;
+    private Point? _rightCropStartPoint;
 
-    private Rect? leftCropRectangle;
-    private Rect? rightCropRectangle;
+    private Rect? _leftCropRectangle;
+    private Rect? _rightCropRectangle;
 
-    private bool isLeftCropping;
-    private bool isRightCropping;
+    private bool _isLeftCropping;
+    private bool _isRightCropping;
 
     private bool _isVisible;
 
@@ -69,43 +69,43 @@ public partial class HomePageView : UserControl
     #region Left Eye Events
     private void LeftOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (leftCamViewMode != CamViewMode.Cropping) return;
+        if (_leftCamViewMode != CamViewMode.Cropping) return;
 
         var position = e.GetPosition(LeftMouthWindow);
-        leftCropStartPoint = position;
-        leftCropRectangle = new Rect(position.X, position.Y, 0, 0);
-        isLeftCropping = true;
+        _leftCropStartPoint = position;
+        _leftCropRectangle = new Rect(position.X, position.Y, 0, 0);
+        _isLeftCropping = true;
     }
 
     private void LeftOnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!isLeftCropping || leftCropStartPoint is null) return;
+        if (!_isLeftCropping || _leftCropStartPoint is null) return;
 
         var position = e.GetPosition(LeftMouthWindow);
-        var x = Math.Min(leftCropStartPoint.Value.X, position.X);
-        var y = Math.Min(leftCropStartPoint.Value.Y, position.Y);
-        var clampedWidth = Math.Clamp(Math.Abs(leftCropStartPoint.Value.X - position.X), 0, _viewModel.LeftEyeBitmap.Size.Width - leftCropStartPoint.Value.X);
-        var clampedHeight = Math.Clamp(Math.Abs(leftCropStartPoint.Value.Y - position.Y), 0, _viewModel.LeftEyeBitmap.Size.Height - leftCropStartPoint.Value.Y);
+        var x = Math.Min(_leftCropStartPoint.Value.X, position.X);
+        var y = Math.Min(_leftCropStartPoint.Value.Y, position.Y);
+        var clampedWidth = Math.Clamp(Math.Abs(_leftCropStartPoint.Value.X - position.X), 0, _viewModel.LeftEyeBitmap.Size.Width - _leftCropStartPoint.Value.X);
+        var clampedHeight = Math.Clamp(Math.Abs(_leftCropStartPoint.Value.Y - position.Y), 0, _viewModel.LeftEyeBitmap.Size.Height - _leftCropStartPoint.Value.Y);
 
-        leftCropRectangle = new Rect(x, y, clampedWidth, clampedHeight);
+        _leftCropRectangle = new Rect(x, y, clampedWidth, clampedHeight);
     }
 
     private void LeftOnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (!isLeftCropping) return;
+        if (!_isLeftCropping) return;
 
-        isLeftCropping = false;
+        _isLeftCropping = false;
 
-        if (leftCropStartPoint.HasValue)
+        if (_leftCropStartPoint.HasValue)
         {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowX", leftCropStartPoint.Value.X);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowY", leftCropStartPoint.Value.Y);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowX", _leftCropStartPoint.Value.X);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowY", _leftCropStartPoint.Value.Y);
         }
 
-        if (leftCropRectangle.HasValue)
+        if (_leftCropRectangle.HasValue)
         {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowW", leftCropRectangle.Value.Width);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowH", leftCropRectangle.Value.Height);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowW", _leftCropRectangle.Value.Width);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowH", _leftCropRectangle.Value.Height);
         }
     }
     #endregion
@@ -113,43 +113,43 @@ public partial class HomePageView : UserControl
     #region Right Eye Events
     private void RightOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (rightCamViewMode != CamViewMode.Cropping) return;
+        if (_rightCamViewMode != CamViewMode.Cropping) return;
 
         var position = e.GetPosition(RightMouthWindow);
-        rightCropStartPoint = position;
-        rightCropRectangle = new Rect(position.X, position.Y, 0, 0);
-        isRightCropping = true;
+        _rightCropStartPoint = position;
+        _rightCropRectangle = new Rect(position.X, position.Y, 0, 0);
+        _isRightCropping = true;
     }
 
     private void RightOnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!isRightCropping || rightCropStartPoint is null) return;
+        if (!_isRightCropping || _rightCropStartPoint is null) return;
 
         var position = e.GetPosition(RightMouthWindow);
-        var x = Math.Min(rightCropStartPoint.Value.X, position.X);
-        var y = Math.Min(rightCropStartPoint.Value.Y, position.Y);
-        var clampedWidth = Math.Clamp(Math.Abs(rightCropStartPoint.Value.X - position.X), 0, _viewModel.RightEyeBitmap.Size.Width - rightCropStartPoint.Value.X);
-        var clampedHeight = Math.Clamp(Math.Abs(rightCropStartPoint.Value.Y - position.Y), 0, _viewModel.RightEyeBitmap.Size.Height - rightCropStartPoint.Value.Y);
+        var x = Math.Min(_rightCropStartPoint.Value.X, position.X);
+        var y = Math.Min(_rightCropStartPoint.Value.Y, position.Y);
+        var clampedWidth = Math.Clamp(Math.Abs(_rightCropStartPoint.Value.X - position.X), 0, _viewModel.RightEyeBitmap.Size.Width - _rightCropStartPoint.Value.X);
+        var clampedHeight = Math.Clamp(Math.Abs(_rightCropStartPoint.Value.Y - position.Y), 0, _viewModel.RightEyeBitmap.Size.Height - _rightCropStartPoint.Value.Y);
 
-        rightCropRectangle = new Rect(x, y, clampedWidth, clampedHeight);
+        _rightCropRectangle = new Rect(x, y, clampedWidth, clampedHeight);
     }
 
     private void RightOnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (!isRightCropping) return;
+        if (!_isRightCropping) return;
 
-        isRightCropping = false;
+        _isRightCropping = false;
 
-        if (rightCropStartPoint.HasValue)
+        if (_rightCropStartPoint.HasValue)
         {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowX", rightCropStartPoint.Value.X);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowY", rightCropStartPoint.Value.Y);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowX", _rightCropStartPoint.Value.X);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowY", _rightCropStartPoint.Value.Y);
         }
 
-        if (rightCropRectangle.HasValue)
+        if (_rightCropRectangle.HasValue)
         {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowW", rightCropRectangle.Value.Width);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowH", rightCropRectangle.Value.Height);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowW", _rightCropRectangle.Value.Width);
+            _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowH", _rightCropRectangle.Value.Height);
         }
     }
     #endregion
@@ -178,16 +178,16 @@ public partial class HomePageView : UserControl
 
     private void UpdateLeftImage()
     {
-        var isCroppingModeUIVisible = leftCamViewMode == CamViewMode.Cropping;
-        LeftRectangleWindow.IsVisible = isCroppingModeUIVisible;
-        LeftSelectEntireFrame.IsVisible = isCroppingModeUIVisible;
+        var isCroppingModeUiVisible = _leftCamViewMode == CamViewMode.Cropping;
+        LeftRectangleWindow.IsVisible = isCroppingModeUiVisible;
+        LeftSelectEntireFrame.IsVisible = isCroppingModeUiVisible;
 
         bool valid;
         bool useColor;
         byte[]? image;
         (int width, int height) dims;
 
-        switch (leftCamViewMode)
+        switch (_leftCamViewMode)
         {
             case CamViewMode.Tracking:
                 useColor = false;
@@ -253,16 +253,16 @@ public partial class HomePageView : UserControl
                 LeftCanvasWindow.Height = dims.height;
             }
 
-            if (leftCropRectangle.HasValue)
+            if (_leftCropRectangle.HasValue)
             {
-                LeftRectangleWindow.Width = leftCropRectangle.Value.Width;
-                LeftRectangleWindow.Height = leftCropRectangle.Value.Height;
+                LeftRectangleWindow.Width = _leftCropRectangle.Value.Width;
+                LeftRectangleWindow.Height = _leftCropRectangle.Value.Height;
             }
 
-            if (leftCropStartPoint.HasValue)
+            if (_leftCropStartPoint.HasValue)
             {
-                _viewModel.LeftOverlayRectangleCanvasX = ((int)leftCropStartPoint.Value.X);
-                _viewModel.LeftOverlayRectangleCanvasY = ((int)leftCropStartPoint.Value.Y);
+                _viewModel.LeftOverlayRectangleCanvasX = ((int)_leftCropStartPoint.Value.X);
+                _viewModel.LeftOverlayRectangleCanvasY = ((int)_leftCropStartPoint.Value.Y);
             }
         }
         else
@@ -284,16 +284,16 @@ public partial class HomePageView : UserControl
 
     private void UpdateRightImage()
     {
-        var isCroppingModeUIVisible = rightCamViewMode == CamViewMode.Cropping;
-        RightRectangleWindow.IsVisible = isCroppingModeUIVisible;
-        RightSelectEntireFrame.IsVisible = isCroppingModeUIVisible;
+        var isCroppingModeUiVisible = _rightCamViewMode == CamViewMode.Cropping;
+        RightRectangleWindow.IsVisible = isCroppingModeUiVisible;
+        RightSelectEntireFrame.IsVisible = isCroppingModeUiVisible;
 
         bool valid;
         bool useColor;
         byte[]? image;
         (int width, int height) dims;
 
-        switch (rightCamViewMode)
+        switch (_rightCamViewMode)
         {
             case CamViewMode.Tracking:
                 useColor = false;
@@ -359,16 +359,16 @@ public partial class HomePageView : UserControl
                 RightCanvasWindow.Height = dims.height;
             }
 
-            if (rightCropRectangle.HasValue)
+            if (_rightCropRectangle.HasValue)
             {
-                RightRectangleWindow.Width = rightCropRectangle.Value.Width;
-                RightRectangleWindow.Height = rightCropRectangle.Value.Height;
+                RightRectangleWindow.Width = _rightCropRectangle.Value.Width;
+                RightRectangleWindow.Height = _rightCropRectangle.Value.Height;
             }
 
-            if (rightCropStartPoint.HasValue)
+            if (_rightCropStartPoint.HasValue)
             {
-                _viewModel.RightOverlayRectangleCanvasX = ((int)rightCropStartPoint.Value.X);
-                _viewModel.RightOverlayRectangleCanvasY = ((int)rightCropStartPoint.Value.Y);
+                _viewModel.RightOverlayRectangleCanvasX = ((int)_rightCropStartPoint.Value.X);
+                _viewModel.RightOverlayRectangleCanvasY = ((int)_rightCropStartPoint.Value.Y);
             }
         }
         else
@@ -396,14 +396,14 @@ public partial class HomePageView : UserControl
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
     {
-        leftCamViewMode = CamViewMode.Tracking;
-        isLeftCropping = false;
+        _leftCamViewMode = CamViewMode.Tracking;
+        _isLeftCropping = false;
         LeftOnPointerReleased(null, null); // Close and save any open crops
     }
 
     public void LeftOnCroppingModeClicked(object sender, RoutedEventArgs args)
     {
-        leftCamViewMode = CamViewMode.Cropping;
+        _leftCamViewMode = CamViewMode.Cropping;
     }
 
     public void LeftSelectEntireFrameClicked(object sender, RoutedEventArgs args)
@@ -414,8 +414,8 @@ public partial class HomePageView : UserControl
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowY", 0);
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowW", _viewModel.LeftEyeBitmap.Size.Width);
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowH", _viewModel.LeftEyeBitmap.Size.Height);
-        leftCropStartPoint = new Point(0, 0);
-        leftCropRectangle = new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height);
+        _leftCropStartPoint = new Point(0, 0);
+        _leftCropRectangle = new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height);
     }
     #endregion
 
@@ -427,14 +427,14 @@ public partial class HomePageView : UserControl
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
     {
-        rightCamViewMode = CamViewMode.Tracking;
-        isRightCropping = false;
+        _rightCamViewMode = CamViewMode.Tracking;
+        _isRightCropping = false;
         RightOnPointerReleased(null, null); // Close and save any open crops
     }
 
     public void RightOnCroppingModeClicked(object sender, RoutedEventArgs args)
     {
-        rightCamViewMode = CamViewMode.Cropping;
+        _rightCamViewMode = CamViewMode.Cropping;
     }
 
     public void RightSelectEntireFrameClicked(object sender, RoutedEventArgs args)
@@ -445,8 +445,8 @@ public partial class HomePageView : UserControl
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowY", 0);
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowW", _viewModel.RightEyeBitmap.Size.Width);
         _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightRoiWindowH", _viewModel.RightEyeBitmap.Size.Height);
-        rightCropStartPoint = new Point(0, 0);
-        rightCropRectangle = new Rect(0, 0, _viewModel.RightEyeBitmap.Size.Width, _viewModel.RightEyeBitmap.Size.Height);
+        _rightCropStartPoint = new Point(0, 0);
+        _rightCropRectangle = new Rect(0, 0, _viewModel.RightEyeBitmap.Size.Width, _viewModel.RightEyeBitmap.Size.Height);
     }
     #endregion
 }

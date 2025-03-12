@@ -74,6 +74,11 @@ public class InferenceService : IInferenceService
             return false;
         }
 
+        if (PlatformConnectors[(int)cameraIndex] is null)
+        {
+            return false;
+        }
+
         // Test if the camera is not ready or connecting to new source
         if (!PlatformConnectors[(int)cameraIndex].ExtractFrameData(_inputTensor.Buffer.Span, _inputSize).Result) return false;
 
@@ -85,14 +90,14 @@ public class InferenceService : IInferenceService
 
         // Run inference!
         using var results = _session.Run(inputs);
-        var output = results[0].AsEnumerable<float>().ToArray();
+        ARKitExpressions = results[0].AsEnumerable<float>().ToArray();
         float time = (float)_sw.Elapsed.TotalSeconds;
         MS = (time - _lastTime) * 1000;
 
         // Filter ARKit Expressions
-        for (int i = 0; i < output.Length; i++)
+        for (int i = 0; i < ARKitExpressions.Length; i++)
         {
-            output[i] = _floatFilter.Filter(output[i], time - _lastTime);
+            ARKitExpressions[i] = _floatFilter.Filter(ARKitExpressions[i], time - _lastTime);
         }
 
         _lastTime = time;
