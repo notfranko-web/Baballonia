@@ -10,9 +10,9 @@
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
         <None Remove="model.onnx" />
-        <AvaloniaResource Include="model.onnx">
+        <Content Include="model.onnx">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </AvaloniaResource>
+        </Content>
     </ItemGroup>
 
 

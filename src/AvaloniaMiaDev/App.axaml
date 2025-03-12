@@ -145,7 +145,7 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/WindowIcon.ico" ToolTipText="Right click to see VRCFaceTracking options">
+            <TrayIcon Icon="/Assets/WindowIcon.ico" ToolTipText="Right click to see Project Babble options">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Click="OnTrayShutdownClicked" Header="Exit" />

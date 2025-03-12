@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using Avalonia;
-using Avalonia.Controls.Notifications;
-using AvaloniaMiaDev;
 using AvaloniaMiaDev.Models;
 using DesktopNotifications;
 using DesktopNotifications.Avalonia;
 using INotificationManager = DesktopNotifications.INotificationManager;
 using Notification = DesktopNotifications.Notification;
 
-namespace VRCFaceTracking.Avalonia.Desktop;
+namespace AvaloniaMiaDev.Desktop;
 
 sealed class Program
 {

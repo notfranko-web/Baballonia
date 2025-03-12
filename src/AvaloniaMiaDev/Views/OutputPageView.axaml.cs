@@ -51,7 +51,7 @@ public partial class OutputPageView : UserControl
         {
             var file = await TopLevel.GetTopLevel(this)?.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Save VRCFaceTracking.Avalonia Log File",
+                Title = "Save Log File",
                 SuggestedFileName = "log.txt",
                 DefaultExtension = "txt",
                 FileTypeChoices =

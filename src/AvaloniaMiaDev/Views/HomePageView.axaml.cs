@@ -48,6 +48,14 @@ public partial class HomePageView : UserControl
         _inferenceService = Ioc.Default.GetService<IInferenceService>()!;
         _localSettingsService.Load(this);
 
+        LeftMouthWindow.PointerPressed += LeftOnPointerPressed;
+        LeftMouthWindow.PointerMoved += LeftOnPointerMoved;
+        LeftMouthWindow.PointerReleased += LeftOnPointerReleased;
+
+        RightMouthWindow.PointerPressed += RightOnPointerPressed;
+        RightMouthWindow.PointerMoved += RightOnPointerMoved;
+        RightMouthWindow.PointerReleased += RightOnPointerReleased;
+
         StartImageUpdates();
 
         PropertyChanged += (_, _) =>
