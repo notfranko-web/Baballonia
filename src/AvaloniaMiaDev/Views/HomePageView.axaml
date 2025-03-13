@@ -245,7 +245,7 @@
                                         Grid.Column="0"
                                         Height="36"
                                         Margin="0,8"
-                                        Text="{Binding LeftCameraAddress}"
+                                        Text="{Binding RightCameraAddress}"
                                         Watermark="Start typing to see detected devices..."
                                         x:Name="RightCameraAddressEntry" />
                                     <Button

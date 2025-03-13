@@ -10,6 +10,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
+using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Services;
 using AvaloniaMiaDev.Services.Camera.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
@@ -47,6 +48,10 @@ public partial class HomePageView : UserControl
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
         _inferenceService = Ioc.Default.GetService<IInferenceService>()!;
         _localSettingsService.Load(this);
+
+        var cameraEntries = DeviceEnumerator.ListCameraNames();
+        LeftCameraAddressEntry.ItemsSource = cameraEntries;
+        RightCameraAddressEntry.ItemsSource = cameraEntries;
 
         LeftMouthWindow.PointerPressed += LeftOnPointerPressed;
         LeftMouthWindow.PointerMoved += LeftOnPointerMoved;
