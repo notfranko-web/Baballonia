@@ -5,7 +5,6 @@
     x:Class="AvaloniaMiaDev.Views.HomePageView"
     x:DataType="splitViewPane:HomePageViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:converters="clr-namespace:AvaloniaMiaDev.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
@@ -120,7 +119,6 @@
                                     <Image
                                         HorizontalAlignment="Center"
                                         IsHitTestVisible="True"
-                                        MaxHeight="200"
                                         Source="{Binding LeftEyeBitmap}"
                                         Stretch="Uniform"
                                         x:Name="LeftMouthWindow" />
@@ -176,7 +174,7 @@
                                     <CheckBox
                                         Grid.Column="2"
                                         Grid.Row="0"
-                                        IsChecked="{Binding FlipRightEyeYAxis}"
+                                        IsChecked="{Binding FlipLeftEyeYAxis}"
                                         x:Name="LeftVerticalFlip" />
 
                                     <StackPanel
@@ -192,7 +190,7 @@
                                     <CheckBox
                                         Grid.Column="2"
                                         Grid.Row="1"
-                                        IsChecked="{Binding FlipRightEyeXAxis}"
+                                        IsChecked="{Binding FlipLeftEyeXAxis}"
                                         x:Name="LeftHorizontalFlip" />
 
                                     <StackPanel Grid.Column="0" Grid.Row="2">
@@ -207,8 +205,8 @@
                                         Grid.Row="2"
                                         Maximum="360"
                                         Minimum="0"
-                                        Value="{Binding RightEyeRotation}"
-                                        Width="270"
+                                        Value="{Binding LeftEyeRotation}"
+                                        Width="180"
                                         x:Name="LeftRotationSlider" />
                                 </Grid>
                             </StackPanel>
@@ -304,7 +302,6 @@
                                     <Image
                                         HorizontalAlignment="Center"
                                         IsHitTestVisible="True"
-                                        MaxHeight="200"
                                         Source="{Binding RightEyeBitmap}"
                                         Stretch="Uniform"
                                         x:Name="RightMouthWindow" />
@@ -392,7 +389,7 @@
                                         Maximum="360"
                                         Minimum="0"
                                         Value="{Binding RightEyeRotation}"
-                                        Width="270"
+                                        Width="180"
                                         x:Name="RightRotationSlider" />
                                 </Grid>
                             </StackPanel>
