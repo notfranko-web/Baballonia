@@ -204,12 +204,10 @@ public partial class HomePageView : UserControl
         {
             case CamViewMode.Tracking:
                 useColor = false;
-                LeftPerfText.IsVisible = true;
                 valid = _inferenceService.GetImage(Chirality.Left, out image, out dims);
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
-                LeftPerfText.IsVisible = false;
                 valid = _inferenceService.GetRawImage(Chirality.Left, ColorType.BGR_24, out image, out dims);
                 break;
             default:
@@ -242,15 +240,7 @@ public partial class HomePageView : UserControl
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
-            }
-
-            if (_inferenceService.MS > 0)
-            {
-                LeftPerfText.Text = $"FPS: {_inferenceService.FPS} MS: {_inferenceService.MS:F2}";
-            }
-            else
-            {
-                LeftPerfText.Text = $"FPS: -- MS: --.--";
+                LeftMouthWindow.Source = _viewModel.LeftEyeBitmap;
             }
 
             using var frameBuffer = _viewModel.LeftEyeBitmap.Lock();
@@ -280,8 +270,6 @@ public partial class HomePageView : UserControl
         }
         else
         {
-            LeftPerfText.IsVisible = false;
-            LeftPerfText.Text = string.Empty;
             LeftMouthWindow.Width = 0;
             LeftMouthWindow.Height = 0;
             LeftCanvasWindow.Width = 0;
@@ -348,6 +336,8 @@ public partial class HomePageView : UserControl
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
+                RightMouthWindow.Source = _viewModel.RightEyeBitmap;
+
             }
 
             if (_inferenceService.MS > 0)

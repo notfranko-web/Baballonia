@@ -102,56 +102,39 @@
                         </Border>
 
                         <!--  Camera view section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            ClipToBounds="True"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Left Camera View" />
-
-                                <Grid>
-                                    <Image
-                                        HorizontalAlignment="Center"
-                                        IsHitTestVisible="True"
-                                        Source="{Binding LeftEyeBitmap}"
-                                        Stretch="Uniform"
-                                        x:Name="LeftMouthWindow" />
-                                    <Canvas
-                                        Background="Transparent"
+                        <Viewbox MaxHeight="256" MaxWidth="256">
+                            <Grid>
+                                <Image
+                                    HorizontalAlignment="Center"
+                                    IsHitTestVisible="True"
+                                    Margin="0,0,0,16"
+                                    MaxHeight="256"
+                                    MaxWidth="256"
+                                    Source="{Binding LeftEyeBitmap}"
+                                    x:Name="LeftMouthWindow" />
+                                <Canvas
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    Margin="0,0,0,16"
+                                    MaxHeight="256"
+                                    MaxWidth="256"
+                                    x:Name="LeftCanvasWindow">
+                                    <Rectangle
+                                        Canvas.Left="{Binding LeftOverlayRectangleCanvasX}"
+                                        Canvas.Top="{Binding LeftOverlayRectangleCanvasY}"
+                                        Fill="Transparent"
                                         IsHitTestVisible="False"
-                                        x:Name="LeftCanvasWindow">
-                                        <Rectangle
-                                            Canvas.Left="{Binding LeftOverlayRectangleCanvasX}"
-                                            Canvas.Top="{Binding LeftOverlayRectangleCanvasY}"
-                                            Fill="Transparent"
-                                            IsHitTestVisible="False"
-                                            Stroke="{DynamicResource Accent}"
-                                            StrokeDashArray="4,2"
-                                            StrokeThickness="2"
-                                            x:Name="LeftRectangleWindow" />
-                                    </Canvas>
-                                </Grid>
-
-                                <StackPanel Margin="0,12,0,0">
-                                    <TextBlock
-                                        FontSize="12"
-                                        Text=""
-                                        x:Name="LeftPerfText" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
+                                        Stroke="{DynamicResource Accent}"
+                                        StrokeThickness="24"
+                                        x:Name="LeftRectangleWindow" />
+                                </Canvas>
+                            </Grid>
+                        </Viewbox>
 
                         <!--  Camera settings section (removed from expander)  -->
                         <Border
                             Background="{DynamicResource SystemChromeMediumLowColor}"
                             CornerRadius="8"
-                            Margin="0,0,0,16"
                             Padding="16">
                             <StackPanel>
                                 <TextBlock
@@ -249,7 +232,7 @@
                                         Watermark="Start typing to see detected devices..."
                                         x:Name="RightCameraAddressEntry" />
                                     <Button
-                                        Click="LeftCameraAddressClicked"
+                                        Click="RightCameraAddressClicked"
                                         Content="Save &amp; Restart"
                                         FontSize="13"
                                         Grid.Column="1"
