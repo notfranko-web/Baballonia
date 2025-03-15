@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Services.Camera.Captures;
-using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 
@@ -59,7 +58,7 @@ public abstract class PlatformConnector
             {
                 if (capture.Key.Item1.Any(prefix => url.EndsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Capture = (Capture)Activator.CreateInstance(capture.Value, url);
+                    Capture = (Capture)Activator.CreateInstance(capture.Value, url)!;
                     Logger.LogInformation($"Changed capture source to {capture.Value.Name} with url {url}.");
                     break;
                 }
@@ -68,7 +67,7 @@ public abstract class PlatformConnector
             {
                 if (capture.Key.Item1.Any(prefix => url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Capture = (Capture)Activator.CreateInstance(capture.Value, url);
+                    Capture = (Capture)Activator.CreateInstance(capture.Value, url)!;
                     Logger.LogInformation($"Changed capture source to {capture.Value.Name} with url {url}.");
                     break;
                 }
@@ -77,7 +76,7 @@ public abstract class PlatformConnector
 
         if (Capture is null)
         {
-            Capture = (Capture)Activator.CreateInstance(DefaultCapture, url);
+            Capture = (Capture)Activator.CreateInstance(DefaultCapture, url)!;
             Logger.LogInformation($"Defaulting capture source to {DefaultCapture.Name} with url {url}.");
         }
 
@@ -187,7 +186,7 @@ public abstract class PlatformConnector
             {
                 Cv2.Resize(resultMat, outputMat, size);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 resultMat.Dispose();
                 return Task.FromResult(false);

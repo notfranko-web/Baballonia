@@ -52,9 +52,9 @@ public abstract class Capture
     /// <returns></returns>
     public abstract bool StopCapture();
 
-    public Capture(string Url)
+    public Capture(string url)
     {
-        this.Url = Url;
+        this.Url = url;
         IsReady = false;
     }
 }

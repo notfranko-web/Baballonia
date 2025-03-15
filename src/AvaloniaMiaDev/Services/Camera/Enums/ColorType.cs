@@ -5,8 +5,8 @@
 /// </summary>
 public enum ColorType
 {
-    GRAY_8,
-    BGR_24,
-    RGB_24,
-    RGBA_32
+    Gray8,
+    Bgr24,
+    Rgb24,
+    Rgba32
 }

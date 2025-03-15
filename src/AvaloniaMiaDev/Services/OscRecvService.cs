@@ -83,7 +83,7 @@ public class OscRecvService : BackgroundService
         {
             _recvSocket.Bind(endpoint);
             _oscTarget.IsConnected = true;
-            return (IPEndPoint)_recvSocket.LocalEndPoint;
+            return (IPEndPoint)_recvSocket.LocalEndPoint!;
         }
         catch (SocketException ex)
         {
@@ -95,7 +95,7 @@ public class OscRecvService : BackgroundService
             _linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_stoppingToken, _cts.Token);
         }
 
-        return null;
+        return null!;
     }
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -123,9 +123,9 @@ public class OscRecvService : BackgroundService
 
                 OnMessageReceived(newMsg);
             }
-            catch (Exception e)
+            catch (Exception)
             {
- 
+
             }
         }
     }

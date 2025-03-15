@@ -62,7 +62,7 @@ public class LocalSettingsService : ILocalSettingsService
     {
         await InitializeAsync();
 
-        _settings[key] = await Json.StringifyAsync(value);
+        _settings[key] = await Json.StringifyAsync(value!);
 
         await _fileService.Save(_applicationDataFolder, _localSettingsFile, _settings);
     }

@@ -12,20 +12,20 @@ namespace AvaloniaMiaDev.Services.Camera.Platforms;
 /// </summary>
 public class AndroidConnector : PlatformConnector
 {
-    private static readonly HashSet<string> _IPConnectionsPrefixes
+    private static readonly HashSet<string> IpConnectionsPrefixes
         = new(StringComparer.OrdinalIgnoreCase) { "http", };
 
-    private static readonly HashSet<string> _IPConnectionsSuffixes
+    private static readonly HashSet<string> IpConnectionsSuffixes
         = new(StringComparer.OrdinalIgnoreCase) { "local", "local/" };
 
-    protected override Type DefaultCapture => typeof(IPCameraCapture);
+    protected override Type DefaultCapture => typeof(IpCameraCapture);
 
-    public AndroidConnector(string Url, ILogger Logger, ILocalSettingsService SettingsService) : base(Url, Logger, SettingsService)
+    public AndroidConnector(string url, ILogger logger, ILocalSettingsService settingsService) : base(url, logger, settingsService)
     {
         Captures = new()
         {
-            { (_IPConnectionsPrefixes, false), typeof(IPCameraCapture) },
-            { (_IPConnectionsSuffixes, true), typeof(IPCameraCapture) }
+            { (IpConnectionsPrefixes, false), typeof(IpCameraCapture) },
+            { (IpConnectionsSuffixes, true), typeof(IpCameraCapture) }
         };
     }
 }

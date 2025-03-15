@@ -125,8 +125,10 @@ public partial class HomePageViewModel : ViewModelBase
 
     ~HomePageViewModel()
     {
+#pragma warning disable CS8601
         OscRecvService.OnMessageReceived -= MessageReceived;
         OscSendService.OnMessagesDispatched -= MessageDispatched;
+#pragma warning restore CS8601
 
         _msgCounterTimer.Stop();
     }

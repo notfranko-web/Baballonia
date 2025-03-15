@@ -18,7 +18,7 @@ public static class Utils
     public static extern uint TimeEndPeriod(uint uMilliseconds);
 
     // Proc memory read helpers
-    public const int PROCESS_VM_READ = 0x0010;
+    public const int ProcessVmRead = 0x0010;
 
     [DllImport("kernel32.dll")]
     public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);

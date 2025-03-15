@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OpenCvSharp;
+#pragma warning disable CS4014
 
 namespace AvaloniaMiaDev.Services.Camera.Captures;
 
@@ -11,7 +12,7 @@ namespace AvaloniaMiaDev.Services.Camera.Captures;
 /// 2) IP Camera capture
 /// 3) Or we aren't on an unsupported mobile platform (iOS or Android. Tizen/WatchOS are ok though??)
 /// </summary>
-public class OpenCVCapture : Capture
+public class OpenCvCapture : Capture
 {
     /// <xlinka>
     /// VideoCapture instance to handle camera frames.
@@ -53,8 +54,8 @@ public class OpenCVCapture : Capture
     /// <summary>
     /// Constructor that accepts a URL for the video source.
     /// </summary>
-    /// <param name="Url">URL for video source.</param>
-    public OpenCVCapture(string Url) : base(Url) { }
+    /// <param name="url">URL for video source.</param>
+    public OpenCvCapture(string url) : base(url) { }
 
     private bool _loop = false;
 

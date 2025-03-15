@@ -1,28 +1,17 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Models;
-using AvaloniaMiaDev.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Vector = Avalonia.Vector;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
 public partial class TrackingSettingsPageViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private ObservableCollection<TrackingAlgorithm> trackingAlgorithms;
+    private ObservableCollection<TrackingAlgorithm> _trackingAlgorithms;
 
     [ObservableProperty]
     [property: SavedSetting("TrackingSettings_OneEuroMinFreqCutoff", 0.0004f)]
@@ -74,11 +63,11 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
 
     [ObservableProperty]
     [property: SavedSetting("AdvancedControls_LeftHSFRadius", 10f)]
-    private float _leftHSFRadius;
+    private float _leftHsfRadius;
 
     [ObservableProperty]
     [property: SavedSetting("AdvancedControls_RightHSFRadius", 10f)]
-    private float _rightHSFRadius;
+    private float _rightHsfRadius;
 
     [ObservableProperty]
     [property: SavedSetting("AdvancedControls_RansacThreshAdd", 11f)]
@@ -108,7 +97,7 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
 
     public TrackingSettingsPageViewModel()
     {
-        trackingAlgorithms =
+        _trackingAlgorithms =
         [
             new TrackingAlgorithm(1, true, "ASHSFRAC", "Description"),
             new TrackingAlgorithm(2, false, "ASHSF", "Description"),
@@ -119,7 +108,7 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
             new TrackingAlgorithm(7, false, "Blob", "Description"),
             new TrackingAlgorithm(8, false, "LEAP", "Description")
         ];
-        trackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
+        _trackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
 
         SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         SettingsService.Load(this);
@@ -130,7 +119,7 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
         };
     }
 
-    private async void OnTrackingAlgorithmCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnTrackingAlgorithmCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // TrackingAlgorithms.CollectionChanged -= OnTrackingAlgorithmCollectionChanged;
 
@@ -147,25 +136,25 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
         // }
     }
 
-    private async void OnLocalModulePropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void OnLocalModulePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
         if (sender is not TrackingAlgorithm module)
             return;
 
         var desiredIndex = module.Order;
-        var currentIndex = trackingAlgorithms.IndexOf(module);
+        var currentIndex = _trackingAlgorithms.IndexOf(module);
 
-        if (desiredIndex >= 0 && desiredIndex < trackingAlgorithms.Count)
-            trackingAlgorithms.Move(currentIndex, desiredIndex);
+        if (desiredIndex >= 0 && desiredIndex < _trackingAlgorithms.Count)
+            _trackingAlgorithms.Move(currentIndex, desiredIndex);
 
         RenumberModules();
     }
 
     private void RenumberModules()
     {
-        for (int i = 0; i < trackingAlgorithms.Count; i++)
+        for (int i = 0; i < _trackingAlgorithms.Count; i++)
         {
-            trackingAlgorithms[i].Order = i;
+            _trackingAlgorithms[i].Order = i;
         }
     }
 

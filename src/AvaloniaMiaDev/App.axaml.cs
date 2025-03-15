@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
@@ -124,7 +123,7 @@ public partial class App : Application
         Task.Run(async () => await _host.StartAsync());
 
         var activation = Ioc.Default.GetRequiredService<IActivationService>();
-        Task.Run(async () => await activation.ActivateAsync(null));
+        Task.Run(async () => await activation.ActivateAsync(null!));
 
         var vm = Ioc.Default.GetRequiredService<MainViewModel>();
         switch (ApplicationLifetime)

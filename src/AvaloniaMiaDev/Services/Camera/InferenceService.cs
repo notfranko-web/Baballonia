@@ -17,8 +17,8 @@ namespace AvaloniaMiaDev.Services;
 public class InferenceService : IInferenceService
 {
     public PlatformConnector[] PlatformConnectors = new PlatformConnector[2];
-    public int FPS => (int) MathF.Floor(1000f / MS);
-    public float MS { get; set; }
+    public int Fps => (int) MathF.Floor(1000f / Ms);
+    public float Ms { get; set; }
     public bool IsRunning { get; private set; }
 
     private readonly DenseTensor<float> _inputTensor = new DenseTensor<float>([1, 1, 256, 256]);
@@ -42,7 +42,7 @@ public class InferenceService : IInferenceService
             logger.LogInformation("Starting Inference Service...");
 
             SessionOptions sessionOptions = SetupSessionOptions();
-            ConfigurePlatformSpecificGPU(sessionOptions);
+            ConfigurePlatformSpecificGpu(sessionOptions);
 
             var minCutoff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroMinFreqCutoff");
             var speedCoeff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroSpeedCutoff");
@@ -64,11 +64,11 @@ public class InferenceService : IInferenceService
     /// <summary>
     /// Poll expression data, frames
     /// </summary>
-    /// <param name="ARKitExpressions"></param>
+    /// <param name="arKitExpressions"></param>
     /// <returns></returns>
-    public bool GetExpressionData(Chirality cameraIndex, out float[] ARKitExpressions)
+    public bool GetExpressionData(Chirality cameraIndex, out float[] arKitExpressions)
     {
-        ARKitExpressions = null;
+        arKitExpressions = null!;
         if (!IsRunning)
         {
             return false;
@@ -89,15 +89,15 @@ public class InferenceService : IInferenceService
         };
 
         // Run inference!
-        using var results = _session.Run(inputs);
-        ARKitExpressions = results[0].AsEnumerable<float>().ToArray();
+        using var results = _session!.Run(inputs);
+        arKitExpressions = results[0].AsEnumerable<float>().ToArray();
         float time = (float)_sw.Elapsed.TotalSeconds;
-        MS = (time - _lastTime) * 1000;
+        Ms = (time - _lastTime) * 1000;
 
         // Filter ARKit Expressions
-        for (int i = 0; i < ARKitExpressions.Length; i++)
+        for (int i = 0; i < arKitExpressions.Length; i++)
         {
-            ARKitExpressions[i] = _floatFilter.Filter(ARKitExpressions[i], time - _lastTime);
+            arKitExpressions[i] = _floatFilter!.Filter(arKitExpressions[i], time - _lastTime);
         }
 
         _lastTime = time;
@@ -127,24 +127,24 @@ public class InferenceService : IInferenceService
             return false;
         }
 
-        dimensions = PlatformConnectors[(int)cameraIndex].Capture.Dimensions;
-        if (color == ((PlatformConnectors[(int)cameraIndex].Capture.RawMat.Channels() == 1) ? ColorType.GRAY_8 : ColorType.BGR_24))
+        dimensions = PlatformConnectors[(int)cameraIndex].Capture!.Dimensions;
+        if (color == ((PlatformConnectors[(int)cameraIndex].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
         {
-            image = PlatformConnectors[(int)cameraIndex].Capture.RawMat.AsSpan<byte>().ToArray();
+            image = PlatformConnectors[(int)cameraIndex].Capture!.RawMat.AsSpan<byte>().ToArray();
         }
         else
         {
             using var convertedMat = new Mat();
-            Cv2.CvtColor(PlatformConnectors[(int)cameraIndex].Capture.RawMat, convertedMat, (PlatformConnectors[(int)cameraIndex].Capture.RawMat.Channels() == 1) ? color switch
+            Cv2.CvtColor(PlatformConnectors[(int)cameraIndex].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraIndex].Capture!.RawMat.Channels() == 1) ? color switch
             {
-                ColorType.BGR_24 => ColorConversionCodes.GRAY2BGR,
-                ColorType.RGB_24 => ColorConversionCodes.GRAY2RGB,
-                ColorType.RGBA_32 => ColorConversionCodes.GRAY2RGBA,
+                ColorType.Bgr24 => ColorConversionCodes.GRAY2BGR,
+                ColorType.Rgb24 => ColorConversionCodes.GRAY2RGB,
+                ColorType.Rgba32 => ColorConversionCodes.GRAY2RGBA,
             } : color switch
             {
-                ColorType.GRAY_8 => ColorConversionCodes.BGR2GRAY,
-                ColorType.RGB_24 => ColorConversionCodes.BGR2RGB,
-                ColorType.RGBA_32 => ColorConversionCodes.BGR2RGBA,
+                ColorType.Gray8 => ColorConversionCodes.BGR2GRAY,
+                ColorType.Rgb24 => ColorConversionCodes.BGR2RGB,
+                ColorType.Rgba32 => ColorConversionCodes.BGR2RGBA,
             });
             image = convertedMat.AsSpan<byte>().ToArray();
         }
@@ -221,7 +221,7 @@ public class InferenceService : IInferenceService
     /// Per-platform hardware accel. detection/activation
     /// </summary>
     /// <param name="sessionOptions"></param>
-    private void ConfigurePlatformSpecificGPU(SessionOptions sessionOptions)
+    private void ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
     {
         sessionOptions.AppendExecutionProvider_CPU();
 

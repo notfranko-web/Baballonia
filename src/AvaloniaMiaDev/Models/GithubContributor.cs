@@ -2,7 +2,14 @@
 
 public class GithubContributor
 {
-    public string login { get; set; }
-    public string html_url { get; set; }
-    public int contributions { get; set; }
+    public GithubContributor(string login, string htmlUrl, int contributions)
+    {
+        this.Login = login;
+        HtmlUrl = htmlUrl;
+        this.Contributions = contributions;
+    }
+
+    public string Login { get; set; }
+    public string HtmlUrl { get; set; }
+    public int Contributions { get; set; }
 }

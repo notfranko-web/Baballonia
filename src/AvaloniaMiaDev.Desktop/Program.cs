@@ -6,6 +6,7 @@ using DesktopNotifications;
 using DesktopNotifications.Avalonia;
 using INotificationManager = DesktopNotifications.INotificationManager;
 using Notification = DesktopNotifications.Notification;
+#pragma warning disable CS8618 // Not all platforms have notif managers
 
 namespace AvaloniaMiaDev.Desktop;
 
@@ -38,13 +39,10 @@ sealed class Program
             BodyImageAltText = notificationModel.BodyAltText!
         };
 
-        if (notificationModel.ActionButtons is not null)
-        {
-            if (notificationModel.ActionButtons.Count != 0)
-                notification.Buttons.AddRange(notificationModel.ActionButtons.
-                    Where(x => x.HasValue).
-                    Select(x => x!.Value));
-        }
+        if (notificationModel.ActionButtons.Count != 0)
+            notification.Buttons.AddRange(notificationModel.ActionButtons.
+                Where(x => x.HasValue).
+                Select(x => x!.Value));
 
         if (notificationModel is { OptionalScheduledTime: not null, OptionalExpirationTime: not null })
             NotificationManager.ScheduleNotification(notification, notificationModel.OptionalScheduledTime.Value, notificationModel.OptionalExpirationTime.Value);
@@ -70,5 +68,5 @@ sealed class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .SetupDesktopNotifications(out NotificationManager);
+            .SetupDesktopNotifications(out NotificationManager!);
 }

@@ -11,7 +11,7 @@ public class EnumToBooleanConverter : IValueConverter
     {
         if (parameter is string enumString)
         {
-            if (!Enum.IsDefined(typeof(ThemeVariant), value))
+            if (!Enum.IsDefined(typeof(ThemeVariant), value!))
             {
                 throw new ArgumentException("ExceptionEnumToBooleanConverterValueMustBeAnEnum");
             }

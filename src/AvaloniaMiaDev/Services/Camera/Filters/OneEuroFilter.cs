@@ -6,46 +6,34 @@ public class OneEuroFilter
 {
     public OneEuroFilter(float minCutoff, float beta)
     {
-        firstTime = true;
-        this.minCutoff = minCutoff;
-        this.beta = beta;
+        FirstTime = true;
+        this.MinCutoff = minCutoff;
+        this.Beta = beta;
 
-        xFilt = new LowpassFilter();
-        dxFilt = new LowpassFilter();
-        dcutoff = 1;
+        XFilt = new LowpassFilter();
+        DxFilt = new LowpassFilter();
+        Dcutoff = 1;
     }
 
-    protected bool firstTime;
-    protected float minCutoff;
-    protected float beta;
-    protected LowpassFilter xFilt;
-    protected LowpassFilter dxFilt;
-    protected float dcutoff;
-
-    public float MinCutoff
-    {
-        get { return minCutoff; }
-        set { minCutoff = value; }
-    }
-
-    public float Beta
-    {
-        get { return beta; }
-        set { beta = value; }
-    }
+    protected bool FirstTime;
+    protected float MinCutoff;
+    protected float Beta;
+    protected LowpassFilter XFilt;
+    protected LowpassFilter DxFilt;
+    protected float Dcutoff;
 
     public float Filter(float x, float rate)
     {
-        float dx = firstTime ? 0 : (x - xFilt.Last()) * rate;
-        if (firstTime)
+        float dx = FirstTime ? 0 : (x - XFilt.Last()) * rate;
+        if (FirstTime)
         {
-            firstTime = false;
+            FirstTime = false;
         }
 
-        var edx = dxFilt.Filter(dx, Alpha(rate, dcutoff));
-        var cutoff = minCutoff + beta * Math.Abs(edx);
+        var edx = DxFilt.Filter(dx, Alpha(rate, Dcutoff));
+        var cutoff = MinCutoff + Beta * Math.Abs(edx);
 
-        return xFilt.Filter(x, Alpha(rate, cutoff));
+        return XFilt.Filter(x, Alpha(rate, cutoff));
     }
 
     protected float Alpha(float rate, float cutoff)
@@ -60,29 +48,29 @@ public class LowpassFilter
 {
     public LowpassFilter()
     {
-        firstTime = true;
+        FirstTime = true;
     }
 
-    protected bool firstTime;
-    protected float hatXPrev;
+    protected bool FirstTime;
+    protected float HatXPrev;
 
     public float Last()
     {
-        return hatXPrev;
+        return HatXPrev;
     }
 
     public float Filter(float x, float alpha)
     {
         float hatX = 0;
-        if (firstTime)
+        if (FirstTime)
         {
-            firstTime = false;
+            FirstTime = false;
             hatX = x;
         }
         else
-            hatX = alpha * x + (1 - alpha) * hatXPrev;
+            hatX = alpha * x + (1 - alpha) * HatXPrev;
 
-        hatXPrev = hatX;
+        HatXPrev = hatX;
 
         return hatX;
     }

@@ -100,11 +100,11 @@ public class OscSendService
 
     public async Task Send(OscMessage[] messages, CancellationToken ct)
     {
-        var cbt = messages.Select(m => m._meta).ToArray();
+        var cbt = messages.Select(m => m.Meta).ToArray();
         var index = 0;
         while (index < cbt.Length)
         {
-            var length = await Task.Run(() => fti_osc.create_osc_bundle(_sendBuffer, cbt, messages.Length, ref index), ct);
+            var length = await Task.Run(() => FtiOsc.create_osc_bundle(_sendBuffer, cbt, messages.Length, ref index), ct);
             await _sendSocket?.SendAsync(_sendBuffer[..length])!;
         }
         OnMessagesDispatched(index);

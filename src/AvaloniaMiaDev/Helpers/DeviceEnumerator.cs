@@ -15,7 +15,7 @@ public static class DeviceEnumerator
 
         if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
         {
-            camNames.AddRange(ListCamerasOpenCV());
+            camNames.AddRange(ListCamerasOpenCv());
         }
         else if (OperatingSystem.IsLinux())
         {
@@ -27,7 +27,7 @@ public static class DeviceEnumerator
     }
 
     // Use OpenCVSharp to detect available cameras
-    private static List<string> ListCamerasOpenCV()
+    private static List<string> ListCamerasOpenCv()
     {
         var cameraIndexes = new List<string>();
         int index = 0;
@@ -56,21 +56,21 @@ public static class DeviceEnumerator
         [DllImport("libudev.so")] static extern IntPtr udev_new();
         [DllImport("libudev.so")] static extern IntPtr udev_unref(IntPtr udev);
         [DllImport("libudev.so")] static extern IntPtr udev_enumerate_new(IntPtr udev);
-        [DllImport("libudev.so")] static extern int udev_enumerate_add_match_subsystem(IntPtr udev_enumerate, [MarshalAs(UnmanagedType.LPUTF8Str)] string subsystem);
-        [DllImport("libudev.so")] static extern int udev_enumerate_scan_devices(IntPtr udev_enumerate);
-        [DllImport("libudev.so")] static extern IntPtr udev_enumerate_get_list_entry(IntPtr udev_enumerate);
-        [DllImport("libudev.so")] static extern IntPtr udev_list_entry_get_next(IntPtr list_entry);
-        [DllImport("libudev.so")] static extern IntPtr udev_list_entry_get_name(IntPtr list_entry);
+        [DllImport("libudev.so")] static extern int udev_enumerate_add_match_subsystem(IntPtr udevEnumerate, [MarshalAs(UnmanagedType.LPUTF8Str)] string subsystem);
+        [DllImport("libudev.so")] static extern int udev_enumerate_scan_devices(IntPtr udevEnumerate);
+        [DllImport("libudev.so")] static extern IntPtr udev_enumerate_get_list_entry(IntPtr udevEnumerate);
+        [DllImport("libudev.so")] static extern IntPtr udev_list_entry_get_next(IntPtr listEntry);
+        [DllImport("libudev.so")] static extern IntPtr udev_list_entry_get_name(IntPtr listEntry);
         [DllImport("libudev.so")] static extern IntPtr udev_device_new_from_syspath(IntPtr udev, IntPtr syspath);
-        [DllImport("libudev.so")] static extern IntPtr udev_device_get_devnode(IntPtr udev_device);
-        [DllImport("libudev.so")] static extern IntPtr udev_enumerate_unref(IntPtr udev_enumerate);
+        [DllImport("libudev.so")] static extern IntPtr udev_device_get_devnode(IntPtr udevDevice);
+        [DllImport("libudev.so")] static extern IntPtr udev_enumerate_unref(IntPtr udevEnumerate);
 
-        [DllImport("libc.so.6")] static extern int open(IntPtr file, int oflag, int _unused);
+        [DllImport("libc.so.6")] static extern int open(IntPtr file, int oflag, int unused);
         [DllImport("libc.so.6")] static extern int close(int fd);
         [DllImport("libc.so.6", SetLastError=true)] static extern int ioctl(int fd, nuint request, ref uint arg);
 
-        const int O_RDWR = 0x2, O_NONBLOCK = 0x800, EINTR = 4, EAGAIN = 11, ETIMEDOUT = 110;
-        const uint VIDIOC_QUERYCAP = 0x80685600, V4L2_CAP_VIDEO_CAPTURE = 0x1, V4L2_CAP_DEVICE_CAPS = 0x80000000;
+        const int oRdwr = 0x2, oNonblock = 0x800, eintr = 4, eagain = 11, etimedout = 110;
+        const uint vidiocQuerycap = 0x80685600, v4L2CapVideoCapture = 0x1, v4L2CapDeviceCaps = 0x80000000;
 
         var devices = new List<string>();
         try
@@ -84,8 +84,8 @@ public static class DeviceEnumerator
                 Span<uint> capsStruct = stackalloc uint[26];
                 for (IntPtr iter = udev_enumerate_get_list_entry(enumerate); iter != IntPtr.Zero; iter = udev_list_entry_get_next(iter))
                 {
-                    IntPtr v4l2_device = udev_device_get_devnode(udev_device_new_from_syspath(udev, udev_list_entry_get_name(iter)));
-                    int fd = open(v4l2_device, O_RDWR | O_NONBLOCK, 0);
+                    IntPtr v4L2Device = udev_device_get_devnode(udev_device_new_from_syspath(udev, udev_list_entry_get_name(iter)));
+                    int fd = open(v4L2Device, oRdwr | oNonblock, 0);
                     if (fd < 0)
                         continue;
                     try
@@ -93,8 +93,8 @@ public static class DeviceEnumerator
                         int result, tries = 0;
                         do
                         {
-                            result = ioctl(fd, VIDIOC_QUERYCAP, ref MemoryMarshal.GetReference(capsStruct));
-                        } while (result != 0 && (Marshal.GetLastPInvokeError() is EINTR or EAGAIN or ETIMEDOUT) && ++tries < 4);
+                            result = ioctl(fd, vidiocQuerycap, ref MemoryMarshal.GetReference(capsStruct));
+                        } while (result != 0 && (Marshal.GetLastPInvokeError() is eintr or eagain or etimedout) && ++tries < 4);
                         if (result < 0)
                             continue;
                     }
@@ -102,9 +102,9 @@ public static class DeviceEnumerator
                     {
                         close(fd);
                     }
-                    uint caps = (capsStruct[21] & V4L2_CAP_DEVICE_CAPS) != 0 ? capsStruct[22] : capsStruct[21];
-                    if ((caps & V4L2_CAP_VIDEO_CAPTURE) != 0)
-                        devices.Add(Marshal.PtrToStringUTF8(v4l2_device));
+                    uint caps = (capsStruct[21] & v4L2CapDeviceCaps) != 0 ? capsStruct[22] : capsStruct[21];
+                    if ((caps & v4L2CapVideoCapture) != 0)
+                        devices.Add(Marshal.PtrToStringUTF8(v4L2Device)!);
                 }
             }
             finally

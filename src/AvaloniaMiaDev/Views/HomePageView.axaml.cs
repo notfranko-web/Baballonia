@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,7 +10,6 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
-using AvaloniaMiaDev.Services;
 using AvaloniaMiaDev.Services.Camera.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -208,7 +206,7 @@ public partial class HomePageView : UserControl
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
-                valid = _inferenceService.GetRawImage(Chirality.Left, ColorType.BGR_24, out image, out dims);
+                valid = _inferenceService.GetRawImage(Chirality.Left, ColorType.Bgr24, out image, out dims);
                 break;
             default:
                 return;
@@ -304,7 +302,7 @@ public partial class HomePageView : UserControl
             case CamViewMode.Cropping:
                 useColor = true;
                 RightPerfText.IsVisible = false;
-                valid = _inferenceService.GetRawImage(Chirality.Right, ColorType.BGR_24, out image, out dims);
+                valid = _inferenceService.GetRawImage(Chirality.Right, ColorType.Bgr24, out image, out dims);
                 break;
             default:
                 return;
@@ -340,9 +338,9 @@ public partial class HomePageView : UserControl
 
             }
 
-            if (_inferenceService.MS > 0)
+            if (_inferenceService.Ms > 0)
             {
-                RightPerfText.Text = $"FPS: {_inferenceService.FPS} MS: {_inferenceService.MS:F2}";
+                RightPerfText.Text = $"FPS: {_inferenceService.Fps} MS: {_inferenceService.Ms:F2}";
             }
             else
             {
@@ -401,7 +399,7 @@ public partial class HomePageView : UserControl
     {
         _leftCamViewMode = CamViewMode.Tracking;
         _isLeftCropping = false;
-        LeftOnPointerReleased(null, null); // Close and save any open crops
+        LeftOnPointerReleased(null, null!); // Close and save any open crops
     }
 
     public void LeftOnCroppingModeClicked(object sender, RoutedEventArgs args)
@@ -432,7 +430,7 @@ public partial class HomePageView : UserControl
     {
         _rightCamViewMode = CamViewMode.Tracking;
         _isRightCropping = false;
-        RightOnPointerReleased(null, null); // Close and save any open crops
+        RightOnPointerReleased(null, null!); // Close and save any open crops
     }
 
     public void RightOnCroppingModeClicked(object sender, RoutedEventArgs args)

@@ -304,7 +304,7 @@
                 <controls:SettingsExpander.ExpanderContent>
                     <StackPanel Margin="10">
                         <CheckBox
-                            Content="HSF: Skip Auto Radius"
+                            Content="Hsf: Skip Auto Radius"
                             IsChecked="{Binding SkipAutoRadius, Mode=TwoWay}"
                             Margin="0,0,0,10" />
 
@@ -312,36 +312,36 @@
                             <StackPanel Grid.Column="0" Grid.Row="0">
                                 <TextBlock
                                     FontWeight="Bold"
-                                    Text="Left HSF Radius"
+                                    Text="Left Hsf Radius"
                                     VerticalAlignment="Center" />
                                 <TextBlock Text="Adjusts the radius for left eye Hough Space Filter" />
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding LeftHSFRadius, StringFormat={}{0:0}}"
+                                        Text="{Binding LeftHsfRadius, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Value="{Binding LeftHSFRadius, Mode=TwoWay}" />
+                                        Value="{Binding LeftHsfRadius, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 
                             <StackPanel Grid.Column="0" Grid.Row="1">
                                 <TextBlock
                                     FontWeight="Bold"
-                                    Text="Right HSF Radius"
+                                    Text="Right Hsf Radius"
                                     VerticalAlignment="Center" />
                                 <TextBlock Text="Adjusts the radius for right eye Hough Space Filter" />
                                 <DockPanel>
                                     <TextBlock
                                         Margin="0,0,10,0"
-                                        Text="{Binding RightHSFRadius, StringFormat={}{0:0}}"
+                                        Text="{Binding RightHsfRadius, StringFormat={}{0:0}}"
                                         VerticalAlignment="Center" />
                                     <Slider
                                         Maximum="100"
                                         Minimum="0"
-                                        Value="{Binding RightHSFRadius, Mode=TwoWay}" />
+                                        Value="{Binding RightHsfRadius, Mode=TwoWay}" />
                                 </DockPanel>
                             </StackPanel>
 

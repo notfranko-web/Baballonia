@@ -1,9 +1,7 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Avalonia.Threading;
+﻿using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using Microsoft.Extensions.Logging;
+#pragma warning disable CS1998
 
 namespace AvaloniaMiaDev.Services;
 
@@ -13,6 +11,8 @@ public class ActivationService(
     ILogger<ActivationService> logger)
     : IActivationService
 {
+    public ILogger<ActivationService> Logger { get; } = logger;
+
     public async Task ActivateAsync(object activationArgs)
     {
         // Execute tasks before activation.

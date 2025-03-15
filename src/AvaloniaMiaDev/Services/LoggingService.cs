@@ -30,7 +30,7 @@ public class OutputPageLogger : ILogger
         Func<TState, Exception?, string> formatter)
     {
         // Add to the staticLog from the dispatcher thread
-        _dispatcher.Post(() =>
+        _dispatcher!.Post(() =>
         {
             AllLogs.Add($"[{_categoryName}] {logLevel}: {formatter(state, exception)}");
             // Filtered is what the user sees, so show Information scope

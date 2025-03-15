@@ -18,6 +18,7 @@ public class MainStandalone : IMainService
         _logger = logger;
     }
 
+#pragma warning disable CS1998
     public async Task Teardown()
     {
         _logger.LogInformation("VRCFT Standalone Exiting!");
@@ -40,4 +41,6 @@ public class MainStandalone : IMainService
         // Begin main OSC update loop
         _logger.LogDebug("Starting OSC update loop...");
     }
+#pragma warning restore CS1998
+
 }

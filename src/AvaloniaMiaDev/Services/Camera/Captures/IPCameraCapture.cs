@@ -15,7 +15,7 @@ namespace AvaloniaMiaDev.Services.Camera.Captures;
 /// https://github.com/Larry57/SimpleMJPEGStreamViewer
 /// https://stackoverflow.com/questions/3801275/how-to-convert-image-to-byte-array
 /// </summary>
-public class IPCameraCapture : Capture
+public class IpCameraCapture : Capture
 {
     public override (int width, int height) Dimensions
     {
@@ -34,14 +34,14 @@ public class IPCameraCapture : Capture
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     // JPEG delimiters
-    private const byte picMarker = 0xFF;
-    private const byte picStart = 0xD8;
-    private const byte picEnd = 0xD9;
+    private const byte PicMarker = 0xFF;
+    private const byte PicStart = 0xD8;
+    private const byte PicEnd = 0xD9;
 
     // Determine if we've got stuck on the same frame
     private Mat _prevMat = new Mat();
 
-    public IPCameraCapture(string Url) : base(Url)
+    public IpCameraCapture(string url) : base(url)
     {
     }
 
@@ -118,11 +118,11 @@ public class IPCameraCapture : Capture
             current = streamBuffer[idx++];
 
             // JPEG picture start ?
-            if (previous == picMarker && current == picStart)
+            if (previous == PicMarker && current == PicStart)
             {
                 frameIdx = 2;
-                frameBuffer[0] = picMarker;
-                frameBuffer[1] = picStart;
+                frameBuffer[0] = PicMarker;
+                frameBuffer[1] = PicStart;
                 inPicture = true;
                 return;
             }
@@ -139,7 +139,7 @@ public class IPCameraCapture : Capture
             frameBuffer[frameIdx++] = current;
 
             // JPEG picture end ?
-            if (previous == picMarker && current == picEnd)
+            if (previous == PicMarker && current == PicEnd)
             {
                 // Using a memory stream this way prevent arrays copy and allocations
                 using (var s = new MemoryStream(frameBuffer, 0, frameIdx))

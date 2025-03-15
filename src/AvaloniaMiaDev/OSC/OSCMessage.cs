@@ -9,29 +9,29 @@ namespace AvaloniaMiaDev.OSC;
 
 public class OscMessage
 {
-    public OscMessageMeta _meta;
+    public OscMessageMeta Meta;
     private IntPtr _metaPtr;
 
     public string Address
     {
-        get => _meta.Address;
-        set => _meta.Address = value;
+        get => Meta.Address;
+        set => Meta.Address = value;
     }
 
     private readonly Action<object> _valueSetter;
 
-    public object Value
+    public object? Value
     {
         get
         {
-            if (_meta.ValueLength == 0)
+            if (Meta.ValueLength == 0)
             {
-                return null;
+                return null!;
             }
 
-            var values = new OscValue[_meta.ValueLength];
-            var ptr = _meta.Value;
-            for (var i = 0; i < _meta.ValueLength; i++)
+            var values = new OscValue[Meta.ValueLength];
+            var ptr = Meta.Value;
+            for (var i = 0; i < Meta.ValueLength; i++)
             {
                 values[i] = Marshal.PtrToStructure<OscValue>(ptr);
                 ptr += Marshal.SizeOf<OscValue>();
@@ -39,7 +39,7 @@ public class OscMessage
 
             return values[0].Value;
         }
-        set => _valueSetter(value);
+        set => _valueSetter(value!);
     }
 
     public OscMessage(string address, Type type)
@@ -49,8 +49,8 @@ public class OscMessage
 
         if (oscType != default)
         {
-            _meta.ValueLength = 1;
-            _meta.Value = Marshal.AllocHGlobal(Marshal.SizeOf<OscValue>() * _meta.ValueLength);
+            Meta.ValueLength = 1;
+            Meta.Value = Marshal.AllocHGlobal(Marshal.SizeOf<OscValue>() * Meta.ValueLength);
             var oscValue = new OscValue
             {
                 Type = oscType.oscType,
@@ -58,16 +58,16 @@ public class OscMessage
             _valueSetter = value =>
             {
                 oscValue.Value = value;
-                Marshal.StructureToPtr(oscValue, _meta.Value, false);
+                Marshal.StructureToPtr(oscValue, Meta.Value, false);
             };
         }
         else    // If we don't have the type, we assume it's a struct and serialize it using reflection
         {
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            _meta.ValueLength = fields.Length;
-            _meta.Value = Marshal.AllocHGlobal(Marshal.SizeOf<OscValue>() * _meta.ValueLength);
-            var values = new OscValue[_meta.ValueLength];
-            for (var i = 0; i < _meta.ValueLength; i++)
+            Meta.ValueLength = fields.Length;
+            Meta.Value = Marshal.AllocHGlobal(Marshal.SizeOf<OscValue>() * Meta.ValueLength);
+            var values = new OscValue[Meta.ValueLength];
+            for (var i = 0; i < Meta.ValueLength; i++)
             {
                 values[i] = new OscValue
                 {
@@ -76,10 +76,10 @@ public class OscMessage
             }
             _valueSetter = value =>
             {
-                for (var j = 0; j < _meta.ValueLength; j++)
+                for (var j = 0; j < Meta.ValueLength; j++)
                 {
                     values[j].Value = fields[j].GetValue(value);
-                    Marshal.StructureToPtr(values[j], _meta.Value + Marshal.SizeOf<OscValue>() * j, false);
+                    Marshal.StructureToPtr(values[j], Meta.Value + Marshal.SizeOf<OscValue>() * j, false);
                 }
             };
         }
@@ -90,7 +90,7 @@ public class OscMessage
         var msg = new OscMessage(bytes, len, ref messageIndex);
         if (msg._metaPtr == IntPtr.Zero)
         {
-            return null;
+            return null!;
         }
 
         return msg;
@@ -98,10 +98,10 @@ public class OscMessage
 
     public OscMessage(byte[] bytes, int len, ref int messageIndex)
     {
-        _metaPtr = fti_osc.parse_osc(bytes, len, ref messageIndex);
+        _metaPtr = FtiOsc.parse_osc(bytes, len, ref messageIndex);
         if (_metaPtr != IntPtr.Zero)
         {
-            _meta = Marshal.PtrToStructure<OscMessageMeta>(_metaPtr);
+            Meta = Marshal.PtrToStructure<OscMessageMeta>(_metaPtr);
         }
     }
 
@@ -111,16 +111,16 @@ public class OscMessage
     /// <param name="buffer">Target byte buffer to serialize to, starting from index 0</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Length of serialized data</returns>
-    public async Task<int> Encode(byte[] buffer, CancellationToken ct) => await Task.Run(() => fti_osc.create_osc_message(buffer, ref _meta), ct);
+    public async Task<int> Encode(byte[] buffer, CancellationToken ct) => await Task.Run(() => FtiOsc.create_osc_message(buffer, ref Meta), ct);
 
-    public OscMessage(OscMessageMeta meta) => _meta = meta;
+    public OscMessage(OscMessageMeta meta) => Meta = meta;
 
     ~OscMessage()
     {
         // If we don't own this memory, then we need to sent it back to rust to free it
         if (_metaPtr != IntPtr.Zero)
         {
-            fti_osc.free_osc_message(_metaPtr);
+            FtiOsc.free_osc_message(_metaPtr);
         }
     }
 }

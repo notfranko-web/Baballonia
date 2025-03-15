@@ -16,8 +16,8 @@ public class SerialCameraCapture : Capture, IDisposable
 {
     public override uint FrameCount { get; protected set; }
 
-    private const int BAUD_RATE = 3000000;
-    private const ulong ETVR_HEADER = 0xd8ff0000a1ffa0ff, ETVR_HEADER_MASK = 0xffff0000ffffffff;
+    private const int BaudRate = 3000000;
+    private const ulong EtvrHeader = 0xd8ff0000a1ffa0ff, EtvrHeaderMask = 0xffff0000ffffffff;
 
     private readonly SerialPort _serialPort;
     private bool _isDisposed;
@@ -34,7 +34,7 @@ public class SerialCameraCapture : Capture, IDisposable
         _serialPort = new SerialPort
         {
             PortName = portName,
-            BaudRate = BAUD_RATE,
+            BaudRate = BaudRate,
             ReadTimeout = SerialPort.InfiniteTimeout,
         };
     }
@@ -47,7 +47,7 @@ public class SerialCameraCapture : Capture, IDisposable
             IsReady = true;
             DataLoop();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             IsReady = false;
         }
@@ -62,7 +62,7 @@ public class SerialCameraCapture : Capture, IDisposable
             IsReady = false;
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
@@ -79,10 +79,10 @@ public class SerialCameraCapture : Capture, IDisposable
                 for (int bufferPosition = 0; bufferPosition < sizeof(ulong);)
                     bufferPosition += await stream.ReadAsync(buffer, bufferPosition, sizeof(ulong) - bufferPosition);
                 ulong header = BinaryPrimitives.ReadUInt64LittleEndian(buffer);
-                for (; (header & ETVR_HEADER_MASK) != ETVR_HEADER; header = header >> 8 | (ulong)buffer[0] << 56)
+                for (; (header & EtvrHeaderMask) != EtvrHeader; header = header >> 8 | (ulong)buffer[0] << 56)
                     while (await stream.ReadAsync(buffer, 0, 1) == 0) /**/;
 
-                ushort jpegSize = (ushort)(header >> BitOperations.TrailingZeroCount(~ETVR_HEADER_MASK));
+                ushort jpegSize = (ushort)(header >> BitOperations.TrailingZeroCount(~EtvrHeaderMask));
                 if (buffer.Length < jpegSize)
                     Array.Resize(ref buffer, jpegSize);
 
@@ -93,14 +93,14 @@ public class SerialCameraCapture : Capture, IDisposable
                 FrameCount++;
             }
         }
-        catch (ObjectDisposedException ex)
+        catch (ObjectDisposedException)
         {
             // Handle when the device is unplugged
             StopCapture();
             Dispose();
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             StopCapture();
         }

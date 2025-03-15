@@ -11,24 +11,24 @@ namespace AvaloniaMiaDev.Services.Camera.Platforms;
 /// </summary>
 public class DesktopConnector : PlatformConnector
 {
-    private static readonly HashSet<string> _serialConnections
+    private static readonly HashSet<string> SerialConnections
         = new(StringComparer.OrdinalIgnoreCase) { "com" };
 
-    private static readonly HashSet<string> _IPConnectionsPrefixes
+    private static readonly HashSet<string> IpConnectionsPrefixes
         = new(StringComparer.OrdinalIgnoreCase) { "http", };
 
-    private static readonly HashSet<string> _IPConnectionsSuffixes
+    private static readonly HashSet<string> IpConnectionsSuffixes
         = new(StringComparer.OrdinalIgnoreCase) { "local", "local/" };
 
-    protected override Type DefaultCapture => typeof(OpenCVCapture);
+    protected override Type DefaultCapture => typeof(OpenCvCapture);
 
-    public DesktopConnector(string Url, ILogger Logger, ILocalSettingsService SettingsService) : base(Url, Logger, SettingsService)
+    public DesktopConnector(string url, ILogger logger, ILocalSettingsService settingsService) : base(url, logger, settingsService)
     {
         Captures = new()
         {
-            { (_serialConnections, false), typeof(SerialCameraCapture) },
-            { (_IPConnectionsPrefixes, false), typeof(IPCameraCapture) },
-            { (_IPConnectionsSuffixes, true), typeof(IPCameraCapture) }
+            { (SerialConnections, false), typeof(SerialCameraCapture) },
+            { (IpConnectionsPrefixes, false), typeof(IpCameraCapture) },
+            { (IpConnectionsSuffixes, true), typeof(IpCameraCapture) }
         };
     }
 }

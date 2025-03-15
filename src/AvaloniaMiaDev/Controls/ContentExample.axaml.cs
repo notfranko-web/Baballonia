@@ -21,10 +21,10 @@ public class ContentExample : TemplatedControl
         }
     }
 
-    public static readonly StyledProperty<Thickness> PaddingProperty =
+    public new static readonly StyledProperty<Thickness> PaddingProperty =
             AvaloniaProperty.Register<ContentExample, Thickness>(nameof(Padding));
 
-    public Thickness Padding
+    public new Thickness Padding
     {
         get => GetValue(PaddingProperty);
         set => SetValue(PaddingProperty, value);
