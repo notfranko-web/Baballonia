@@ -14,8 +14,7 @@ namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 public partial class HomePageViewModel : ViewModelBase
 {
     // Left eye properties
-    [ObservableProperty]
-    private WriteableBitmap _leftEyeBitmap;
+    public WriteableBitmap LeftEyeBitmap { get; set; }
 
     [ObservableProperty]
     [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
@@ -38,39 +37,6 @@ public partial class HomePageViewModel : ViewModelBase
     [ObservableProperty]
     [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
     private float _leftEyeRotation;
-
-    // Right eye properties
-    [ObservableProperty]
-    private WriteableBitmap _rightEyeBitmap;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_IndexCameraIndex", "0")]
-    private string _rightCameraAddress;
-
-    [ObservableProperty]
-    private int _rightOverlayRectangleCanvasX;
-
-    [ObservableProperty]
-    private int _rightOverlayRectangleCanvasY;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
-    private bool _flipRightEyeXAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
-    private bool _flipRightEyeYAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
-    private float _rightEyeRotation;
-
-    // Shared properties
-    [ObservableProperty]
-    private Canvas _overlayCanvas;
-
-    [ObservableProperty]
-    private Rect _overlayRectangle;
 
     // Services and other properties
     public IOscTarget OscTarget { get; }

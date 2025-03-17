@@ -102,22 +102,16 @@
                         </Border>
 
                         <!--  Camera view section  -->
-                        <Viewbox MaxHeight="256" MaxWidth="256">
+                        <Viewbox x:Name="LeftViewBox">
                             <Grid>
                                 <Image
                                     HorizontalAlignment="Center"
                                     IsHitTestVisible="True"
-                                    Margin="0,0,0,16"
-                                    MaxHeight="256"
-                                    MaxWidth="256"
                                     Source="{Binding LeftEyeBitmap}"
                                     x:Name="LeftMouthWindow" />
                                 <Canvas
                                     Background="Transparent"
                                     IsHitTestVisible="False"
-                                    Margin="0,0,0,16"
-                                    MaxHeight="256"
-                                    MaxWidth="256"
                                     x:Name="LeftCanvasWindow">
                                     <Rectangle
                                         Canvas.Left="{Binding LeftOverlayRectangleCanvasX}"
@@ -157,8 +151,7 @@
                                     <CheckBox
                                         Grid.Column="2"
                                         Grid.Row="0"
-                                        IsChecked="{Binding FlipLeftEyeYAxis}"
-                                        x:Name="LeftVerticalFlip" />
+                                        IsChecked="{Binding FlipLeftEyeYAxis, Mode=TwoWay}" />
 
                                     <StackPanel
                                         Grid.Column="0"
@@ -173,8 +166,7 @@
                                     <CheckBox
                                         Grid.Column="2"
                                         Grid.Row="1"
-                                        IsChecked="{Binding FlipLeftEyeXAxis}"
-                                        x:Name="LeftHorizontalFlip" />
+                                        IsChecked="{Binding FlipLeftEyeXAxis, Mode=TwoWay}" />
 
                                     <StackPanel Grid.Column="0" Grid.Row="2">
                                         <TextBlock
@@ -186,194 +178,11 @@
                                     <Slider
                                         Grid.Column="2"
                                         Grid.Row="2"
-                                        Maximum="360"
+                                        Maximum="6.28"
                                         Minimum="0"
                                         Value="{Binding LeftEyeRotation}"
                                         Width="180"
                                         x:Name="LeftRotationSlider" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </StackPanel>
-
-                <!--  Right Panel  -->
-                <StackPanel Grid.Column="2">
-                    <TextBlock
-                        FontSize="20"
-                        FontWeight="Medium"
-                        Margin="0,0,0,12"
-                        Text="Right Eye Camera" />
-
-                    <StackPanel>
-                        <!--  Camera address section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16,16,16,16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Right Camera Configuration" />
-
-                                <TextBlock FontSize="14" Text="Right Camera Address" />
-                                <!--  Grid for placing AutoCompleteBox and Button on the same row  -->
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <AutoCompleteBox
-                                        FilterMode="Contains"
-                                        FontSize="13"
-                                        Grid.Column="0"
-                                        Height="36"
-                                        Margin="0,8"
-                                        Text="{Binding RightCameraAddress}"
-                                        Watermark="Start typing to see detected devices..."
-                                        x:Name="RightCameraAddressEntry" />
-                                    <Button
-                                        Click="RightCameraAddressClicked"
-                                        Content="Save &amp; Restart"
-                                        FontSize="13"
-                                        Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Padding="12,8"
-                                        x:Name="RightSaveAndRestartTrackingText" />
-                                </Grid>
-
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <RadioButton
-                                        Click="RightOnTrackingModeClicked"
-                                        Content="Tracking Mode"
-                                        GroupName="RightImageControlGroup"
-                                        IsChecked="True"
-                                        x:Name="RightTrackingModeButton" />
-                                    <RadioButton
-                                        Click="RightOnCroppingModeClicked"
-                                        Content="Cropping Mode"
-                                        GroupName="RightImageControlGroup"
-                                        x:Name="RightCroppingModeButton" />
-                                </StackPanel>
-
-                                <Button
-                                    Click="RightSelectEntireFrameClicked"
-                                    Content="Select Entire Frame"
-                                    FontSize="13"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    Margin="0,12,0,0"
-                                    Padding="0,8"
-                                    x:Name="RightSelectEntireFrame" />
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Camera view section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            ClipToBounds="True"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Right Camera View" />
-
-                                <Grid>
-                                    <Image
-                                        HorizontalAlignment="Center"
-                                        IsHitTestVisible="True"
-                                        Source="{Binding RightEyeBitmap}"
-                                        Stretch="Uniform"
-                                        x:Name="RightMouthWindow" />
-                                    <Canvas
-                                        Background="Transparent"
-                                        IsHitTestVisible="False"
-                                        x:Name="RightCanvasWindow">
-                                        <Rectangle
-                                            Canvas.Left="{Binding RightOverlayRectangleCanvasX}"
-                                            Canvas.Top="{Binding RightOverlayRectangleCanvasY}"
-                                            Fill="Transparent"
-                                            IsHitTestVisible="False"
-                                            Stroke="{DynamicResource Accent}"
-                                            StrokeDashArray="4,2"
-                                            StrokeThickness="2"
-                                            x:Name="RightRectangleWindow" />
-                                    </Canvas>
-                                </Grid>
-
-                                <StackPanel Margin="0,12,0,0">
-                                    <TextBlock
-                                        FontSize="12"
-                                        Text=""
-                                        x:Name="RightPerfText" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Camera settings section (removed from expander)  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Text="Right Camera Settings" />
-                                <TextBlock
-                                    FontSize="13"
-                                    Margin="0,0,0,16"
-                                    Text="Adjust your right camera settings" />
-
-                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
-                                    <StackPanel Grid.Column="0" Grid.Row="0">
-                                        <TextBlock
-                                            FontSize="14"
-                                            FontWeight="Medium"
-                                            Text="Vertical Flip" />
-                                        <TextBlock FontSize="12" Text="Flip the image vertically" />
-                                    </StackPanel>
-                                    <CheckBox
-                                        Grid.Column="2"
-                                        Grid.Row="0"
-                                        IsChecked="{Binding FlipRightEyeYAxis}"
-                                        x:Name="RightVerticalFlip" />
-
-                                    <StackPanel
-                                        Grid.Column="0"
-                                        Grid.Row="1"
-                                        Margin="0,12">
-                                        <TextBlock
-                                            FontSize="14"
-                                            FontWeight="Medium"
-                                            Text="Horizontal Flip" />
-                                        <TextBlock FontSize="12" Text="Flip the image horizontally" />
-                                    </StackPanel>
-                                    <CheckBox
-                                        Grid.Column="2"
-                                        Grid.Row="1"
-                                        IsChecked="{Binding FlipRightEyeXAxis}"
-                                        x:Name="RightHorizontalFlip" />
-
-                                    <StackPanel Grid.Column="0" Grid.Row="2">
-                                        <TextBlock
-                                            FontSize="14"
-                                            FontWeight="Medium"
-                                            Text="Image Rotation" />
-                                        <TextBlock FontSize="12" Text="Rotates the image in a circle" />
-                                    </StackPanel>
-                                    <Slider
-                                        Grid.Column="2"
-                                        Grid.Row="2"
-                                        Maximum="360"
-                                        Minimum="0"
-                                        Value="{Binding RightEyeRotation}"
-                                        Width="180"
-                                        x:Name="RightRotationSlider" />
                                 </Grid>
                             </StackPanel>
                         </Border>

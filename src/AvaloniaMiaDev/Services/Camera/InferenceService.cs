@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Services.Camera.Enums;
 using AvaloniaMiaDev.Services.Camera.Filters;
+using AvaloniaMiaDev.Services.Camera.Models;
 using AvaloniaMiaDev.Services.Camera.Platforms;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
@@ -64,9 +65,10 @@ public class InferenceService : IInferenceService
     /// <summary>
     /// Poll expression data, frames
     /// </summary>
+    /// <param name="cameraSettings"></param>
     /// <param name="arKitExpressions"></param>
     /// <returns></returns>
-    public bool GetExpressionData(Chirality cameraIndex, out float[] arKitExpressions)
+    public bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
         if (!IsRunning)
@@ -74,13 +76,13 @@ public class InferenceService : IInferenceService
             return false;
         }
 
-        if (PlatformConnectors[(int)cameraIndex] is null)
+        if (PlatformConnectors[(int)cameraSettings.Chirality] is null)
         {
             return false;
         }
 
         // Test if the camera is not ready or connecting to new source
-        if (!PlatformConnectors[(int)cameraIndex].ExtractFrameData(_inputTensor.Buffer.Span, _inputSize).Result) return false;
+        if (!PlatformConnectors[(int)cameraSettings.Chirality].ExtractFrameData(_inputTensor.Buffer.Span, _inputSize, cameraSettings).Result) return false;
 
         // Camera ready, prepare Mat as DenseTensor
         var inputs = new List<NamedOnnxValue>
@@ -111,7 +113,7 @@ public class InferenceService : IInferenceService
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public bool GetRawImage(Chirality cameraIndex, ColorType color, out byte[] image, out (int width, int height) dimensions)
+    public bool GetRawImage(CameraSettings cameraSettings, ColorType color, out byte[] image, out (int width, int height) dimensions)
     {
         if (PlatformConnectors is null)
         {
@@ -120,22 +122,22 @@ public class InferenceService : IInferenceService
             return false;
         }
 
-        if (PlatformConnectors[(int)cameraIndex]?.Capture!.RawMat is null)
+        if (PlatformConnectors[(int)cameraSettings.Chirality]?.Capture!.RawMat is null)
         {
             dimensions = (0, 0);
             image = Array.Empty<byte>();
             return false;
         }
 
-        dimensions = PlatformConnectors[(int)cameraIndex].Capture!.Dimensions;
-        if (color == ((PlatformConnectors[(int)cameraIndex].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
+        dimensions = PlatformConnectors[(int)cameraSettings.Chirality].Capture!.Dimensions;
+        if (color == ((PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
         {
-            image = PlatformConnectors[(int)cameraIndex].Capture!.RawMat.AsSpan<byte>().ToArray();
+            image = PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.AsSpan<byte>().ToArray();
         }
         else
         {
             using var convertedMat = new Mat();
-            Cv2.CvtColor(PlatformConnectors[(int)cameraIndex].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraIndex].Capture!.RawMat.Channels() == 1) ? color switch
+            Cv2.CvtColor(PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.Channels() == 1) ? color switch
             {
                 ColorType.Bgr24 => ColorConversionCodes.GRAY2BGR,
                 ColorType.Rgb24 => ColorConversionCodes.GRAY2RGB,
@@ -159,7 +161,7 @@ public class InferenceService : IInferenceService
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public bool GetImage(Chirality cameraIndex, out byte[]? image, out (int width, int height) dimensions)
+    public bool GetImage(CameraSettings cameraSettings, out byte[]? image, out (int width, int height) dimensions)
     {
         image = null;
         dimensions = (0, 0);
@@ -167,7 +169,7 @@ public class InferenceService : IInferenceService
 
         byte[] data = new byte[_inputSize.Width * _inputSize.Height];
         using var imageMat = Mat<byte>.FromPixelData(_inputSize.Height, _inputSize.Width, data);
-        if (PlatformConnectors[(int)cameraIndex]?.TransformRawImage(imageMat).Result != true) return false;
+        if (PlatformConnectors[(int)cameraSettings.Chirality]?.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
 
         image = data;
         dimensions = (imageMat.Width, imageMat.Height);

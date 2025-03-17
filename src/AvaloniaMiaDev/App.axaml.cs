@@ -91,14 +91,14 @@ public partial class App : Application
                 services.AddSingleton<MainWindow>();
 
                 services.AddTransient<OutputPageViewModel>();
-                services.AddTransient<AppSettingsPageViewModel>();
-                services.AddTransient<TrackingSettingsPageViewModel>();
-                services.AddTransient<ModuleSettingsPageViewModel>();
-                services.AddTransient<HomePageViewModel>();
                 services.AddTransient<OutputPageView>();
+                services.AddTransient<AppSettingsPageViewModel>();
                 services.AddTransient<AppSettingsPageView>();
+                services.AddTransient<TrackingSettingsPageViewModel>();
                 services.AddTransient<TrackingSettingsPageView>();
+                services.AddTransient<ModuleSettingsPageViewModel>();
                 services.AddTransient<ModuleSettingsPageView>();
+                services.AddTransient<HomePageViewModel>();
                 services.AddTransient<HomePageView>();
 
                 services.AddHostedService(provider => provider.GetService<OscRecvService>()!);

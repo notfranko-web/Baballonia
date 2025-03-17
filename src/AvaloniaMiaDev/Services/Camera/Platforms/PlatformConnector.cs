@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Services.Camera.Captures;
+using AvaloniaMiaDev.Services.Camera.Models;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 
@@ -51,6 +52,8 @@ public abstract class PlatformConnector
     /// </summary>
     public virtual void Initialize(string url)
     {
+        if (string.IsNullOrEmpty(url)) return;
+
         this.Url = url;
         foreach (var capture in Captures)
         {
@@ -91,7 +94,7 @@ public abstract class PlatformConnector
     /// Converts Capture.Frame into something Babble can understand
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    public unsafe Task<bool> ExtractFrameData(Span<float> floatArray, Size size)
+    public unsafe Task<bool> ExtractFrameData(Span<float> floatArray, Size size, CameraSettings settings)
     {
         if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null || Capture.FrameCount == _lastFrameCount)
             return Task.FromResult(false);
@@ -103,11 +106,12 @@ public abstract class PlatformConnector
         fixed (float* array = floatArray)
         {
             using var finalMat = Mat<float>.FromPixelData(size.Height, size.Width, new IntPtr(array));
-            return TransformRawImage(finalMat, 1.0 / 255.0);
+            settings.Brightness = 1.0f / 255.0f;
+            return TransformRawImage(finalMat, settings);
         }
     }
 
-    public unsafe Task<bool> TransformRawImage(Mat outputMat, double brightness = 1)
+    public unsafe Task<bool> TransformRawImage(Mat outputMat, CameraSettings settings)
     {
         // If this method is called from above, then the below checks don't apply
         // We need this in case we poll from Babble.Core.cs, in which the developer
@@ -115,30 +119,12 @@ public abstract class PlatformConnector
         if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null)
             return Task.FromResult(false);
 
-        var roiX = LocalSettingsService.ReadSettingAsync<int>("EyeTrackVRService_RoiWindowX").Result;
-        var roiY = LocalSettingsService.ReadSettingAsync<int>("EyeTrackVRService_RoiWindowY").Result;
-        var roiWidth = LocalSettingsService.ReadSettingAsync<int>("EyeTrackVRService_RoiWindowW").Result;
-        var roiHeight = LocalSettingsService.ReadSettingAsync<int>("EyeTrackVRService_RoiWindowH").Result;
-        var rotationRadians = LocalSettingsService.ReadSettingAsync<float>("EyeTrackVRService_RotationAngle").Result * Math.PI / 180.0;
-        var useRedChannel = LocalSettingsService.ReadSettingAsync<bool>("EyeTrackVRService_UseRedChannel").Result;
-
-        // Check to see if the user's supplied crop is too large. IE, they were using a higher resolution camera, but they switched to a smaller one
-        if (roiX > Capture.RawMat.Width)
-        {
-            LocalSettingsService.SaveSettingAsync("EyeTrackVRService_RoiWindowX", 0);
-        }
-        if (roiY > Capture.RawMat.Height)
-        {
-            LocalSettingsService.SaveSettingAsync("EyeTrackVRService_RoiWindowY", 0);
-        }
-        if (roiWidth > Capture.RawMat.Width)
-        {
-            LocalSettingsService.SaveSettingAsync("EyeTrackVRService_RoiWindowW", 0);
-        }
-        if (roiHeight > Capture.RawMat.Width)
-        {
-            LocalSettingsService.SaveSettingAsync("EyeTrackVRService_RoiWindowH", 0);
-        }
+        var roiX = settings.RoiX;
+        var roiY = settings.RoiY;
+        var roiWidth = settings.RoiWidth;
+        var roiHeight = settings.RoiHeight;
+        var rotationRadians = settings.RotationRadians;
+        var useRedChannel = settings.UseRedChannel;
 
         Mat sourceMat = Capture.RawMat, resultMat = new Mat(sourceMat, (roiX == 0 || roiY == 0 || roiWidth == 0 || roiHeight == 0 ||
             roiWidth == sourceMat.Width || roiHeight == sourceMat.Height) ? new Rect(0, 0, sourceMat.Width, sourceMat.Height) : new Rect(roiX, roiY, roiWidth, roiHeight));
@@ -152,17 +138,17 @@ public abstract class PlatformConnector
             resultMat.Dispose();
             resultMat = newMat;
         }
-        if (resultMat.Type() != outputMat.Type() || brightness != 1)
+        if (resultMat.Type() != outputMat.Type() || settings.Brightness != 1)
         {
             var newMat = new Mat();
-            resultMat.ConvertTo(newMat, outputMat.Type(), brightness);
+            resultMat.ConvertTo(newMat, outputMat.Type(), settings.Brightness);
             resultMat.Dispose();
             resultMat = newMat;
         }
         Size size = outputMat.Size();
 
-        var hFlip = LocalSettingsService.ReadSettingAsync<bool>("EyeTrackVRService_UseHorizontalFlip").Result;
-        var vFlip = LocalSettingsService.ReadSettingAsync<bool>("EyeTrackVRService_UseVerticalFlip").Result;
+        var hFlip = settings.UseHorizontalFlip;
+        var vFlip = settings.UseVerticalFlip;
 
         if (rotationRadians != 0 || hFlip || vFlip)
         {

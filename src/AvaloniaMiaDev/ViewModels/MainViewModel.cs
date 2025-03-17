@@ -36,8 +36,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isPaneOpen;
 
-    [ObservableProperty]
-    private ViewModelBase _currentPage = new HomePageViewModel();
+    [ObservableProperty] private ViewModelBase _currentPage;
 
     [ObservableProperty]
     private ListItemTemplate? _selectedListItem;
