@@ -25,8 +25,7 @@ public partial class HomePageView : UserControl
     private readonly ILocalSettingsService _localSettingsService;
 
     private CamViewMode _leftCamViewMode = CamViewMode.Tracking;
-    private Point? _leftCropStartPoint;
-    private Rect? _leftCropRectangle;
+    private Rect _leftOverlayRectangle = new Rect();
     private bool _isLeftCropping;
 
     private bool _isVisible;
@@ -74,28 +73,27 @@ public partial class HomePageView : UserControl
         _isVisible = false;
     }
 
-    private void LeftOnPointerPressed(object? sender, PointerPressedEventArgs e)
+    private async void LeftOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (_leftCamViewMode != CamViewMode.Cropping) return;
 
         var position = e.GetPosition(LeftMouthWindow);
-        _leftCropStartPoint = position;
-        _leftCropRectangle = new Rect(position.X, position.Y, 0, 0);
+        _leftOverlayRectangle = new Rect(position.X, position.Y, 0, 0);
+        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
         _isLeftCropping = true;
     }
 
-    private void LeftOnPointerMoved(object? sender, PointerEventArgs e)
+    private async void LeftOnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!_isLeftCropping || _leftCropStartPoint is null) return;
+        if (!_isLeftCropping) return;
 
         Image image = sender as Image;
-        var position = e.GetPosition(LeftMouthWindow);
-        var x = Math.Min(_leftCropStartPoint.Value.X, position.X);
-        var y = Math.Min(_leftCropStartPoint.Value.Y, position.Y);
-        var clampedWidth = Math.Clamp(Math.Abs(_leftCropStartPoint.Value.X - position.X), 0, image.Width - _leftCropStartPoint.Value.X);
-        var clampedHeight = Math.Clamp(Math.Abs(_leftCropStartPoint.Value.Y - position.Y), 0, image.Height - _leftCropStartPoint.Value.Y);
 
-        _leftCropRectangle = new Rect(x, y, clampedWidth, clampedHeight);
+        var clampedWidth = Math.Clamp(_leftOverlayRectangle.X, 0, image.Width);
+        var clampedHeight = Math.Clamp(_leftOverlayRectangle.Y, 0, image.Height);
+        _leftOverlayRectangle = new Rect(_leftOverlayRectangle.X, _leftOverlayRectangle.Y, clampedWidth, clampedHeight);
+
+        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
     }
 
     private void LeftOnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -103,18 +101,6 @@ public partial class HomePageView : UserControl
         if (!_isLeftCropping) return;
 
         _isLeftCropping = false;
-
-        if (_leftCropStartPoint.HasValue)
-        {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowX", _leftCropStartPoint.Value.X);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowY", _leftCropStartPoint.Value.Y);
-        }
-
-        if (_leftCropRectangle.HasValue)
-        {
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowW", _leftCropRectangle.Value.Width);
-            _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowH", _leftCropRectangle.Value.Height);
-        }
     }
 
     private void StartImageUpdates()
@@ -147,37 +133,18 @@ public partial class HomePageView : UserControl
         byte[]? image;
         (int width, int height) dims;
 
-        CameraSettings cameraSettings;
-        if (_leftCropRectangle.HasValue)
+        var cameraSettings = new CameraSettings
         {
-            cameraSettings = new CameraSettings
-            {
-                Chirality = Chirality.Left,
-                RoiX = (int)_leftCropRectangle.Value.X,
-                RoiY = (int)_leftCropRectangle.Value.Y,
-                RoiWidth = (int)_leftCropRectangle.Value.Width,
-                RoiHeight = (int)_leftCropRectangle.Value.Height,
-                RotationRadians = await _localSettingsService.ReadSettingAsync<float>("EyeSettings_LeftEyeRotation"),
-                UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeXAxis"),
-                UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeYAxis"),
-                Brightness = 1f
-            };
-        }
-        else
-        {
-            cameraSettings = new CameraSettings
-            {
-                Chirality = Chirality.Left,
-                RoiX = 0,
-                RoiY = 0,
-                RoiWidth = 0,
-                RoiHeight = 0,
-                RotationRadians = await _localSettingsService.ReadSettingAsync<float>("EyeSettings_LeftEyeRotation"),
-                UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeXAxis"),
-                UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeYAxis"),
-                Brightness = 1f
-            };
-        }
+            Chirality = Chirality.Left,
+            RoiX = (int)_leftOverlayRectangle.X,
+            RoiY = (int)_leftOverlayRectangle.Y,
+            RoiWidth = (int)_leftOverlayRectangle.Width,
+            RoiHeight = (int)_leftOverlayRectangle.Height,
+            RotationRadians = await _localSettingsService.ReadSettingAsync<float>("EyeSettings_LeftEyeRotation"),
+            UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeXAxis"),
+            UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeYAxis"),
+            Brightness = 1f
+        };
 
         switch (_leftCamViewMode)
         {
@@ -237,20 +204,14 @@ public partial class HomePageView : UserControl
                 LeftCanvasWindow.Height = dims.height;
             }
 
-            if (_leftCropRectangle.HasValue)
-            {
-                LeftRectangleWindow.Width = _leftCropRectangle.Value.Width;
-                LeftRectangleWindow.Height = _leftCropRectangle.Value.Height;
-            }
-
-            if (_leftCropStartPoint.HasValue)
-            {
-                _viewModel.LeftOverlayRectangleCanvasX = ((int)_leftCropStartPoint.Value.X);
-                _viewModel.LeftOverlayRectangleCanvasY = ((int)_leftCropStartPoint.Value.Y);
-            }
+            _leftOverlayRectangle = LeftRectangleWindow.Bounds.WithX(_leftOverlayRectangle.X);
+            _leftOverlayRectangle = LeftRectangleWindow.Bounds.WithY(_leftOverlayRectangle.Y);
+            LeftRectangleWindow.Width = _leftOverlayRectangle.Width;
+            LeftRectangleWindow.Height = _leftOverlayRectangle.Height;
         }
         else
         {
+            LeftViewBox.Margin = new Thickness();
             LeftViewBox.Margin = new Thickness();
             LeftMouthWindow.Width = 0;
             LeftMouthWindow.Height = 0;
@@ -265,7 +226,6 @@ public partial class HomePageView : UserControl
         Dispatcher.UIThread.Post(LeftRectangleWindow.InvalidateVisual, DispatcherPriority.Render);
     }
 
-    #region Left Panel Button Events
     public void LeftCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
         _inferenceService.ConfigurePlatformConnectors(Chirality.Left, _viewModel.LeftCameraAddress);
@@ -287,12 +247,7 @@ public partial class HomePageView : UserControl
     {
         if (_viewModel.LeftEyeBitmap is null) return;
 
-        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowX", 0);
-        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowY", 0);
-        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowW", _viewModel.LeftEyeBitmap.Size.Width);
-        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftRoiWindowH", _viewModel.LeftEyeBitmap.Size.Height);
-        _leftCropStartPoint = new Point(0, 0);
-        _leftCropRectangle = new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height);
+        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftROI",
+            new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height));
     }
-    #endregion
 }

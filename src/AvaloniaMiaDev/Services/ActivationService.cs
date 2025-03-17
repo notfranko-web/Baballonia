@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using Microsoft.Extensions.Logging;
-#pragma warning disable CS1998
 
 namespace AvaloniaMiaDev.Services;
 
@@ -29,8 +28,6 @@ public class ActivationService(
     {
         await themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await languageSelectorService.InitializeAsync().ConfigureAwait(false);
-
-        await Task.CompletedTask;
     }
 
     private async Task StartupAsync()
@@ -72,8 +69,8 @@ public class ActivationService(
         }
 
         logger.LogInformation("Initializing modules...");
-        Dispatcher.UIThread.Invoke(() => libManager.Initialize());
+        Dispatcher.UIThread.Invoke(() => libManager.Initialize());*/
 
-        await Task.CompletedTask;*/
+        await Task.CompletedTask;
     }
 }

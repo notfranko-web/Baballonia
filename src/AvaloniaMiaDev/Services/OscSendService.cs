@@ -22,7 +22,7 @@ public class OscSendService
     private readonly byte[] _sendBuffer = new byte[4096];
 
     private CancellationTokenSource _cts;
-    public Action<int> OnMessagesDispatched = _ => { };
+    public event Action<int> OnMessagesDispatched = _ => { };
 
     public OscSendService(
         ILogger<OscSendService> logger,

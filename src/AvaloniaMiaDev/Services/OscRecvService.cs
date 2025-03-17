@@ -22,7 +22,7 @@ public class OscRecvService : BackgroundService
     private CancellationTokenSource _cts, _linkedToken;
     private CancellationToken _stoppingToken;
 
-    public Action<OscMessage> OnMessageReceived = _ => { };
+    public event Action<OscMessage> OnMessageReceived = _ => { };
 
     public OscRecvService(
         ILogger<OscRecvService> logger,

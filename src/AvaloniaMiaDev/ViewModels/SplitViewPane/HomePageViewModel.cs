@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
@@ -21,10 +20,8 @@ public partial class HomePageViewModel : ViewModelBase
     private string _leftCameraAddress;
 
     [ObservableProperty]
-    private int _leftOverlayRectangleCanvasX;
-
-    [ObservableProperty]
-    private int _leftOverlayRectangleCanvasY;
+    [property: SavedSetting("EyeTrackVRService_LeftCameraROI")]
+    private Rect _leftOverlayRectangle;
 
     [ObservableProperty]
     [property: SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
@@ -91,10 +88,8 @@ public partial class HomePageViewModel : ViewModelBase
 
     ~HomePageViewModel()
     {
-#pragma warning disable CS8601
         OscRecvService.OnMessageReceived -= MessageReceived;
         OscSendService.OnMessagesDispatched -= MessageDispatched;
-#pragma warning restore CS8601
 
         _msgCounterTimer.Stop();
     }

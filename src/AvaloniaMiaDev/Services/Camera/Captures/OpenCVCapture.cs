@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OpenCvSharp;
-#pragma warning disable CS4014
 
 namespace AvaloniaMiaDev.Services.Camera.Captures;
 
@@ -25,11 +24,13 @@ public class OpenCvCapture : Capture
     /// <xlinka>
     /// Retrieves a raw frame from the camera feed within a 2-second timeout to prevent blocking.
     /// </xlinka>
-    public unsafe override Mat RawMat => _mat;
+    public override Mat RawMat => _mat;
 
-    private Mat _mat = new();
+    private readonly Mat _mat = new();
 
-    public override uint FrameCount { get; protected set; }
+    public override uint FrameCount { get => _frameCount; protected set => _frameCount = value; }
+
+    private uint _frameCount;
 
     /// <summary>
     /// Retrieves the dimensions of the video frame with timeout.
@@ -57,7 +58,8 @@ public class OpenCvCapture : Capture
     /// <param name="url">URL for video source.</param>
     public OpenCvCapture(string url) : base(url) { }
 
-    private bool _loop = false;
+    private Task? _updateTask = null;
+    private CancellationTokenSource _updateTaskCTS = new();
 
     /// <summary>
     /// Starts video capture and applies custom resolution and framerate settings.
@@ -78,8 +80,6 @@ public class OpenCvCapture : Capture
                     _videoCapture = await Task.Run(() => VideoCapture.FromCamera(index), cts.Token);
                 else
                     _videoCapture = await Task.Run(() => new VideoCapture(Url), cts.Token);
-                _loop = true;
-                Task.Run(VideoCapture_UpdateLoop);
             }
             catch (AggregateException)
             {
@@ -90,21 +90,25 @@ public class OpenCvCapture : Capture
         }
 
         IsReady = _videoCapture.IsOpened();
+
+        CancellationToken token = _updateTaskCTS.Token;
+        _updateTask = Task.Run(() => VideoCapture_UpdateLoop(_videoCapture, token));
+
         return IsReady;
     }
 
-    private Task VideoCapture_UpdateLoop()
+    private Task VideoCapture_UpdateLoop(VideoCapture capture, CancellationToken ct)
     {
-        while (_loop)
+        while (!ct.IsCancellationRequested)
         {
             try
             {
-                IsReady = _videoCapture?.Read(_mat) == true;
+                IsReady = capture.Read(_mat);
                 if (IsReady)
                 {
-                    FrameCount++;
                     _dimensions.width = _mat.Width;
                     _dimensions.height = _mat.Height;
+                    Interlocked.Increment(ref _frameCount);
                 }
             }
             catch (Exception) { }
@@ -125,7 +129,11 @@ public class OpenCvCapture : Capture
         if (_videoCapture is null)
             return false;
 
-        _loop = false;
+        if (_updateTask != null) {
+            _updateTaskCTS.Cancel();
+            _updateTask.Wait();
+        }
+
         IsReady = false;
         _videoCapture.Release();
         _videoCapture.Dispose();

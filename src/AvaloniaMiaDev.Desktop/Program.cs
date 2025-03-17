@@ -6,13 +6,12 @@ using DesktopNotifications;
 using DesktopNotifications.Avalonia;
 using INotificationManager = DesktopNotifications.INotificationManager;
 using Notification = DesktopNotifications.Notification;
-#pragma warning disable CS8618 // Not all platforms have notif managers
 
 namespace AvaloniaMiaDev.Desktop;
 
 sealed class Program
 {
-    internal static INotificationManager NotificationManager;
+    internal static INotificationManager NotificationManager = null!;
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
