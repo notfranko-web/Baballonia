@@ -7,9 +7,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:l="using:Jeek.Avalonia.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:AvaloniaMiaDev.Models"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -21,78 +19,374 @@
         <StackPanel Classes="Page">
             <TextBlock Classes="Header" Text="Tracking Settings" />
 
-            <controls:SettingsExpander
-                Description="Prioritize how gaze-tracking methods should be utilized"
-                IconPath="TextNumberListLtrRegular"
-                Title="Gaze Method Order">
-                <controls:SettingsExpander.ExpanderContent>
-                    <ListBox
-                        Classes="draggable"
-                        ItemsSource="{Binding TrackingAlgorithms}"
-                        SelectionChanged="OnLocalModuleSelected"
-                        x:Name="LocalModuleList">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:TrackingAlgorithm">
-                                <Grid
-                                    ColumnDefinitions="Auto, Auto, *, Auto"
-                                    Margin="5"
-                                    VerticalAlignment="Center">
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource TextNumberListLtrRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="Gaze Method Order" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Prioritize how gaze-tracking methods should be utilized" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <ListBox x:Name="LocalModuleList">
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
 
-                                    <CheckBox
-                                        Grid.Column="1"
-                                        HorizontalAlignment="Center"
-                                        IsChecked="{Binding ShouldUse, Mode=TwoWay}"
-                                        Margin="5,0"
-                                        VerticalAlignment="Center" />
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[0].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
 
-                                    <Grid
-                                        ColumnDefinitions="Auto,Auto"
-                                        Grid.Column="0"
-                                        Margin="5,0">
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            Text="{Binding Order}"
-                                            VerticalAlignment="Center" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Text="."
-                                            VerticalAlignment="Center" />
-                                    </Grid>
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[0].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[0].Description}" />
+                            </StackPanel>
 
-                                    <StackPanel
-                                        Grid.Column="2"
-                                        Margin="10,0,5,0"
-                                        Orientation="Vertical">
-                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                                        <TextBlock
-                                            FontSize="12"
-                                            Foreground="{DynamicResource SystemChromeGrayColor}"
-                                            Text="{Binding Description}" />
-                                    </StackPanel>
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Down0" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Up0" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
 
-                                    <StackPanel
-                                        Grid.Column="3"
-                                        HorizontalAlignment="Right"
-                                        Orientation="Horizontal"
-                                        Spacing="2">
-                                        <Button
-                                            Click="DecrementOrder"
-                                            Content="↑"
-                                            Name="LocalModuleUpButton"
-                                            Padding="3" />
-                                        <Button
-                                            Click="IncrementOrder"
-                                            Content="↓"
-                                            Name="LocalModuleDownButton"
-                                            Padding="3" />
-                                    </StackPanel>
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[1].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
 
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </controls:SettingsExpander.ExpanderContent>
-            </controls:SettingsExpander>
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[1].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[1].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Down1" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Up1" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[2].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[2].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[2].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up2" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down2" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[3].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[3].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[3].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up3" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down3" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[4].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[4].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[4].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up4" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down4" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[5].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[5].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[5].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up5" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down5" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[6].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[6].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[6].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up6" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down6" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid
+                            ColumnDefinitions="Auto, Auto, *, Auto"
+                            Margin="5"
+                            VerticalAlignment="Center">
+
+                            <CheckBox
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                IsChecked="{Binding TrackingAlgorithms[7].ShouldUse, Mode=TwoWay}"
+                                Margin="5,0"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="10,0,5,0"
+                                Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding TrackingAlgorithms[7].Name}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource SystemChromeGrayColor}"
+                                    Text="{Binding TrackingAlgorithms[7].Description}" />
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <Button
+                                    Click="DecrementOrder"
+                                    Content="↑"
+                                    Padding="3"
+                                    x:Name="Up7" />
+                                <Button
+                                    Click="IncrementOrder"
+                                    Content="↓"
+                                    Padding="3"
+                                    x:Name="Down7" />
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                </ListBox>
+            </Expander>
 
             <controls:SettingsExpander
                 Description="One-Euro filter settings"
@@ -100,7 +394,6 @@
                 Title="Filter Settings">
                 <controls:SettingsExpander.ExpanderContent>
                     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
-
                         <StackPanel
                             Grid.Column="0"
                             Grid.Row="0"

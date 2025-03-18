@@ -11,6 +11,7 @@ namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 public partial class TrackingSettingsPageViewModel : ViewModelBase
 {
     [ObservableProperty]
+    [property: SavedSetting("TrackingSettings_Algorithms")]
     private ObservableCollection<TrackingAlgorithm> _trackingAlgorithms;
 
     [ObservableProperty]
@@ -97,6 +98,9 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
 
     public TrackingSettingsPageViewModel()
     {
+        SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        SettingsService.Load(this);
+
         _trackingAlgorithms =
         [
             new TrackingAlgorithm(1, true, "ASHSFRAC", "Description"),
@@ -108,10 +112,6 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
             new TrackingAlgorithm(7, false, "Blob", "Description"),
             new TrackingAlgorithm(8, false, "LEAP", "Description")
         ];
-        _trackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
-
-        SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
-        SettingsService.Load(this);
 
         PropertyChanged += (_, _) =>
         {
@@ -119,30 +119,9 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
         };
     }
 
-    private void OnTrackingAlgorithmCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    public void MoveModules(int currentIndex, int desiredIndex)
     {
-        // TrackingAlgorithms.CollectionChanged -= OnTrackingAlgorithmCollectionChanged;
-
-        RenumberModules();
-
-        // try
-        // {
-        //     var _installedModules = TrackingAlgorithms.ToList(); // Create a copy to avoid modification during save
-        // }
-        // finally
-        // {
-        //     // Re-enable the event handler
-        //     TrackingAlgorithms.CollectionChanged += OnTrackingAlgorithmCollectionChanged;
-        // }
-    }
-
-    private void OnLocalModulePropertyChanged(object sender, PropertyChangedEventArgs e)
-    {
-        if (sender is not TrackingAlgorithm module)
-            return;
-
-        var desiredIndex = module.Order;
-        var currentIndex = _trackingAlgorithms.IndexOf(module);
+        if (currentIndex < 0) return;
 
         if (desiredIndex >= 0 && desiredIndex < _trackingAlgorithms.Count)
             _trackingAlgorithms.Move(currentIndex, desiredIndex);
@@ -156,10 +135,5 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
         {
             _trackingAlgorithms[i].Order = i;
         }
-    }
-
-    public void DetachedFromVisualTree()
-    {
-
     }
 }
