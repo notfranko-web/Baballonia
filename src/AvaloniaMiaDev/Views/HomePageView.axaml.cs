@@ -25,7 +25,7 @@ public partial class HomePageView : UserControl
     private readonly ILocalSettingsService _localSettingsService;
 
     private CamViewMode _leftCamViewMode = CamViewMode.Tracking;
-    private global::Avalonia.Rect _leftOverlayRectangle = new Rect();
+    private Rect _leftOverlayRectangle;
     private bool _isLeftCropping;
 
     private double _dragStartX;
@@ -92,14 +92,11 @@ public partial class HomePageView : UserControl
     {
         if (!_isLeftCropping) return;
 
-        Image image = sender as Image;
+        Image? image = sender as Image;
 
         var position = e.GetPosition(LeftMouthWindow);
 
-        double x = 0;
-        double y = 0;
-        double w = 0;
-        double h = 0;
+        double x, y, w, h;
 
         if (position.X < _dragStartX)
         {
@@ -123,7 +120,7 @@ public partial class HomePageView : UserControl
             h = position.Y - _dragStartY;
         }
 
-        _leftOverlayRectangle = new Rect(x, y, Math.Min(image.Width, w), Math.Min(image.Height, h));
+        _leftOverlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
 
         await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
     }
@@ -279,7 +276,8 @@ public partial class HomePageView : UserControl
     {
         if (_viewModel.LeftEyeBitmap is null) return;
 
-        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftROI",
-            new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height));
+        _leftOverlayRectangle =
+            new Rect(0, 0, _viewModel.LeftEyeBitmap.Size.Width, _viewModel.LeftEyeBitmap.Size.Height);
+        _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftROI", _leftOverlayRectangle);
     }
 }
