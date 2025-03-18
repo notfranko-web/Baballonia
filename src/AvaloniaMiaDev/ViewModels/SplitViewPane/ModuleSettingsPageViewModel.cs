@@ -40,10 +40,9 @@ public partial class ModuleSettingsPageViewModel : ViewModelBase
 
     [ObservableProperty]
     [property: SavedSetting("ModuleSettings_EyebrowsRaise", 1f)]
-    private float _eyeBrowsRaise = 1f;
+    private float _eyeBrowsUpper = 1f;
 
     private ILocalSettingsService SettingsService { get; }
-
     public ModuleSettingsPageViewModel()
     {
         SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;

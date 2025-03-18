@@ -130,7 +130,7 @@ public static class DeviceEnumerator
         if (OperatingSystem.IsLinux())
             return Directory.GetFiles("/dev/serial/by-id");
         if (OperatingSystem.IsMacOS())
-            return Directory.GetFiles("/dev", "tty*");
+            return Directory.GetFiles("/dev", "ttyACM*");
         return new string[0];
     }
 }
