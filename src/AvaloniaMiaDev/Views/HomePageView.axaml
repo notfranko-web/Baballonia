@@ -114,8 +114,6 @@
                                     IsHitTestVisible="False"
                                     x:Name="LeftCanvasWindow">
                                     <Rectangle
-                                        Canvas.Left="{Binding LeftOverlayRectangle.X, Mode=TwoWay}"
-                                        Canvas.Top="{Binding LeftOverlayRectangle.Y, Mode=TwoWay}"
                                         Fill="Transparent"
                                         IsHitTestVisible="False"
                                         Stroke="{DynamicResource Accent}"

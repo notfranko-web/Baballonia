@@ -25,8 +25,11 @@ public partial class HomePageView : UserControl
     private readonly ILocalSettingsService _localSettingsService;
 
     private CamViewMode _leftCamViewMode = CamViewMode.Tracking;
-    private Rect _leftOverlayRectangle = new Rect();
+    private global::Avalonia.Rect _leftOverlayRectangle = new Rect();
     private bool _isLeftCropping;
+
+    private double _dragStartX;
+    private double _dragStartY;
 
     private bool _isVisible;
 
@@ -78,7 +81,9 @@ public partial class HomePageView : UserControl
         if (_leftCamViewMode != CamViewMode.Cropping) return;
 
         var position = e.GetPosition(LeftMouthWindow);
-        _leftOverlayRectangle = new Rect(position.X, position.Y, 0, 0);
+        _dragStartX = position.X;
+        _dragStartY = position.Y;
+
         await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
         _isLeftCropping = true;
     }
@@ -89,9 +94,36 @@ public partial class HomePageView : UserControl
 
         Image image = sender as Image;
 
-        var clampedWidth = Math.Clamp(_leftOverlayRectangle.X, 0, image.Width);
-        var clampedHeight = Math.Clamp(_leftOverlayRectangle.Y, 0, image.Height);
-        _leftOverlayRectangle = new Rect(_leftOverlayRectangle.X, _leftOverlayRectangle.Y, clampedWidth, clampedHeight);
+        var position = e.GetPosition(LeftMouthWindow);
+
+        double x = 0;
+        double y = 0;
+        double w = 0;
+        double h = 0;
+
+        if (position.X < _dragStartX)
+        {
+            x = position.X;
+            w = _dragStartX - x;
+        }
+        else
+        {
+            x = _dragStartX;
+            w = position.X - _dragStartX;
+        }
+
+        if (position.Y < _dragStartY)
+        {
+            y = position.Y;
+            h = _dragStartY - y;
+        }
+        else
+        {
+            y = _dragStartY;
+            h = position.Y - _dragStartY;
+        }
+
+        _leftOverlayRectangle = new Rect(x, y, Math.Min(image.Width, w), Math.Min(image.Height, h));
 
         await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
     }
@@ -204,10 +236,10 @@ public partial class HomePageView : UserControl
                 LeftCanvasWindow.Height = dims.height;
             }
 
-            _leftOverlayRectangle = LeftRectangleWindow.Bounds.WithX(_leftOverlayRectangle.X);
-            _leftOverlayRectangle = LeftRectangleWindow.Bounds.WithY(_leftOverlayRectangle.Y);
             LeftRectangleWindow.Width = _leftOverlayRectangle.Width;
             LeftRectangleWindow.Height = _leftOverlayRectangle.Height;
+            Canvas.SetLeft(LeftRectangleWindow, _leftOverlayRectangle.X);
+            Canvas.SetTop(LeftRectangleWindow, _leftOverlayRectangle.Y);
         }
         else
         {
