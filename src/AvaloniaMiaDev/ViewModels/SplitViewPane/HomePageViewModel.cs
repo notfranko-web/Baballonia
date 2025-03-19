@@ -15,6 +15,8 @@ public partial class HomePageViewModel : ViewModelBase
     // Left eye properties
     public WriteableBitmap LeftEyeBitmap { get; set; }
 
+    public WriteableBitmap RightEyeBitmap { get; set; }
+
     [ObservableProperty]
     [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
     private string _leftCameraAddress;
@@ -34,6 +36,26 @@ public partial class HomePageViewModel : ViewModelBase
     [ObservableProperty]
     [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
     private float _leftEyeRotation;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_RightCameraIndex", "0")]
+    private string _rightCameraAddress;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_RightCameraROI")]
+    private Rect _rightOverlayRectangle;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
+    private bool _flipRightEyeXAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
+    private bool _flipRightEyeYAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
+    private float _rightEyeRotation;
 
     // Services and other properties
     public IOscTarget OscTarget { get; }
