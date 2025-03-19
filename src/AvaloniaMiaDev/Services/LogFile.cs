@@ -25,13 +25,13 @@ public class LogFileLogger : ILogger
         LogLevel logLevel,
         EventId eventId,
         TState state,
-        Exception exception,
+        Exception? exception,
         Func<TState, Exception, string> formatter)
     {
         Mutex.WaitOne(); // Wait for the semaphore to be released
         try
         {
-            _file.Write($"[{_categoryName}] {logLevel}: {formatter(state, exception)}\n");
+            _file.Write($"[{_categoryName}] {logLevel}: {formatter(state, exception!)}\n");
             _file.Flush();
         }
         catch

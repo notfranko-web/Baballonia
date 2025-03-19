@@ -1,6 +1,4 @@
-using System.IO;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
@@ -94,7 +92,7 @@ public partial class AppSettingsPageView : UserControl
         var item = _langComboBox.SelectedItem as ComboBoxItem;
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            await _languageSelectorService.SetLanguageAsync(item!.Name);
+            await _languageSelectorService.SetLanguageAsync(item!.Name!);
             UpdateThemes();
         });
     }

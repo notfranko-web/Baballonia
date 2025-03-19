@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Avalonia.Threading;
+﻿using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +10,8 @@ public class ActivationService(
     ILogger<ActivationService> logger)
     : IActivationService
 {
+    public ILogger<ActivationService> Logger { get; } = logger;
+
     public async Task ActivateAsync(object activationArgs)
     {
         // Execute tasks before activation.
@@ -29,8 +28,6 @@ public class ActivationService(
     {
         await themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await languageSelectorService.InitializeAsync().ConfigureAwait(false);
-
-        await Task.CompletedTask;
     }
 
     private async Task StartupAsync()
@@ -72,8 +69,8 @@ public class ActivationService(
         }
 
         logger.LogInformation("Initializing modules...");
-        Dispatcher.UIThread.Invoke(() => libManager.Initialize());
+        Dispatcher.UIThread.Invoke(() => libManager.Initialize());*/
 
-        await Task.CompletedTask;*/
+        await Task.CompletedTask;
     }
 }

@@ -13,7 +13,7 @@
     <Expander
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
-        IsExpanded="False"
+        IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
         VerticalAlignment="Stretch">
         <Expander.Header>
             <Grid ColumnDefinitions="Auto,Auto,*">

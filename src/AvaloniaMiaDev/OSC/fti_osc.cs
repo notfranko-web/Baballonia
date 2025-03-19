@@ -28,9 +28,9 @@ public struct OscValue {
 #else
     [MarshalAs(UnmanagedType.LPUTF8Str)]
 #endif
-    public string StringValue; // Use IntPtr for pointer types
+    public string? StringValue; // Use IntPtr for pointer types
 
-    public object Value
+    public object? Value
     {
         get => Type switch
         {
@@ -45,16 +45,16 @@ public struct OscValue {
             switch (Type)
             {
                 case OscValueType.Int:
-                    IntValue = (int)value;
+                    IntValue = (int)value!;
                     break;
                 case OscValueType.Float:
-                    FloatValue = (float)value;
+                    FloatValue = (float)value!;
                     break;
                 case OscValueType.Bool:
-                    BoolValue = (bool)value;
+                    BoolValue = (bool)value!;
                     break;
                 case OscValueType.String:
-                    StringValue = (string)value;
+                    StringValue = (string)value!;
                     break;
             }
         }
@@ -78,7 +78,7 @@ public struct OscMessageMeta {
 }
 
 // Simple Rust OSC Lib wrapper
-public static class fti_osc
+public static class FtiOsc
 {
 #if WINDOWS_DEBUG || WINDOWS_RELEASE
     private const string DllName = "fti_osc.dll";
@@ -108,7 +108,7 @@ public static class fti_osc
     /// <param name="osc_template">Target OscMessageMeta to serialize</param>
     /// <returns>Amount of bytes written to <paramref name="buf"/></returns>
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int create_osc_message([MarshalAs(UnmanagedType.LPArray, SizeConst = 4096)] byte[] buf, ref OscMessageMeta osc_template);
+    public static extern int create_osc_message([MarshalAs(UnmanagedType.LPArray, SizeConst = 4096)] byte[] buf, ref OscMessageMeta oscTemplate);
 
     /// <summary>
     /// Serializes a pointer to an array of OscMessageMeta structs to a byte array of size 4096

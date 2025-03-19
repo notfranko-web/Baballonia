@@ -4,7 +4,7 @@
     Height="700"
     Icon="/Assets/WindowIcon.ico"
     SystemDecorations="Full"
-    Title="VRCFaceTracking"
+    Title="Project Babble"
     Width="1100"
     WindowStartupLocation="CenterScreen"
     d:DesignHeight="700"
@@ -60,7 +60,7 @@
                         HorizontalAlignment="Left"
                         IsHitTestVisible="False"
                         Margin="10,0,0,0"
-                        Text="VRCFaceTracking"
+                        Text="Project Babble"
                         VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>

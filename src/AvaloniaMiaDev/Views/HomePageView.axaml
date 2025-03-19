@@ -6,24 +6,344 @@
     x:DataType="splitViewPane:HomePageViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="clr-namespace:AvaloniaMiaDev.Helpers"
-    xmlns:l="using:Jeek.Avalonia.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <UserControl.Resources>
-        <helpers:StreamToBitmapConverter x:Key="ImageConverter" />
-    </UserControl.Resources>
-
     <ScrollViewer>
-        <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="{l:Localize Shell_Main.Content}" />
-            <CheckBox Content="Flip Left Eye X-Axis" IsChecked="{Binding FlipLeftEyeXAxis, Mode=TwoWay}" />
-            <CheckBox Content="Flip Right Eye Y-Axis" IsChecked="{Binding FlipRightEyeYAxis, Mode=TwoWay}" />
-            <CheckBox Content="Flip Eye Y-Axis" IsChecked="{Binding FlipEyeYAxis, Mode=TwoWay}" />
-            <CheckBox Content="Left Eye Circle crop" IsChecked="{Binding LeftEyeCircleCrop, Mode=TwoWay}" />
-            <CheckBox Content="Right Eye Circle crop" IsChecked="{Binding RightEyeCircleCrop, Mode=TwoWay}" />
+        <StackPanel Classes="Page" Margin="16">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                <TextBlock
+                    Classes="Header"
+                    FontSize="28"
+                    Grid.Column="0"
+                    Text="Home" />
+                <Button
+                    CornerRadius="4"
+                    Grid.Column="1"
+                    Padding="12,8"
+                    x:Name="HeaderActionButton">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource HeadsetVrRegular}" />
+                        <TextBlock Text="Launch VR Calibration Overlay" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,12,*">
+                <!--  Left Panel  -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Margin="0,0,12,12"
+                        Text="Left Eye Camera" />
+
+                    <StackPanel>
+                        <!--  Camera address section  -->
+                        <Border
+                            Background="{DynamicResource SystemChromeMediumLowColor}"
+                            CornerRadius="8"
+                            Margin="0,0,0,16"
+                            Padding="16,16,16,16">
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="0,0,0,12"
+                                    Text="Left Camera Configuration" />
+
+                                <TextBlock FontSize="14" Text="Left Camera Address" />
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <AutoCompleteBox
+                                        FilterMode="Contains"
+                                        FontSize="13"
+                                        Grid.Column="0"
+                                        Height="36"
+                                        Margin="0,8"
+                                        Text="{Binding LeftCameraAddress}"
+                                        Watermark="Start typing to see detected devices..."
+                                        x:Name="LeftCameraAddressEntry" />
+                                    <Button
+                                        Click="LeftCameraAddressClicked"
+                                        Content="Save &amp; Restart"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        Padding="12,8"
+                                        x:Name="LeftSaveAndRestartTrackingText" />
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <RadioButton
+                                        Click="LeftOnTrackingModeClicked"
+                                        Content="Tracking Mode"
+                                        GroupName="LeftImageControlGroup"
+                                        IsChecked="True"
+                                        x:Name="LeftTrackingModeButton" />
+                                    <RadioButton
+                                        Click="LeftOnCroppingModeClicked"
+                                        Content="Cropping Mode"
+                                        GroupName="LeftImageControlGroup"
+                                        x:Name="LeftCroppingModeButton" />
+                                </StackPanel>
+
+                                <Button
+                                    Click="LeftSelectEntireFrameClicked"
+                                    Content="Select Entire Frame"
+                                    FontSize="13"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="0,8,0,0"
+                                    Padding="0,8"
+                                    x:Name="LeftSelectEntireFrame" />
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Camera view section  -->
+                        <Viewbox x:Name="LeftViewBox">
+                            <Grid>
+                                <Image
+                                    HorizontalAlignment="Center"
+                                    IsHitTestVisible="True"
+                                    Source="{Binding LeftEyeBitmap}"
+                                    x:Name="LeftMouthWindow" />
+                                <Canvas
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    x:Name="LeftCanvasWindow">
+                                    <Rectangle
+                                        Fill="Transparent"
+                                        IsHitTestVisible="False"
+                                        Stroke="{DynamicResource Accent}"
+                                        StrokeThickness="24"
+                                        x:Name="LeftRectangleWindow" />
+                                </Canvas>
+                            </Grid>
+                        </Viewbox>
+
+                        <!--  Camera settings section (removed from expander)  -->
+                        <Border
+                            Background="{DynamicResource SystemChromeMediumLowColor}"
+                            CornerRadius="8"
+                            Padding="16">
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Left Camera Settings" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Margin="0,0,0,12"
+                                    Text="Adjust your left camera settings" />
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                    <StackPanel Grid.Column="0" Grid.Row="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Vertical Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image vertically" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        Grid.Row="0"
+                                        IsChecked="{Binding FlipLeftEyeYAxis, Mode=TwoWay}" />
+
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        Grid.Row="1"
+                                        Margin="0,12">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Horizontal Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image horizontally" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        Grid.Row="1"
+                                        IsChecked="{Binding FlipLeftEyeXAxis, Mode=TwoWay}" />
+
+                                    <StackPanel Grid.Column="0" Grid.Row="2">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Image Rotation" />
+                                        <TextBlock FontSize="12" Text="Rotates the image in a circle" />
+                                    </StackPanel>
+                                    <Slider
+                                        Grid.Column="2"
+                                        Grid.Row="2"
+                                        Maximum="6.28"
+                                        Minimum="0"
+                                        Value="{Binding LeftEyeRotation}"
+                                        Width="180"
+                                        x:Name="LeftRotationSlider" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  Right Panel  -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Margin="0,0,12,12"
+                        Text="Right Eye Camera" />
+
+                    <StackPanel>
+                        <!--  Camera address section  -->
+                        <Border
+                            Background="{DynamicResource SystemChromeMediumLowColor}"
+                            CornerRadius="8"
+                            Margin="0,0,0,16"
+                            Padding="16,16,16,16">
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="0,0,0,12"
+                                    Text="Right Camera Configuration" />
+
+                                <TextBlock FontSize="14" Text="Right Camera Address" />
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <AutoCompleteBox
+                                        FilterMode="Contains"
+                                        FontSize="13"
+                                        Grid.Column="0"
+                                        Height="36"
+                                        Margin="0,8"
+                                        Text="{Binding RightCameraAddress}"
+                                        Watermark="Start typing to see detected devices..."
+                                        x:Name="RightCameraAddressEntry" />
+                                    <Button
+                                        Click="RightCameraAddressClicked"
+                                        Content="Save &amp; Restart"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        Padding="12,8"
+                                        x:Name="RightSaveAndRestartTrackingText" />
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <RadioButton
+                                        Click="RightOnTrackingModeClicked"
+                                        Content="Tracking Mode"
+                                        GroupName="RightImageControlGroup"
+                                        IsChecked="True"
+                                        x:Name="RightTrackingModeButton" />
+                                    <RadioButton
+                                        Click="RightOnCroppingModeClicked"
+                                        Content="Cropping Mode"
+                                        GroupName="RightImageControlGroup"
+                                        x:Name="RightCroppingModeButton" />
+                                </StackPanel>
+
+                                <Button
+                                    Click="RightSelectEntireFrameClicked"
+                                    Content="Select Entire Frame"
+                                    FontSize="13"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Margin="0,8,0,0"
+                                    Padding="0,8"
+                                    x:Name="RightSelectEntireFrame" />
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Camera view section  -->
+                        <Viewbox x:Name="RightViewBox">
+                            <Grid>
+                                <Image
+                                    HorizontalAlignment="Center"
+                                    IsHitTestVisible="True"
+                                    Source="{Binding RightEyeBitmap}"
+                                    x:Name="RightMouthWindow" />
+                                <Canvas
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    x:Name="RightCanvasWindow">
+                                    <Rectangle
+                                        Fill="Transparent"
+                                        IsHitTestVisible="False"
+                                        Stroke="{DynamicResource Accent}"
+                                        StrokeThickness="24"
+                                        x:Name="RightRectangleWindow" />
+                                </Canvas>
+                            </Grid>
+                        </Viewbox>
+
+                        <!--  Camera settings section (removed from expander)  -->
+                        <Border
+                            Background="{DynamicResource SystemChromeMediumLowColor}"
+                            CornerRadius="8"
+                            Padding="16">
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Right Camera Settings" />
+                                <TextBlock
+                                    FontSize="13"
+                                    Margin="0,0,0,12"
+                                    Text="Adjust your Right camera settings" />
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                    <StackPanel Grid.Column="0" Grid.Row="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Vertical Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image vertically" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        Grid.Row="0"
+                                        IsChecked="{Binding FlipRightEyeYAxis, Mode=TwoWay}" />
+
+                                    <StackPanel
+                                        Grid.Column="0"
+                                        Grid.Row="1"
+                                        Margin="0,12">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Horizontal Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image horizontally" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        Grid.Row="1"
+                                        IsChecked="{Binding FlipRightEyeXAxis, Mode=TwoWay}" />
+
+                                    <StackPanel Grid.Column="0" Grid.Row="2">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Image Rotation" />
+                                        <TextBlock FontSize="12" Text="Rotates the image in a circle" />
+                                    </StackPanel>
+                                    <Slider
+                                        Grid.Column="2"
+                                        Grid.Row="2"
+                                        Maximum="6.28"
+                                        Minimum="0"
+                                        Value="{Binding RightEyeRotation}"
+                                        Width="180"
+                                        x:Name="RightRotationSlider" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
+
 </UserControl>

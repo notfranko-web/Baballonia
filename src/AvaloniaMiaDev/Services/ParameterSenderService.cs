@@ -43,7 +43,7 @@ public class ParameterSenderService : BackgroundService
 
                 SendQueue.Clear();
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }

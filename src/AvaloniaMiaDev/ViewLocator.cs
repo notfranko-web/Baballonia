@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using AvaloniaMiaDev.ViewModels;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;

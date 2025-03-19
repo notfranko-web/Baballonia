@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using Avalonia;
-using Avalonia.Controls.Notifications;
-using AvaloniaMiaDev;
 using AvaloniaMiaDev.Models;
 using DesktopNotifications;
 using DesktopNotifications.Avalonia;
 using INotificationManager = DesktopNotifications.INotificationManager;
 using Notification = DesktopNotifications.Notification;
 
-namespace VRCFaceTracking.Avalonia.Desktop;
+namespace AvaloniaMiaDev.Desktop;
 
 sealed class Program
 {
-    internal static INotificationManager NotificationManager;
+    internal static INotificationManager NotificationManager = null!;
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -41,13 +38,10 @@ sealed class Program
             BodyImageAltText = notificationModel.BodyAltText!
         };
 
-        if (notificationModel.ActionButtons is not null)
-        {
-            if (notificationModel.ActionButtons.Count != 0)
-                notification.Buttons.AddRange(notificationModel.ActionButtons.
-                    Where(x => x.HasValue).
-                    Select(x => x!.Value));
-        }
+        if (notificationModel.ActionButtons.Count != 0)
+            notification.Buttons.AddRange(notificationModel.ActionButtons.
+                Where(x => x.HasValue).
+                Select(x => x!.Value));
 
         if (notificationModel is { OptionalScheduledTime: not null, OptionalExpirationTime: not null })
             NotificationManager.ScheduleNotification(notification, notificationModel.OptionalScheduledTime.Value, notificationModel.OptionalExpirationTime.Value);
@@ -73,5 +67,5 @@ sealed class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .SetupDesktopNotifications(out NotificationManager);
+            .SetupDesktopNotifications(out NotificationManager!);
 }

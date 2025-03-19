@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using AvaloniaMiaDev.Contracts;
@@ -32,6 +33,7 @@ public class IdentityService : IIdentityService
         return GetFallbackId();
     }
 
+    [SupportedOSPlatform("windows")]
     private static string GetWindowsSystemId()
     {
         try

@@ -41,6 +41,15 @@ public partial class SettingsExpander : UserControl
         set => SetValue(ExpanderContentProperty, value);
     }
 
+    public static readonly StyledProperty<bool> IsExpandedByDefaultProperty =
+        AvaloniaProperty.Register<SettingsExpander, bool>(nameof(IsExpandedByDefaultProperty));
+
+    public bool IsExpandedByDefault
+    {
+        get => GetValue(IsExpandedByDefaultProperty);
+        set => SetValue(IsExpandedByDefaultProperty, value);
+    }
+
     public SettingsExpander()
     {
         InitializeComponent(true);

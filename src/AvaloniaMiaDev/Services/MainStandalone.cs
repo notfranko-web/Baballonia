@@ -18,7 +18,7 @@ public class MainStandalone : IMainService
         _logger = logger;
     }
 
-    public async Task Teardown()
+    public Task Teardown()
     {
         _logger.LogInformation("VRCFT Standalone Exiting!");
 
@@ -33,11 +33,13 @@ public class MainStandalone : IMainService
         }
 
         _logger.LogDebug("Teardown complete. Awaiting exit...");
+        return Task.CompletedTask;
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
         // Begin main OSC update loop
         _logger.LogDebug("Starting OSC update loop...");
+        return Task.CompletedTask;
     }
 }

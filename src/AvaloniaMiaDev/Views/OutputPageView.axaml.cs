@@ -12,7 +12,7 @@ namespace AvaloniaMiaDev.Views;
 
 public partial class OutputPageView : UserControl
 {
-    private static readonly string[] _fileOptions = ["*.txt"];
+    private static readonly string[] FileOptions = ["*.txt"];
 
     private readonly ScrollViewer _scrollViewer;
     // private readonly Button _copyButton;
@@ -51,14 +51,14 @@ public partial class OutputPageView : UserControl
         {
             var file = await TopLevel.GetTopLevel(this)?.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Save VRCFaceTracking.Avalonia Log File",
+                Title = "Save Log File",
                 SuggestedFileName = "log.txt",
                 DefaultExtension = "txt",
                 FileTypeChoices =
                 [
                     new FilePickerFileType("Text File")
                     {
-                        Patterns = _fileOptions
+                        Patterns = FileOptions
                     }
                 ]
             })!;

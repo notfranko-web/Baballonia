@@ -1,46 +1,73 @@
 ﻿using System;
+using Avalonia;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.OSC;
 using AvaloniaMiaDev.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
 public partial class HomePageViewModel : ViewModelBase
 {
+    // Left eye properties
+    public WriteableBitmap LeftEyeBitmap { get; set; }
+
+    public WriteableBitmap RightEyeBitmap { get; set; }
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
+    private string _leftCameraAddress;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_LeftCameraROI")]
+    private Rect _leftOverlayRectangle;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
+    private bool _flipLeftEyeXAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipLeftEyeYAxis", false)]
+    private bool _flipLeftEyeYAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
+    private float _leftEyeRotation;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_RightCameraIndex", "0")]
+    private string _rightCameraAddress;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeTrackVRService_RightCameraROI")]
+    private Rect _rightOverlayRectangle;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
+    private bool _flipRightEyeXAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
+    private bool _flipRightEyeYAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
+    private float _rightEyeRotation;
+
+    // Services and other properties
     public IOscTarget OscTarget { get; }
     private OscRecvService OscRecvService { get; }
     private OscSendService OscSendService { get; }
+    private ILocalSettingsService LocalSettingsService { get; }
 
     private int _messagesRecvd;
     [ObservableProperty] private string _messagesInPerSecCount;
 
     private int _messagesSent;
     [ObservableProperty] private string _messagesOutPerSecCount;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
-    private bool _flipLeftEyeXAxis;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
-    private bool _flipRightEyeYAxis;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_FlipEyeYAxis", false)]
-    private bool _flipEyeYAxis;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_LeftEyeCircleCrop", false)]
-    private bool _leftEyeCircleCrop;
-
-    [ObservableProperty]
-    [SavedSetting("EyeSettings_RightEyeCircleCrop", false)]
-    private bool _rightEyeCircleCrop;
 
     private readonly DispatcherTimer _msgCounterTimer;
 
@@ -50,6 +77,8 @@ public partial class HomePageViewModel : ViewModelBase
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;
         OscRecvService = Ioc.Default.GetService<OscRecvService>()!;
         OscSendService = Ioc.Default.GetService<OscSendService>()!;
+        LocalSettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        LocalSettingsService.Load(this);
 
         // Message Timer
         MessagesInPerSecCount = "0";
@@ -69,6 +98,11 @@ public partial class HomePageViewModel : ViewModelBase
             _messagesSent = 0;
         };
         _msgCounterTimer.Start();
+
+        PropertyChanged += (_, _) =>
+        {
+            LocalSettingsService.Save(this);
+        };
     }
 
     private void MessageReceived(OscMessage msg) => _messagesRecvd++;

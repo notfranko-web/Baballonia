@@ -72,6 +72,7 @@ public partial class App : Application
                 services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
+                services.AddSingleton<IInferenceService, InferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
@@ -90,14 +91,14 @@ public partial class App : Application
                 services.AddSingleton<MainWindow>();
 
                 services.AddTransient<OutputPageViewModel>();
-                services.AddTransient<AppSettingsPageViewModel>();
-                services.AddTransient<TrackingSettingsPageViewModel>();
-                services.AddTransient<ModuleSettingsPageViewModel>();
-                services.AddTransient<HomePageViewModel>();
                 services.AddTransient<OutputPageView>();
+                services.AddTransient<AppSettingsPageViewModel>();
                 services.AddTransient<AppSettingsPageView>();
+                services.AddTransient<TrackingSettingsPageViewModel>();
                 services.AddTransient<TrackingSettingsPageView>();
+                services.AddTransient<ModuleSettingsPageViewModel>();
                 services.AddTransient<ModuleSettingsPageView>();
+                services.AddTransient<HomePageViewModel>();
                 services.AddTransient<HomePageView>();
 
                 services.AddHostedService(provider => provider.GetService<OscRecvService>()!);
@@ -122,7 +123,7 @@ public partial class App : Application
         Task.Run(async () => await _host.StartAsync());
 
         var activation = Ioc.Default.GetRequiredService<IActivationService>();
-        Task.Run(async () => await activation.ActivateAsync(null));
+        Task.Run(async () => await activation.ActivateAsync(null!));
 
         var vm = Ioc.Default.GetRequiredService<MainViewModel>();
         switch (ApplicationLifetime)
