@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class AppSettingsPageViewModel : ViewModelBase
+public partial class AppSettingsViewModel : ViewModelBase
 {
     public IOscTarget OscTarget { get; private set;}
     public ILocalSettingsService SettingsService { get; private set;}
@@ -24,7 +24,7 @@ public partial class AppSettingsPageViewModel : ViewModelBase
     [property: SavedSetting("AppSettings_CheckForUpdates", false)]
     private bool _checkForUpdates;
 
-    public AppSettingsPageViewModel()
+    public AppSettingsViewModel()
     {
         // General/Calibration Settings
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;

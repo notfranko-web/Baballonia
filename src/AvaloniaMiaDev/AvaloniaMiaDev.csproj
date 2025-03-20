@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.2.4" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.2.4" />
         <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="11.1.5" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.4" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.4" />
@@ -71,12 +72,16 @@
 
 
     <ItemGroup>
-      <Compile Update="Views\TrackingSettingsPageView.axaml.cs">
+      <Compile Update="Views\EyeCalibrationView.axaml.cs">
         <DependentUpon>TrackingSettingsPageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
       <Compile Update="Views\ModuleSettingsPageView.axaml.cs">
         <DependentUpon>ModuleSettingsPageView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\FaceHomeView.axaml.cs">
+        <DependentUpon>FaceHomePageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

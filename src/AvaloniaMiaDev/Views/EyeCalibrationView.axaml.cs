@@ -4,16 +4,16 @@ using AvaloniaMiaDev.ViewModels.SplitViewPane;
 
 namespace AvaloniaMiaDev.Views;
 
-public partial class TrackingSettingsPageView : UserControl
+public partial class EyeCalibrationView : UserControl
 {
-    public TrackingSettingsPageView()
+    public EyeCalibrationView()
     {
         InitializeComponent();
     }
 
     private void DecrementOrder(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as TrackingSettingsPageViewModel;
+        var viewModel = DataContext as EyeCalibrationViewModel;
         var button = sender as Button;
         var index = int.Parse(button!.Name![^1].ToString());
         var previousIndex = viewModel!.TrackingAlgorithms[index].Order;
@@ -23,7 +23,7 @@ public partial class TrackingSettingsPageView : UserControl
 
     private void IncrementOrder(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as TrackingSettingsPageViewModel;
+        var viewModel = DataContext as EyeCalibrationViewModel;
         var button = sender as Button;
         var index = int.Parse(button!.Name![^1].ToString());
         var previousIndex = viewModel!.TrackingAlgorithms[index].Order;

@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,7 +6,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class TrackingSettingsPageViewModel : ViewModelBase
+public partial class EyeCalibrationViewModel : ViewModelBase
 {
     [ObservableProperty]
     [property: SavedSetting("TrackingSettings_Algorithms")]
@@ -94,12 +92,12 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
     [property: SavedSetting("AdvancedControls_LeftEyeThresh", 80f)]
     private float _leftEyeThresh;
 
-    public ILocalSettingsService SettingsService { get; private set;}
+    private ILocalSettingsService _settingsService { get; }
 
-    public TrackingSettingsPageViewModel()
+    public EyeCalibrationViewModel()
     {
-        SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
-        SettingsService.Load(this);
+        _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        _settingsService.Load(this);
 
         _trackingAlgorithms =
         [
@@ -115,7 +113,7 @@ public partial class TrackingSettingsPageViewModel : ViewModelBase
 
         PropertyChanged += (_, _) =>
         {
-            SettingsService.Save(this);
+            _settingsService.Save(this);
         };
     }
 

@@ -2,8 +2,8 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d"
-    x:Class="AvaloniaMiaDev.Views.TrackingSettingsPageView"
-    x:DataType="splitViewPane:TrackingSettingsPageViewModel"
+    x:Class="AvaloniaMiaDev.Views.EyeCalibrationView"
+    x:DataType="splitViewPane:EyeCalibrationViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:AvaloniaMiaDev.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -17,7 +17,7 @@
 
     <ScrollViewer>
         <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="Tracking Settings" />
+            <TextBlock Classes="Header" Text="Eye Tracking Calibration" />
 
             <Expander
                 HorizontalAlignment="Stretch"

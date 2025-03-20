@@ -19,10 +19,10 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.Views;
 
-public partial class HomePageView : UserControl
+public partial class EyeHomeView : UserControl
 {
     private readonly IInferenceService _inferenceService;
-    private readonly HomePageViewModel _viewModel;
+    private readonly EyeHomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
     private CamViewMode _leftCamViewMode = CamViewMode.Tracking;
@@ -38,13 +38,13 @@ public partial class HomePageView : UserControl
 
     private bool _isVisible;
 
-    public HomePageView()
+    public EyeHomeView()
     {
         InitializeComponent();
         Loaded += CamView_OnLoaded;
         Unloaded += CamView_Unloaded;
 
-        _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
+        _viewModel = Ioc.Default.GetRequiredService<EyeHomePageViewModel>()!;
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
         _inferenceService = Ioc.Default.GetService<IInferenceService>()!;
         _localSettingsService.Load(this);

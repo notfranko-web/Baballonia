@@ -8,7 +8,7 @@ using Jeek.Avalonia.Localization;
 
 namespace AvaloniaMiaDev.Views;
 
-public partial class AppSettingsPageView : UserControl
+public partial class AppSettingsView : UserControl
 {
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ILanguageSelectorService _languageSelectorService;
@@ -16,7 +16,7 @@ public partial class AppSettingsPageView : UserControl
     private readonly ComboBox _themeComboBox;
     private readonly ComboBox _langComboBox;
 
-    public AppSettingsPageView()
+    public AppSettingsView()
     {
         InitializeComponent();
 
@@ -66,7 +66,7 @@ public partial class AppSettingsPageView : UserControl
         _langComboBox.SelectedIndex = index;
     }
 
-    ~AppSettingsPageView()
+    ~AppSettingsView()
     {
         _themeComboBox.SelectionChanged -= ThemeComboBox_SelectionChanged;
     }

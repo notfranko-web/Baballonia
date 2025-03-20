@@ -17,7 +17,7 @@ namespace AvaloniaMiaDev.Services;
 
 public class InferenceService : IInferenceService
 {
-    public PlatformConnector[] PlatformConnectors = new PlatformConnector[2];
+    public PlatformConnector[] PlatformConnectors = new PlatformConnector[3];
     public int Fps => (int) MathF.Floor(1000f / Ms);
     public float Ms { get; set; }
     public bool IsRunning { get; private set; }

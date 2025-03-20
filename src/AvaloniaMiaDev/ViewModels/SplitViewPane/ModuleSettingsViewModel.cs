@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class ModuleSettingsPageViewModel : ViewModelBase
+public partial class ModuleSettingsViewModel : ViewModelBase
 {
     [ObservableProperty]
     [property: SavedSetting("ModuleSettings_EmulateEyeWiden", false)]
@@ -43,7 +43,7 @@ public partial class ModuleSettingsPageViewModel : ViewModelBase
     private float _eyeBrowsUpper = 1f;
 
     private ILocalSettingsService SettingsService { get; }
-    public ModuleSettingsPageViewModel()
+    public ModuleSettingsViewModel()
     {
         SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         SettingsService.Load(this);
