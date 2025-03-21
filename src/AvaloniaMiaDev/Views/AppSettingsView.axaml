@@ -120,6 +120,12 @@
             </controls:SettingsExpander>
 
             <controls:SettingsToggle
+                Description="Use your GPU to make things run faster!"
+                IconPath="TopSpeedRegular"
+                SettingToggled="{Binding UseGPU, Mode=TwoWay}"
+                Title="Use GPU acceleration" />
+
+            <controls:SettingsToggle
                 Description="Should the app check for updates on start?"
                 IconPath="ArrowSyncRegular"
                 SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}"

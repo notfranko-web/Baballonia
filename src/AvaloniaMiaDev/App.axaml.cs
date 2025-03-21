@@ -94,8 +94,6 @@ public partial class App : Application
                 services.AddTransient<OutputPageView>();
                 services.AddTransient<AppSettingsViewModel>();
                 services.AddTransient<AppSettingsView>();
-                services.AddTransient<ModuleSettingsViewModel>();
-                services.AddTransient<ModuleSettingsPageView>();
                 services.AddTransient<EyeHomePageViewModel>();
                 services.AddTransient<EyeHomeView>();
                 services.AddTransient<EyeCalibrationViewModel>();

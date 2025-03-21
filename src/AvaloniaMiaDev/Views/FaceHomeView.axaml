@@ -17,17 +17,7 @@
                     Classes="Header"
                     FontSize="28"
                     Grid.Column="0"
-                    Text="Home" />
-                <Button
-                    CornerRadius="4"
-                    Grid.Column="1"
-                    Padding="12,8"
-                    x:Name="HeaderActionButton">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <PathIcon Data="{StaticResource HeadsetVrRegular}" />
-                        <TextBlock Text="Launch VR Calibration Overlay" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+                    Text="Face Tracking Home" />
             </Grid>
 
             <Grid ColumnDefinitions="*,12,*">

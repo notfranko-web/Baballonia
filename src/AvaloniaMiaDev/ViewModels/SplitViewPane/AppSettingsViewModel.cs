@@ -21,6 +21,10 @@ public partial class AppSettingsViewModel : ViewModelBase
     private string _recenterAddress;
 
     [ObservableProperty]
+    [property: SavedSetting("AppSettings_UseGPU", false)]
+    private bool _useGPU;
+
+    [ObservableProperty]
     [property: SavedSetting("AppSettings_CheckForUpdates", false)]
     private bool _checkForUpdates;
 

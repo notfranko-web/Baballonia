@@ -17,7 +17,7 @@
                     Classes="Header"
                     FontSize="28"
                     Grid.Column="0"
-                    Text="Home" />
+                    Text="Eye Tracking Home" />
                 <Button
                     CornerRadius="4"
                     Grid.Column="1"

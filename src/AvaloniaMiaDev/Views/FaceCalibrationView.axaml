@@ -14,7 +14,7 @@
 
     <ScrollViewer>
         <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="Face Calibration Settings" />
+            <TextBlock Classes="Header" Text="Face Tracking Calibration" />
 
             <Border
                 Background="{DynamicResource SystemChromeMediumLowColor}"

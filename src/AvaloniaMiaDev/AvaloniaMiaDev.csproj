@@ -76,10 +76,6 @@
         <DependentUpon>TrackingSettingsPageView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Views\ModuleSettingsPageView.axaml.cs">
-        <DependentUpon>ModuleSettingsPageView.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
       <Compile Update="Views\FaceHomeView.axaml.cs">
         <DependentUpon>FaceHomePageView.axaml</DependentUpon>
         <SubType>Code</SubType>

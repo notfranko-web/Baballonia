@@ -22,7 +22,6 @@ public class ViewLocator : IDataTemplate
         RegisterViewFactory<FaceCalibrationViewModel, FaceCalibrationView>();
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<EyeCalibrationViewModel, EyeCalibrationView>();
-        RegisterViewFactory<ModuleSettingsViewModel, ModuleSettingsPageView>();
         RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
     }
 

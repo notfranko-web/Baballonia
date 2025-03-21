@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
+    xmlns:twoRangeSlider="https://github.com/DmitryNizhebovsky/Avalonia.RangeSlider"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Styles>
@@ -480,6 +481,125 @@
                 </controls:SettingsExpander.ExpanderContent>
             </controls:SettingsExpander>
 
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource EyeTrackingRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="Expression Emulation Settings" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Eye and eyebrow controls" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel Margin="10">
+                    <!--  Eye Widen Section  -->
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock
+                            FontWeight="Bold"
+                            Grid.Column="0"
+                            Text="Emulate Eye Widen"
+                            VerticalAlignment="Center" />
+                        <ToggleSwitch Grid.Column="2" IsChecked="{Binding EmulateEyeWiden, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run Text="Threshold: " />
+                                <Run Text="{Binding #LeftHsfSlider.LowerSelectedValue, StringFormat={}{0:0.00}}" />
+                                <Run Text="-" />
+                                <Run Text="{Binding #LeftHsfSlider.UpperSelectedValue, StringFormat={}{0:0.00}}" />
+                            </TextBlock>
+                            <twoRangeSlider:RangeSlider
+                                IsEnabled="{Binding EmulateEyeWiden}"
+                                LowerSelectedValue="{Binding EyeWidenLower, Mode=TwoWay}"
+                                Maximum="1"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                UpperSelectedValue="{Binding EyeWidenUpper, Mode=TwoWay}"
+                                x:Name="LeftHsfSlider" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  Eye Squint Section  -->
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock
+                            FontWeight="Bold"
+                            Grid.Column="0"
+                            Text="Emulate Eye Squint"
+                            VerticalAlignment="Center" />
+                        <ToggleSwitch Grid.Column="2" IsChecked="{Binding EmulateEyeSquint, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run Text="Threshold: " />
+                                <Run Text="{Binding #RightHsfSlider.LowerSelectedValue, StringFormat={}{0:0.00}}" />
+                                <Run Text="-" />
+                                <Run Text="{Binding #RightHsfSlider.UpperSelectedValue, StringFormat={}{0:0.00}}" />
+                            </TextBlock>
+                            <twoRangeSlider:RangeSlider
+                                IsEnabled="{Binding EmulateEyeSquint}"
+                                LowerSelectedValue="{Binding EyeSquintLower, Mode=TwoWay}"
+                                Maximum="1"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                UpperSelectedValue="{Binding EyeSquintUpper, Mode=TwoWay}"
+                                x:Name="RightHsfSlider" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  Eyebrows Section  -->
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock
+                            FontWeight="Bold"
+                            Grid.Column="0"
+                            Text="Emulate Eyebrows"
+                            VerticalAlignment="Center" />
+                        <ToggleSwitch Grid.Column="2" IsChecked="{Binding EmulateEyebrows, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                                <Run Text="Lower" />
+                                <Run Text="{Binding #BottomHsfSlider.LowerSelectedValue, StringFormat={}{0:0.00}}" />
+                                <Run Text="- Raiser " />
+                                <Run Text="{Binding #BottomHsfSlider.UpperSelectedValue, StringFormat={}{0:0.00}}" />
+                            </TextBlock>
+                            <twoRangeSlider:RangeSlider
+                                IsEnabled="{Binding EmulateEyebrows}"
+                                LowerSelectedValue="{Binding EyeBrowsLower, Mode=TwoWay}"
+                                Maximum="1"
+                                Minimum="0"
+                                TickFrequency="0.01"
+                                UpperSelectedValue="{Binding EyeBrowsUpper, Mode=TwoWay}"
+                                x:Name="BottomHsfSlider" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
             <controls:SettingsExpander
                 Description="Fine-tune blink detection"
                 IconPath="EyeTrackingRegular"
@@ -590,165 +710,197 @@
                 SettingToggled="{Binding EclipseBasedDilation, Mode=TwoWay}"
                 Title="Pupil Dilation" />
 
-            <controls:SettingsExpander
-                Description="Low-level algorithm stuff here!"
-                IconPath="DeveloperBoardRegular"
-                Title="Advanced Controls">
-                <controls:SettingsExpander.ExpanderContent>
-                    <StackPanel Margin="10">
-                        <CheckBox
-                            Content="Hsf: Skip Auto Radius"
-                            IsChecked="{Binding SkipAutoRadius, Mode=TwoWay}"
-                            Margin="0,0,0,10" />
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource DeveloperBoardRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="Advanced Controls" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Low-level algorithm stuff here!" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel Margin="10">
+                    <CheckBox
+                        Content="Hsf: Skip Auto Radius"
+                        IsChecked="{Binding SkipAutoRadius, Mode=TwoWay}"
+                        Margin="0,0,0,10" />
 
-                        <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,Auto,Auto,Auto">
-                            <StackPanel Grid.Column="0" Grid.Row="0">
+                    <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <StackPanel Grid.Column="0" Grid.Row="0">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Left Hsf Radius"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Adjusts the radius for left eye Hough Space Filter" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Left Hsf Radius"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Adjusts the radius for left eye Hough Space Filter" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding LeftHsfRadius, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding LeftHsfRadius, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding LeftHsfRadius, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding LeftHsfRadius, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="0" Grid.Row="1">
+                        <StackPanel Grid.Column="0" Grid.Row="1">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Right Hsf Radius"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Adjusts the radius for right eye Hough Space Filter" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Right Hsf Radius"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Adjusts the radius for right eye Hough Space Filter" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding RightHsfRadius, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding RightHsfRadius, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding RightHsfRadius, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding RightHsfRadius, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="0" Grid.Row="2">
+                        <StackPanel Grid.Column="0" Grid.Row="2">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="RANSAC Thresh Add"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Additional threshold for RANSAC algorithm" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="RANSAC Thresh Add"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Additional threshold for RANSAC algorithm" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding RansacThreshAdd, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding RansacThreshAdd, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding RansacThreshAdd, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding RansacThreshAdd, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="0" Grid.Row="3">
+                        <StackPanel Grid.Column="0" Grid.Row="3">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Blob Threshold"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Threshold for blob detection" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Blob Threshold"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Threshold for blob detection" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding BlobThreshold, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding BlobThreshold, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding BlobThreshold, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding BlobThreshold, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="2" Grid.Row="0">
+                        <StackPanel Grid.Column="2" Grid.Row="0">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Min Blob Size"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Minimum size for detected blobs" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Min Blob Size"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Minimum size for detected blobs" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding MinBlobSize, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding MinBlobSize, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding MinBlobSize, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding MinBlobSize, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="2" Grid.Row="1">
+                        <StackPanel Grid.Column="2" Grid.Row="1">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Max Blob Size"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Maximum size for detected blobs" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Max Blob Size"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Maximum size for detected blobs" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding MaxBlobSize, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding MaxBlobSize, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding MaxBlobSize, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding MaxBlobSize, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="2" Grid.Row="2">
+                        <StackPanel Grid.Column="2" Grid.Row="2">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Right Eye Thresh"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Threshold value for right eye detection" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Right Eye Thresh"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Threshold value for right eye detection" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding RightEyeThresh, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding RightEyeThresh, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding RightEyeThresh, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding RightEyeThresh, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="2" Grid.Row="3">
+                        <StackPanel Grid.Column="2" Grid.Row="3">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Text="Left Eye Thresh"
+                                VerticalAlignment="Center" />
+                            <TextBlock Text="Threshold value for left eye detection" />
+                            <DockPanel>
                                 <TextBlock
-                                    FontWeight="Bold"
-                                    Text="Left Eye Thresh"
-                                    VerticalAlignment="Center" />
-                                <TextBlock Text="Threshold value for left eye detection" />
-                                <DockPanel>
-                                    <TextBlock
-                                        Margin="0,0,10,0"
-                                        Text="{Binding LeftEyeThresh, StringFormat={}{0:0}}"
-                                        VerticalAlignment="Center" />
-                                    <Slider
-                                        Maximum="100"
-                                        Minimum="0"
-                                        Value="{Binding LeftEyeThresh, Mode=TwoWay}" />
-                                </DockPanel>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </controls:SettingsExpander.ExpanderContent>
-            </controls:SettingsExpander>
+                                    Margin="0,0,5,0"
+                                    Text="{Binding LeftEyeThresh, StringFormat={}{0:0}}"
+                                    VerticalAlignment="Center"
+                                    Width="32" />
+                                <Slider
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{Binding LeftEyeThresh, Mode=TwoWay}" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

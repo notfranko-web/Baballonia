@@ -26,11 +26,10 @@ public partial class MainViewModel : ViewModelBase
     private readonly List<ListItemTemplate> _templates =
     [
         new ListItemTemplate(typeof(EyeHomePageViewModel), "EyeTrackingRegular", "Eye Tracking Home"),
+        new ListItemTemplate(typeof(EyeCalibrationViewModel), "EyeTrackingSettingsRegular", "Eye Tracking Calibration"),
         new ListItemTemplate(typeof(FaceHomeViewModel), "EmojiLaughRegular", "Face Tracking Home"),
-        new ListItemTemplate(typeof(EyeCalibrationViewModel), "EditRegular", "Eye Tracking Settings"),
-        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EditRegular", "Face Tracking Settings"),
+        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EmojiLaughSettingsRegular", "Face Tracking Calibration"),
         new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", Localizer.Get("Shell_Output.Content")),
-        new ListItemTemplate(typeof(ModuleSettingsViewModel), "HeadsetVrRegular", "VRChat Module Settings"),
         new ListItemTemplate(typeof(AppSettingsViewModel), "SettingsRegular", "App Settings"),
     ];
 
