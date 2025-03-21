@@ -13,14 +13,6 @@ public partial class EyeCalibrationViewModel : ViewModelBase
     private ObservableCollection<TrackingAlgorithm> _trackingAlgorithms;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuroMinFreqCutoff", 0.0004f)]
-    private float _oneEuroMinFreqCutoff;
-
-    [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuroSpeedCutoff", 0.9f)]
-    private float _oneEuroSpeedCutoff;
-
-    [ObservableProperty]
     [property: SavedSetting("TrackingSettings_OuterEyeFalloff", false)]
     private float _outerEyeFalloff;
 

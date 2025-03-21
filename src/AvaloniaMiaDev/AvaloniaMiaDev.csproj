@@ -86,4 +86,12 @@
     <ItemGroup>
       <Folder Include="Services\Camera\Platforms\" />
     </ItemGroup>
+
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Images\chocolate_sample.jpg" />
+      <UpToDateCheckInput Remove="Assets\Images\logo_big.png" />
+      <UpToDateCheckInput Remove="Assets\Images\snow.jpg" />
+      <UpToDateCheckInput Remove="Assets\Images\tiny_house.jpg" />
+    </ItemGroup>
 </Project>

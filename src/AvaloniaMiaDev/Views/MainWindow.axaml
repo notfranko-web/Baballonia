@@ -53,7 +53,7 @@
                         MaxWidth="24"
                         MinHeight="24"
                         MinWidth="24"
-                        Source="/Assets/VRCFT-logo-24.png"
+                        Source="/Assets/IconOpaque_32x32.png"
                         VerticalAlignment="Center" />
                     <TextBlock
                         FontSize="12"

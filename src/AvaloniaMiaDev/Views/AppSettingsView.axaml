@@ -119,6 +119,45 @@
                 </controls:SettingsExpander.ExpanderContent>
             </controls:SettingsExpander>
 
+            <controls:SettingsExpander
+                Description="One-Euro filter settings"
+                IconPath="DataFunnelRegular"
+                Title="Filter Settings">
+                <controls:SettingsExpander.ExpanderContent>
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="Minimum frequency cutoff" />
+                            <TextBlock Text="Minimum frequency cutoff" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="0"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}"
+                            Width="300" />
+
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="Speed coefficient" />
+                            <TextBlock Text="Speed coefficient" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding OneEuroSpeedCutoff}"
+                            Width="300" />
+                    </Grid>
+                </controls:SettingsExpander.ExpanderContent>
+            </controls:SettingsExpander>
+
             <controls:SettingsToggle
                 Description="Use your GPU to make things run faster!"
                 IconPath="TopSpeedRegular"
