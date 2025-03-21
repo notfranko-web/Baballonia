@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls;
 using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
+using AvaloniaMiaDev.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
@@ -19,16 +20,17 @@ public partial class MainViewModel : ViewModelBase
     {
         Items = new ObservableCollection<ListItemTemplate>(_templates);
 
-        SelectedListItem = Items.First(vm => vm.ModelType == typeof(HomePageViewModel));
+        SelectedListItem = Items.First(vm => vm.ModelType == typeof(EyeHomePageViewModel));
     }
 
     private readonly List<ListItemTemplate> _templates =
     [
-        new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", Localizer.Get("Shell_Main.Content")),
+        new ListItemTemplate(typeof(EyeHomePageViewModel), "EyeTrackingRegular", "Eye Tracking Home"),
+        new ListItemTemplate(typeof(EyeCalibrationViewModel), "EyeTrackingSettingsRegular", "Eye Tracking Calibration"),
+        new ListItemTemplate(typeof(FaceHomeViewModel), "EmojiLaughRegular", "Face Tracking Home"),
+        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EmojiLaughSettingsRegular", "Face Tracking Calibration"),
         new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", Localizer.Get("Shell_Output.Content")),
-        new ListItemTemplate(typeof(TrackingSettingsPageViewModel), "EditRegular", "Tracking Settings"),
-        new ListItemTemplate(typeof(ModuleSettingsPageViewModel), "HeadsetVrRegular", "VRChat Module Settings"),
-        new ListItemTemplate(typeof(AppSettingsPageViewModel), "SettingsRegular", "App Settings"),
+        new ListItemTemplate(typeof(AppSettingsViewModel), "SettingsRegular", "App Settings"),
     ];
 
     public MainViewModel() : this(new WeakReferenceMessenger()) { }

@@ -17,11 +17,12 @@ public class ViewLocator : IDataTemplate
     public ViewLocator()
     {
         RegisterViewFactory<MainViewModel, MainWindow>();
-        RegisterViewFactory<HomePageViewModel, HomePageView>();
+        RegisterViewFactory<EyeHomePageViewModel, EyeHomeView>();
+        RegisterViewFactory<FaceHomeViewModel, FaceHomeView>();
+        RegisterViewFactory<FaceCalibrationViewModel, FaceCalibrationView>();
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
-        RegisterViewFactory<TrackingSettingsPageViewModel, TrackingSettingsPageView>();
-        RegisterViewFactory<ModuleSettingsPageViewModel, ModuleSettingsPageView>();
-        RegisterViewFactory<AppSettingsPageViewModel, AppSettingsPageView>();
+        RegisterViewFactory<EyeCalibrationViewModel, EyeCalibrationView>();
+        RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
     }
 
     public Control Build(object? data)

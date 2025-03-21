@@ -92,14 +92,16 @@ public partial class App : Application
 
                 services.AddTransient<OutputPageViewModel>();
                 services.AddTransient<OutputPageView>();
-                services.AddTransient<AppSettingsPageViewModel>();
-                services.AddTransient<AppSettingsPageView>();
-                services.AddTransient<TrackingSettingsPageViewModel>();
-                services.AddTransient<TrackingSettingsPageView>();
-                services.AddTransient<ModuleSettingsPageViewModel>();
-                services.AddTransient<ModuleSettingsPageView>();
-                services.AddTransient<HomePageViewModel>();
-                services.AddTransient<HomePageView>();
+                services.AddTransient<AppSettingsViewModel>();
+                services.AddTransient<AppSettingsView>();
+                services.AddTransient<EyeHomePageViewModel>();
+                services.AddTransient<EyeHomeView>();
+                services.AddTransient<EyeCalibrationViewModel>();
+                services.AddTransient<EyeCalibrationView>();
+                services.AddTransient<FaceHomeViewModel>();
+                services.AddTransient<FaceHomeView>();
+                services.AddTransient<FaceCalibrationViewModel>();
+                services.AddTransient<FaceCalibrationView>();
 
                 services.AddHostedService(provider => provider.GetService<OscRecvService>()!);
                 services.AddHostedService(provider => provider.GetService<ParameterSenderService>()!);

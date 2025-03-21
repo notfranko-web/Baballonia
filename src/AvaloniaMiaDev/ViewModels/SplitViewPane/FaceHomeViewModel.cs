@@ -10,52 +10,29 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class HomePageViewModel : ViewModelBase
+public partial class FaceHomeViewModel : ViewModelBase
 {
-    // Left eye properties
-    public WriteableBitmap LeftEyeBitmap { get; set; }
-
-    public WriteableBitmap RightEyeBitmap { get; set; }
+    public WriteableBitmap FaceBitmap { get; set; }
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
-    private string _leftCameraAddress;
+    [property: SavedSetting("Babble_FaceCameraIndex", "0")]
+    private string _faceCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_LeftCameraROI")]
-    private Rect _leftOverlayRectangle;
+    [property: SavedSetting("Babble_FaceCameraROI")]
+    private Rect _faceOverlayRectangle;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
-    private bool _flipLeftEyeXAxis;
+    [property: SavedSetting("Babble_FlipFaceXAxis", false)]
+    private bool _flipFaceXAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipLeftEyeYAxis", false)]
-    private bool _flipLeftEyeYAxis;
+    [property: SavedSetting("Babble_FlipFaceYAxis", false)]
+    private bool _flipFaceYAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
-    private float _leftEyeRotation;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_RightCameraIndex", "0")]
-    private string _rightCameraAddress;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_RightCameraROI")]
-    private Rect _rightOverlayRectangle;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
-    private bool _flipRightEyeXAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
-    private bool _flipRightEyeYAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
-    private float _rightEyeRotation;
+    [property: SavedSetting("Babble_FaceRotation", 0f)]
+    private float _faceRotation;
 
     // Services and other properties
     public IOscTarget OscTarget { get; }
@@ -71,7 +48,7 @@ public partial class HomePageViewModel : ViewModelBase
 
     private readonly DispatcherTimer _msgCounterTimer;
 
-    public HomePageViewModel()
+    public FaceHomeViewModel()
     {
         // Services
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;
@@ -108,7 +85,7 @@ public partial class HomePageViewModel : ViewModelBase
     private void MessageReceived(OscMessage msg) => _messagesRecvd++;
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
 
-    ~HomePageViewModel()
+    ~FaceHomeViewModel()
     {
         OscRecvService.OnMessageReceived -= MessageReceived;
         OscSendService.OnMessagesDispatched -= MessageDispatched;
