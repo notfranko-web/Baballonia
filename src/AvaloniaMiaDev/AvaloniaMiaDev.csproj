@@ -84,7 +84,7 @@
 
 
     <ItemGroup>
-      <Folder Include="Services\Camera\Platforms\" />
+      <Folder Include="Services\Inference\Platforms\" />
     </ItemGroup>
 
 
@@ -94,4 +94,22 @@
       <UpToDateCheckInput Remove="Assets\Images\snow.jpg" />
       <UpToDateCheckInput Remove="Assets\Images\tiny_house.jpg" />
     </ItemGroup>
+
+<!-- Gets the current OS and uses it to determine which fti_osc lib to use.-->
+<!-- This prevents building non-natively (IE linux binaries on macOS), but this way we don't need a billion build targets -->
+<ItemGroup>
+    <!-- Windows-specific -->
+    <Content Include="fti_osc.dll" Link="fti_osc.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <!-- macOS-specific -->
+    <Content Include="fti_osc.dylib" Link="fti_osc.dylib" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <!-- Linux-specific -->
+    <Content Include="fti_osc.so" Link="fti_osc.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+</ItemGroup>
+
 </Project>

@@ -12,8 +12,8 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
-using AvaloniaMiaDev.Services.Camera.Enums;
-using AvaloniaMiaDev.Services.Camera.Models;
+using AvaloniaMiaDev.Services.Inference.Enums;
+using AvaloniaMiaDev.Services.Inference.Models;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
@@ -94,7 +94,7 @@ public partial class EyeHomeView : UserControl
         _dragStartX = position.X;
         _dragStartY = position.Y;
 
-        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("EyeHome_LeftCameraROI", _leftOverlayRectangle);
         _isLeftCropping = true;
     }
 
@@ -132,7 +132,7 @@ public partial class EyeHomeView : UserControl
 
         _leftOverlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
 
-        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _leftOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("EyeHome_LeftCameraROI", _leftOverlayRectangle);
     }
 
     private void LeftOnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -150,7 +150,7 @@ public partial class EyeHomeView : UserControl
         _dragStartX = position.X;
         _dragStartY = position.Y;
 
-        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_LeftCameraROI", _rightOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("EyeHome_LeftCameraROI", _rightOverlayRectangle);
         _isRightCropping = true;
     }
 
@@ -188,7 +188,7 @@ public partial class EyeHomeView : UserControl
 
         _rightOverlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
 
-        await _localSettingsService.SaveSettingAsync("EyeTrackVRService_RightCameraROI", _rightOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("EyeHome_RightCameraROI", _rightOverlayRectangle);
     }
 
     private void RightOnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -213,15 +213,15 @@ public partial class EyeHomeView : UserControl
         };
         drawTimer.Tick += async (s, e) =>
         {
-            await UpdateImage(Chirality.Left, _leftCamViewMode, LeftRectangleWindow, LeftSelectEntireFrame, LeftViewBox,
+            await UpdateImage(Camera.Left, _leftCamViewMode, LeftRectangleWindow, LeftSelectEntireFrame, LeftViewBox,
                 _leftOverlayRectangle, LeftMouthWindow, LeftCanvasWindow);
-            await UpdateImage(Chirality.Right, _rightCamViewMode, RightRectangleWindow, RightSelectEntireFrame, RightViewBox,
+            await UpdateImage(Camera.Right, _rightCamViewMode, RightRectangleWindow, RightSelectEntireFrame, RightViewBox,
                 _rightOverlayRectangle, RightMouthWindow, RightCanvasWindow);
         };
         drawTimer.Start();
     }
 
-    private async Task UpdateImage(Chirality chirality, CamViewMode croppingMode, Rectangle rectWindow, Button selectEntireFrameButton,
+    private async Task UpdateImage(Camera camera, CamViewMode croppingMode, Rectangle rectWindow, Button selectEntireFrameButton,
         Viewbox viewBox, Rect overlayRectangle, Image mouthWindow, Canvas canvas)
     {
         var isCroppingModeUiVisible = croppingMode == CamViewMode.Cropping;
@@ -237,20 +237,20 @@ public partial class EyeHomeView : UserControl
 
         var cameraSettings = new CameraSettings
         {
-            Chirality = chirality,
+            Camera = camera,
             RoiX = (int)overlayRectangle.X,
             RoiY = (int)overlayRectangle.Y,
             RoiWidth = (int)overlayRectangle.Width,
             RoiHeight = (int)overlayRectangle.Height,
-            RotationRadians = chirality == Chirality.Left ?
-                await _localSettingsService.ReadSettingAsync<float>("EyeSettings_LeftEyeRotation") :
-                await _localSettingsService.ReadSettingAsync<float>("EyeSettings_RightEyeRotation"),
-            UseHorizontalFlip = chirality == Chirality.Left ?
-                await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeXAxis") :
-                await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipRightEyeXAxis"),
-            UseVerticalFlip = chirality == Chirality.Left ?
-                await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipLeftEyeYAxis") :
-                await _localSettingsService.ReadSettingAsync<bool>("EyeSettings_FlipRightEyeYAxis"),
+            RotationRadians = camera == Camera.Left ?
+                await _localSettingsService.ReadSettingAsync<float>("EyeHome_LeftEyeRotation") :
+                await _localSettingsService.ReadSettingAsync<float>("EyeHome_RightEyeRotation"),
+            UseHorizontalFlip = camera == Camera.Left ?
+                await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeXAxis") :
+                await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeXAxis"),
+            UseVerticalFlip = camera == Camera.Left ?
+                await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeYAxis") :
+                await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeYAxis"),
             Brightness = 1f
         };
 
@@ -288,7 +288,7 @@ public partial class EyeHomeView : UserControl
             }
 
             // Hacky!
-            if (Chirality.Left == chirality)
+            if (Camera.Left == camera)
             {
                 if (_viewModel.LeftEyeBitmap is null ||
                     _viewModel.LeftEyeBitmap.PixelSize.Width != dims.width ||
@@ -307,7 +307,7 @@ public partial class EyeHomeView : UserControl
                     Marshal.Copy(image, 0, frameBuffer.Address, image.Length);
                 }
             }
-            else if (Chirality.Right == chirality)
+            else if (Camera.Right == camera)
             {
                 if (_viewModel.RightEyeBitmap is null ||
                     _viewModel.RightEyeBitmap.PixelSize.Width != dims.width ||
@@ -359,12 +359,12 @@ public partial class EyeHomeView : UserControl
 
     public void LeftCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _inferenceService.ConfigurePlatformConnectors(Chirality.Left, _viewModel.LeftCameraAddress);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Left, _viewModel.LeftCameraAddress);
     }
 
     public void RightCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _inferenceService.ConfigurePlatformConnectors(Chirality.Right, _viewModel.RightCameraAddress);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Right, _viewModel.RightCameraAddress);
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)

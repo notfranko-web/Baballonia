@@ -18,43 +18,43 @@ public partial class EyeHomePageViewModel : ViewModelBase
     public WriteableBitmap RightEyeBitmap { get; set; }
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_LeftCameraIndex", "0")]
+    [property: SavedSetting("EyeHome_LeftCameraIndex", "0")]
     private string _leftCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_LeftCameraROI")]
+    [property: SavedSetting("EyeHome_LeftCameraROI")]
     private Rect _leftOverlayRectangle;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipLeftEyeXAxis", false)]
+    [property: SavedSetting("EyeHome_FlipLeftEyeXAxis", false)]
     private bool _flipLeftEyeXAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipLeftEyeYAxis", false)]
+    [property: SavedSetting("EyeHome_FlipLeftEyeYAxis", false)]
     private bool _flipLeftEyeYAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_LeftEyeRotation", 0f)]
+    [property: SavedSetting("EyeHome_LeftEyeRotation", 0f)]
     private float _leftEyeRotation;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_RightCameraIndex", "0")]
+    [property: SavedSetting("EyeHome_RightCameraIndex", "0")]
     private string _rightCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeTrackVRService_RightCameraROI")]
+    [property: SavedSetting("EyeHome_RightCameraROI")]
     private Rect _rightOverlayRectangle;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeXAxis", false)]
+    [property: SavedSetting("EyeHome_FlipRightEyeXAxis", false)]
     private bool _flipRightEyeXAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_FlipRightEyeYAxis", false)]
+    [property: SavedSetting("EyeHome_FlipRightEyeYAxis", false)]
     private bool _flipRightEyeYAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeSettings_RightEyeRotation", 0f)]
+    [property: SavedSetting("EyeHome_RightEyeRotation", 0f)]
     private float _rightEyeRotation;
 
     // Services and other properties

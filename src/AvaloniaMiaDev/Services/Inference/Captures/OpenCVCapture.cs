@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OpenCvSharp;
 
-namespace AvaloniaMiaDev.Services.Camera.Captures;
+namespace AvaloniaMiaDev.Services.Inference.Captures;
 
 /// <summary>
 /// Wrapper class for OpenCV. We use this class when we know our camera isn't a:
@@ -11,7 +11,7 @@ namespace AvaloniaMiaDev.Services.Camera.Captures;
 /// 2) IP Camera capture
 /// 3) Or we aren't on an unsupported mobile platform (iOS or Android. Tizen/WatchOS are ok though??)
 /// </summary>
-public class OpenCvCapture : Capture
+public sealed class OpenCvCapture : Capture
 {
     /// <xlinka>
     /// VideoCapture instance to handle camera frames.

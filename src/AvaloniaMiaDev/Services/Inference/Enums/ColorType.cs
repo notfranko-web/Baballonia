@@ -1,4 +1,4 @@
-﻿namespace AvaloniaMiaDev.Services.Camera.Enums;
+﻿namespace AvaloniaMiaDev.Services.Inference.Enums;
 
 /// <summary>
 /// Intermediate color representation so people don't have to import OpenCVSharp into their project

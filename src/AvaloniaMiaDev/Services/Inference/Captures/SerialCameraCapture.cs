@@ -6,21 +6,26 @@ using System.Numerics;
 using System.Threading.Tasks;
 using OpenCvSharp;
 
-namespace AvaloniaMiaDev.Services.Camera.Captures;
+namespace AvaloniaMiaDev.Services.Inference.Captures;
 
 /// <summary>
 /// Serial Camera capture class intended for use on Desktop platforms
 /// Babble-board specific implementation, assumes a fixed camera size of 240x240
 /// </summary>
-public class SerialCameraCapture : Capture, IDisposable
+public sealed class SerialCameraCapture(string portName) : Capture(portName), IDisposable
 {
     public override uint FrameCount { get; protected set; }
 
     private const int BaudRate = 3000000;
     private const ulong EtvrHeader = 0xd8ff0000a1ffa0ff, EtvrHeaderMask = 0xffff0000ffffffff;
-
-    private readonly SerialPort _serialPort;
     private bool _isDisposed;
+
+    private readonly SerialPort _serialPort = new()
+    {
+        PortName = portName,
+        BaudRate = BaudRate,
+        ReadTimeout = SerialPort.InfiniteTimeout,
+    };
 
     public override string Url { get; set; } = null!;
     public override Mat RawMat { get; } = new Mat();
@@ -28,16 +33,6 @@ public class SerialCameraCapture : Capture, IDisposable
     public override (int width, int height) Dimensions => (RawMat.Width, RawMat.Height);
 
     public override bool IsReady { get; protected set; }
-
-    public SerialCameraCapture(string portName) : base(portName)
-    {
-        _serialPort = new SerialPort
-        {
-            PortName = portName,
-            BaudRate = BaudRate,
-            ReadTimeout = SerialPort.InfiniteTimeout,
-        };
-    }
 
     public override Task<bool> StartCapture()
     {
@@ -51,6 +46,7 @@ public class SerialCameraCapture : Capture, IDisposable
         {
             IsReady = false;
         }
+
         return Task.FromResult(IsReady);
     }
 
@@ -89,7 +85,7 @@ public class SerialCameraCapture : Capture, IDisposable
                 BinaryPrimitives.WriteUInt16LittleEndian(buffer, 0xd8ff);
                 for (int bufferPosition = 2; bufferPosition < jpegSize;)
                     bufferPosition += await stream.ReadAsync(buffer, bufferPosition, jpegSize - bufferPosition);
-                Mat.FromImageData(buffer, ImreadModes.Color).CopyTo(RawMat);
+                Mat.FromImageData(buffer).CopyTo(RawMat);
                 FrameCount++;
             }
         }
@@ -106,17 +102,16 @@ public class SerialCameraCapture : Capture, IDisposable
         }
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
-        if (!_isDisposed)
+        if (_isDisposed) return;
+
+        if (disposing)
         {
-            if (disposing)
-            {
-                StopCapture(); // xlinka 11/8/24: Ensure capture stops before disposing resources
-                _serialPort?.Dispose(); // xlinka 11/8/24: Dispose of serial port if initialized
-            }
-            _isDisposed = true;
+            StopCapture(); // xlinka 11/8/24: Ensure capture stops before disposing resources
+            _serialPort?.Dispose(); // xlinka 11/8/24: Dispose of serial port if initialized
         }
+        _isDisposed = true;
     }
 
     public void Dispose()

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OpenCvSharp;
 
-namespace AvaloniaMiaDev.Services.Camera.Captures;
+namespace AvaloniaMiaDev.Services.Inference.Captures;
 
 /// <summary>
 /// Captures and decodes an MJPEG stream, commonly used by IP Cameras
@@ -15,19 +15,14 @@ namespace AvaloniaMiaDev.Services.Camera.Captures;
 /// https://github.com/Larry57/SimpleMJPEGStreamViewer
 /// https://stackoverflow.com/questions/3801275/how-to-convert-image-to-byte-array
 /// </summary>
-public class IpCameraCapture : Capture
+public sealed class IpCameraCapture(string url) : Capture(url)
 {
-    public override (int width, int height) Dimensions
-    {
-        get
-        {
-            // Babble Cam res (240x240)
-            return DefaultFrameDimensions;
-        }
-    }
+    // Babble Cam res (240x240)
+    public override (int width, int height) Dimensions =>
+        DefaultFrameDimensions;
 
     public override uint FrameCount { get; protected set; }
-    public override Mat RawMat { get; } = new Mat();
+    public override Mat RawMat { get; } = new();
     public override bool IsReady { get; protected set; }
     public override string Url { get; set; } = null!;
 
@@ -38,16 +33,10 @@ public class IpCameraCapture : Capture
     private const byte PicStart = 0xD8;
     private const byte PicEnd = 0xD9;
 
-    // Determine if we've got stuck on the same frame
-    private Mat _prevMat = new Mat();
-
-    public IpCameraCapture(string url) : base(url)
-    {
-    }
-
     public override Task<bool> StartCapture()
     {
-        Task.Run(() => StartStreaming(Url, null, null, _cancellationTokenSource.Token, 1024, Dimensions.width * Dimensions.height));
+        Task.Run(() => StartStreaming(Url, null, null, _cancellationTokenSource.Token, 1024,
+            Dimensions.width * Dimensions.height));
         IsReady = true;
         return Task.FromResult(true);
     }
@@ -63,14 +52,16 @@ public class IpCameraCapture : Capture
     /// <param name="frameBufferSize">Maximum frame byte size</param>
     /// <returns></returns>
     ///
-    public async Task StartStreaming(string url, string? login = null, string? password = null, CancellationToken? token = null, int chunkMaxSize = 1024, int frameBufferSize = 1024 * 1024)
+    public async Task StartStreaming(string url, string? login = null, string? password = null, CancellationToken? token = null,
+        int chunkMaxSize = 1024, int frameBufferSize = 1024 * 1024)
     {
         var tok = token ?? CancellationToken.None;
 
         using var cli = new HttpClient();
 
         if (!string.IsNullOrEmpty(login) && !string.IsNullOrEmpty(password))
-            cli.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{login}:{password}")));
+            cli.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                Convert.ToBase64String(Encoding.ASCII.GetBytes($"{login}:{password}")));
 
         using var stream = await cli.GetStreamAsync(url).ConfigureAwait(false);
 
@@ -92,25 +83,29 @@ public class IpCameraCapture : Capture
 
     // Parse the stream buffer
 
-    private void ParseStreamBuffer(byte[] frameBuffer, ref int frameIdx, int streamLength, byte[] streamBuffer, ref bool inPicture, ref byte previous, ref byte current)
+    private void ParseStreamBuffer(byte[] frameBuffer, ref int frameIdx, int streamLength, byte[] streamBuffer,
+        ref bool inPicture, ref byte previous, ref byte current)
     {
         var idx = 0;
         while (idx < streamLength)
         {
             if (inPicture)
             {
-                ParsePicture(frameBuffer, ref frameIdx, ref streamLength, streamBuffer, ref idx, ref inPicture, ref previous, ref current);
+                ParsePicture(frameBuffer, ref frameIdx, ref streamLength, streamBuffer, ref idx, ref inPicture,
+                    ref previous, ref current);
             }
             else
             {
-                SearchPicture(frameBuffer, ref frameIdx, ref streamLength, streamBuffer, ref idx, ref inPicture, ref previous, ref current);
+                SearchPicture(frameBuffer, ref frameIdx, ref streamLength, streamBuffer, ref idx, ref inPicture,
+                    ref previous, ref current);
             }
         }
     }
 
     // While we are looking for a picture, look for a FFD8 (end of JPEG) sequence.
 
-    private void SearchPicture(byte[] frameBuffer, ref int frameIdx, ref int streamLength, byte[] streamBuffer, ref int idx, ref bool inPicture, ref byte previous, ref byte current)
+    private void SearchPicture(byte[] frameBuffer, ref int frameIdx, ref int streamLength, byte[] streamBuffer,
+        ref int idx, ref bool inPicture, ref byte previous, ref byte current)
     {
         do
         {
@@ -130,7 +125,8 @@ public class IpCameraCapture : Capture
     }
 
     // While we are parsing a picture, fill the frame buffer until a FFD9 is reach.
-    private void ParsePicture(byte[] frameBuffer, ref int frameIdx, ref int streamLength, byte[] streamBuffer, ref int idx, ref bool inPicture, ref byte previous, ref byte current)
+    private void ParsePicture(byte[] frameBuffer, ref int frameIdx, ref int streamLength, byte[] streamBuffer,
+        ref int idx, ref bool inPicture, ref byte previous, ref byte current)
     {
         do
         {

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using OpenCvSharp;
 
-namespace AvaloniaMiaDev.Services.Camera.Captures;
+namespace AvaloniaMiaDev.Services.Inference.Captures;
 
 /// <summary>
 /// Defines custom camera stream behavior

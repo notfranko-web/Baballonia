@@ -9,115 +9,115 @@ namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 public partial class EyeCalibrationViewModel : ViewModelBase
 {
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_Algorithms")]
+    [property: SavedSetting("EyeCalibration_Algorithms")]
     private ObservableCollection<TrackingAlgorithm> _trackingAlgorithms;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OuterEyeFalloff", false)]
+    [property: SavedSetting("EyeCalibration_OuterEyeFalloff", false)]
     private float _outerEyeFalloff;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_EyeDominantIndex", 0)]
+    [property: SavedSetting("EyeCalibration_EyeDominantIndex", 0)]
     private int _eyeDominantIndex;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_EyeDifferenceThreshold", 0.3f)]
+    [property: SavedSetting("EyeCalibration_EyeDifferenceThreshold", 0.3f)]
     private int _eyeDifferenceThreshold;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_BlinkDetectionAlgorithmIndex", 0)]
+    [property: SavedSetting("EyeCalibration_BlinkDetectionAlgorithmIndex", 0)]
     private int _blinkDetectionAlgorithmIndex;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_LEAPCalibrationSamples", 2000f)]
+    [property: SavedSetting("EyeCalibration_LEAPCalibrationSamples", 2000f)]
     private float _leapCalibrationSamples;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_IBOFilterSampleSize", 400f)]
+    [property: SavedSetting("EyeCalibration_IBOFilterSampleSize", 400f)]
     private float _iboFilterSampleSize;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_CalibrationSamples", 600f)]
+    [property: SavedSetting("EyeCalibration_CalibrationSamples", 600f)]
     private float _calibrationSamples;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_IBOCloseThreshold", 0.3f)]
+    [property: SavedSetting("EyeCalibration_IBOCloseThreshold", 0.3f)]
     private float _iboCloseThreshold;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_EclipseBasedDilation?", false)]
+    [property: SavedSetting("EyeCalibration_EclipseBasedDilation?", false)]
     private bool _eclipseBasedDilation;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_SkipAutoRadius", false)]
+    [property: SavedSetting("EyeCalibration_SkipAutoRadius", false)]
     private bool _skipAutoRadius;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_LeftHSFRadius", 10f)]
+    [property: SavedSetting("EyeCalibration_LeftHSFRadius", 10f)]
     private float _leftHsfRadius;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_RightHSFRadius", 10f)]
+    [property: SavedSetting("EyeCalibration_RightHSFRadius", 10f)]
     private float _rightHsfRadius;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_RansacThreshAdd", 11f)]
+    [property: SavedSetting("EyeCalibration_RansacThreshAdd", 11f)]
     private float _ransacThreshAdd;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_BlobThreshold", 65f)]
+    [property: SavedSetting("EyeCalibration_BlobThreshold", 65f)]
     private float _blobThreshold;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_MinBlobSize", 10f)]
+    [property: SavedSetting("EyeCalibration_MinBlobSize", 10f)]
     private float _minBlobSize;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_MaxBlobSize", 25f)]
+    [property: SavedSetting("EyeCalibration_MaxBlobSize", 25f)]
     private float _maxBlobSize;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_RightEyeThresh", 80f)]
+    [property: SavedSetting("EyeCalibration_RightEyeThresh", 80f)]
     private float _rightEyeThresh;
 
     [ObservableProperty]
-    [property: SavedSetting("AdvancedControls_LeftEyeThresh", 80f)]
+    [property: SavedSetting("EyeCalibration_LeftEyeThresh", 80f)]
     private float _leftEyeThresh;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EmulateEyeWiden", false)]
+    [property: SavedSetting("EyeCalibration_EmulateEyeWiden", false)]
     private bool _emulateEyeWiden = false;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyeWidenLower", 0f)]
+    [property: SavedSetting("EyeCalibration_EyeWidenLower", 0f)]
     private float _eyeWidenLower = 0f;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyeWidenUpper", 1f)]
+    [property: SavedSetting("EyeCalibration_EyeWidenUpper", 1f)]
     private float _eyeWidenUpper = 1f;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EmulateEyeSquint", false)]
+    [property: SavedSetting("EyeCalibration_EmulateEyeSquint", false)]
     private bool _emulateEyeSquint = false;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyeSquintLower", 0f)]
+    [property: SavedSetting("EyeCalibration_EyeSquintLower", 0f)]
     private float _eyeSquintLower = 0f;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyeSquintUpper", 1f)]
+    [property: SavedSetting("EyeCalibration_EyeSquintUpper", 1f)]
     private float _eyeSquintUpper = 1f;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EmulateEyebrows", false)]
+    [property: SavedSetting("EyeCalibration_EmulateEyebrows", false)]
     private bool _emulateEyebrows = false;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyebrowsLower", 0f)]
+    [property: SavedSetting("EyeCalibration_EyebrowsLower", 0f)]
     private float _eyeBrowsLower = 0f;
 
     [ObservableProperty]
-    [property: SavedSetting("ModuleSettings_EyebrowsRaise", 1f)]
+    [property: SavedSetting("EyeCalibration_EyebrowsRaise", 1f)]
     private float _eyeBrowsUpper = 1f;
 
     private ILocalSettingsService _settingsService { get; }

@@ -1,4 +1,4 @@
-namespace AvaloniaMiaDev.Views;
+namespace AvaloniaMiaDev.Helpers;
 
 internal enum CamViewMode
 {

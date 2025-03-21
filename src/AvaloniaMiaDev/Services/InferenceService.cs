@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
-using AvaloniaMiaDev.Services.Camera.Enums;
-using AvaloniaMiaDev.Services.Camera.Filters;
-using AvaloniaMiaDev.Services.Camera.Models;
-using AvaloniaMiaDev.Services.Camera.Platforms;
+using AvaloniaMiaDev.Services.Inference.Enums;
+using AvaloniaMiaDev.Services.Inference.Filters;
+using AvaloniaMiaDev.Services.Inference.Models;
+using AvaloniaMiaDev.Services.Inference.Platforms;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -17,7 +17,7 @@ namespace AvaloniaMiaDev.Services;
 
 public class InferenceService : IInferenceService
 {
-    public PlatformConnector[] PlatformConnectors = new PlatformConnector[3];
+    public PlatformConnector[] PlatformConnectors { get; } = new PlatformConnector[3];
     public int Fps => (int) MathF.Floor(1000f / Ms);
     public float Ms { get; set; }
     public bool IsRunning { get; private set; }
@@ -45,8 +45,8 @@ public class InferenceService : IInferenceService
             SessionOptions sessionOptions = SetupSessionOptions();
             ConfigurePlatformSpecificGpu(sessionOptions);
 
-            var minCutoff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroMinFreqCutoff");
-            var speedCoeff = await settingsService.ReadSettingAsync<float>("TrackingSettings_OneEuroSpeedCutoff");
+            var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+            var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
             _floatFilter = new OneEuroFilter(
                 minCutoff: minCutoff,
                 beta: speedCoeff
@@ -65,10 +65,10 @@ public class InferenceService : IInferenceService
     /// <summary>
     /// Poll expression data, frames
     /// </summary>
-    /// <param name="cameraSettings"></param>
+    /// <param name="camera"></param>
     /// <param name="arKitExpressions"></param>
     /// <returns></returns>
-    public bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions)
+    public bool GetExpressionData(Camera camera, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
         if (!IsRunning)
@@ -76,13 +76,8 @@ public class InferenceService : IInferenceService
             return false;
         }
 
-        if (PlatformConnectors[(int)cameraSettings.Chirality] is null)
-        {
-            return false;
-        }
-
         // Test if the camera is not ready or connecting to new source
-        if (!PlatformConnectors[(int)cameraSettings.Chirality].ExtractFrameData(_inputTensor.Buffer.Span, _inputSize, cameraSettings).Result) return false;
+        if (!PlatformConnectors[(int)camera].Capture!.IsReady) return false;
 
         // Camera ready, prepare Mat as DenseTensor
         var inputs = new List<NamedOnnxValue>
@@ -122,22 +117,22 @@ public class InferenceService : IInferenceService
             return false;
         }
 
-        if (PlatformConnectors[(int)cameraSettings.Chirality]?.Capture!.RawMat is null)
+        if (PlatformConnectors[(int)cameraSettings.Camera]?.Capture!.RawMat is null)
         {
             dimensions = (0, 0);
             image = Array.Empty<byte>();
             return false;
         }
 
-        dimensions = PlatformConnectors[(int)cameraSettings.Chirality].Capture!.Dimensions;
-        if (color == ((PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
+        dimensions = PlatformConnectors[(int)cameraSettings.Camera].Capture!.Dimensions;
+        if (color == ((PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
         {
-            image = PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.AsSpan<byte>().ToArray();
+            image = PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.AsSpan<byte>().ToArray();
         }
         else
         {
             using var convertedMat = new Mat();
-            Cv2.CvtColor(PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraSettings.Chirality].Capture!.RawMat.Channels() == 1) ? color switch
+            Cv2.CvtColor(PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.Channels() == 1) ? color switch
             {
                 ColorType.Bgr24 => ColorConversionCodes.GRAY2BGR,
                 ColorType.Rgb24 => ColorConversionCodes.GRAY2RGB,
@@ -169,7 +164,7 @@ public class InferenceService : IInferenceService
 
         byte[] data = new byte[_inputSize.Width * _inputSize.Height];
         using var imageMat = Mat<byte>.FromPixelData(_inputSize.Height, _inputSize.Width, data);
-        if (PlatformConnectors[(int)cameraSettings.Chirality]?.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
+        if (PlatformConnectors[(int)cameraSettings.Camera]?.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
 
         image = data;
         dimensions = (imageMat.Width, imageMat.Height);
@@ -203,19 +198,19 @@ public class InferenceService : IInferenceService
     /// We have a custom implementations for IP Cameras, the de-facto use case on mobile
     /// As well as SerialCameras (not tested on mobile yet)
     /// </summary>
-    public void ConfigurePlatformConnectors(Chirality chirality, string cameraIndex)
+    public void ConfigurePlatformConnectors(Camera camera, string cameraIndex)
     {
         if (OperatingSystem.IsAndroid())
         {
-            PlatformConnectors[(int)chirality] = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
-            PlatformConnectors[(int)chirality].Initialize(cameraIndex);
+            PlatformConnectors[(int)camera] = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)camera].Initialize(cameraIndex);
         }
         else
         {
             // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
             // Use the standard EmguCV VideoCapture backend
-            PlatformConnectors[(int)chirality] = new DesktopConnector(cameraIndex, _logger, _localSettingsService);
-            PlatformConnectors[(int)chirality].Initialize(cameraIndex);
+            PlatformConnectors[(int)camera] = new DesktopConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)camera].Initialize(cameraIndex);
         }
     }
 

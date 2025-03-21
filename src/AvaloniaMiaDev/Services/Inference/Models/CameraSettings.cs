@@ -1,10 +1,8 @@
-using AvaloniaMiaDev.Services.Camera.Enums;
-
-namespace AvaloniaMiaDev.Services.Camera.Models;
+namespace AvaloniaMiaDev.Services.Inference.Models;
 
 public class CameraSettings
 {
-    public Chirality Chirality { get; set; }
+    public Enums.Camera Camera { get; set; }
     public int RoiX;
     public int RoiY;
     public int RoiWidth;

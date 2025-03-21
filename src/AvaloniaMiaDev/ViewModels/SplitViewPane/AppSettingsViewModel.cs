@@ -21,11 +21,11 @@ public partial class AppSettingsViewModel : ViewModelBase
     private string _recenterAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuroMinFreqCutoff", 0.0004f)]
+    [property: SavedSetting("AppSettings_OneEuroMinFreqCutoff", 0.0004f)]
     private float _oneEuroMinFreqCutoff;
 
     [ObservableProperty]
-    [property: SavedSetting("TrackingSettings_OneEuroSpeedCutoff", 0.9f)]
+    [property: SavedSetting("AppSettings_OneEuroSpeedCutoff", 0.9f)]
     private float _oneEuroSpeedCutoff;
 
     [ObservableProperty]

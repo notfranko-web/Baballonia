@@ -12,8 +12,8 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
-using AvaloniaMiaDev.Services.Camera.Enums;
-using AvaloniaMiaDev.Services.Camera.Models;
+using AvaloniaMiaDev.Services.Inference.Enums;
+using AvaloniaMiaDev.Services.Inference.Models;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
@@ -85,7 +85,7 @@ public partial class FaceHomeView : UserControl
         _dragStartX = position.X;
         _dragStartY = position.Y;
 
-        await _localSettingsService.SaveSettingAsync("Babble_FaceCameraROI", _faceOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("Face_CameraROI", _faceOverlayRectangle);
         _isFaceCropping = true;
     }
 
@@ -123,7 +123,7 @@ public partial class FaceHomeView : UserControl
 
         _faceOverlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
 
-        await _localSettingsService.SaveSettingAsync("Babble_FaceCameraROI", _faceOverlayRectangle);
+        await _localSettingsService.SaveSettingAsync("Face_CameraROI", _faceOverlayRectangle);
     }
 
     private void FaceOnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -145,13 +145,13 @@ public partial class FaceHomeView : UserControl
         };
         drawTimer.Tick += async (s, e) =>
         {
-            await UpdateImage(Chirality.Face, _faceCamViewMode, FaceRectangleWindow, FaceSelectEntireFrame, FaceViewBox,
+            await UpdateImage(Camera.Face, _faceCamViewMode, FaceRectangleWindow, FaceSelectEntireFrame, FaceViewBox,
                 _faceOverlayRectangle, FaceMouthWindow, FaceCanvasWindow);
         };
         drawTimer.Start();
     }
 
-    private async Task UpdateImage(Chirality chirality, CamViewMode croppingMode, Rectangle rectWindow, Button selectEntireFrameButton,
+    private async Task UpdateImage(Camera camera, CamViewMode croppingMode, Rectangle rectWindow, Button selectEntireFrameButton,
         Viewbox viewBox, Rect overlayRectangle, Image mouthWindow, Canvas canvas)
     {
         var isCroppingModeUiVisible = croppingMode == CamViewMode.Cropping;
@@ -167,14 +167,14 @@ public partial class FaceHomeView : UserControl
 
         var cameraSettings = new CameraSettings
         {
-            Chirality = chirality,
+            Camera = camera,
             RoiX = (int)overlayRectangle.X,
             RoiY = (int)overlayRectangle.Y,
             RoiWidth = (int)overlayRectangle.Width,
             RoiHeight = (int)overlayRectangle.Height,
-            RotationRadians = await _localSettingsService.ReadSettingAsync<float>("Babble_FaceRotation"),
-            UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("Babble_FlipFaceXAxis"),
-            UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("Babble_FlipFaceYAxis"),
+            RotationRadians = await _localSettingsService.ReadSettingAsync<float>("Face_Rotation"),
+            UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("Face_FlipXAxis"),
+            UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("Face_FlipYAxis"),
             Brightness = 1f
         };
 
@@ -260,12 +260,12 @@ public partial class FaceHomeView : UserControl
 
     public void FaceCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _inferenceService.ConfigurePlatformConnectors(Chirality.Face, _viewModel.FaceCameraAddress);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Face, _viewModel.FaceCameraAddress);
     }
 
     public void RightCameraAddressClicked(object? sender, RoutedEventArgs e)
     {
-        _inferenceService.ConfigurePlatformConnectors(Chirality.Face, _viewModel.FaceCameraAddress);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Face, _viewModel.FaceCameraAddress);
     }
 
     public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)

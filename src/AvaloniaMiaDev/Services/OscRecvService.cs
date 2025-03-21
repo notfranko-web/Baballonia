@@ -48,15 +48,6 @@ public class OscRecvService : BackgroundService
                 return;
             }
 
-            // var validationResults = new List<ValidationResult>();
-            // var context = new ValidationContext(oscTarget);
-            // if (!Validator.TryValidateObject(oscTarget, context, validationResults, false))
-            // {
-            //     var errorMessages = string.Join(Environment.NewLine, validationResults.Select(vr => vr.ErrorMessage));
-            //     _logger.LogWarning($"{errorMessages} Reverting to default.");
-            //     oscTarget.DestinationAddress = "127.0.0.1";
-            // }
-
             if (_oscTarget.DestinationAddress is not null)
             {
                 UpdateTarget(new IPEndPoint(IPAddress.Parse(_oscTarget.DestinationAddress), _oscTarget.InPort));

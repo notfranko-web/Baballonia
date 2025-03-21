@@ -15,23 +15,23 @@ public partial class FaceHomeViewModel : ViewModelBase
     public WriteableBitmap FaceBitmap { get; set; }
 
     [ObservableProperty]
-    [property: SavedSetting("Babble_FaceCameraIndex", "0")]
+    [property: SavedSetting("Face_CameraIndex", "0")]
     private string _faceCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("Babble_FaceCameraROI")]
+    [property: SavedSetting("Face_CameraROI")]
     private Rect _faceOverlayRectangle;
 
     [ObservableProperty]
-    [property: SavedSetting("Babble_FlipFaceXAxis", false)]
+    [property: SavedSetting("Face_FlipXAxis", false)]
     private bool _flipFaceXAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("Babble_FlipFaceYAxis", false)]
+    [property: SavedSetting("Face_FlipYAxis", false)]
     private bool _flipFaceYAxis;
 
     [ObservableProperty]
-    [property: SavedSetting("Babble_FaceRotation", 0f)]
+    [property: SavedSetting("Face_Rotation", 0f)]
     private float _faceRotation;
 
     // Services and other properties

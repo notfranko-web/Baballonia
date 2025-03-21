@@ -292,7 +292,7 @@
                                 <TextBlock
                                     FontSize="13"
                                     Margin="0,0,0,12"
-                                    Text="Adjust your Right camera settings" />
+                                    Text="Adjust your right camera settings" />
 
                                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
                                     <StackPanel Grid.Column="0" Grid.Row="0">

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AvaloniaMiaDev.Services.Camera.Filters;
+namespace AvaloniaMiaDev.Services.Inference.Filters;
 
 public class OneEuroFilter
 {

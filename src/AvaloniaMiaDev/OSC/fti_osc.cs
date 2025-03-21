@@ -23,11 +23,7 @@ public struct OscValue {
     [MarshalAs(UnmanagedType.I1)]
     public bool BoolValue;
 
-#if WINDOWS_DEBUG || WINDOWS_RELEASE
-    [MarshalAs(UnmanagedType.LPStr)]
-#else
     [MarshalAs(UnmanagedType.LPUTF8Str)]
-#endif
     public string? StringValue; // Use IntPtr for pointer types
 
     public object? Value
@@ -63,11 +59,7 @@ public struct OscValue {
 
 [StructLayout(LayoutKind.Sequential)]
 public struct OscMessageMeta {
-#if WINDOWS_DEBUG || WINDOWS_RELEASE
-    [MarshalAs(UnmanagedType.LPStr)]
-#else
     [MarshalAs(UnmanagedType.LPUTF8Str)]
-#endif
     public string Address;
 
     [MarshalAs(UnmanagedType.U4)]
@@ -80,16 +72,6 @@ public struct OscMessageMeta {
 // Simple Rust OSC Lib wrapper
 public static class FtiOsc
 {
-#if WINDOWS_DEBUG || WINDOWS_RELEASE
-    private const string DllName = "fti_osc.dll";
-#elif MACOS_DEBUG || MACOS_RELEASE
-    private const string DllName = "fti_osc.dylib";
-#elif LINUX_DEBUG || LINUX_RELEASE
-    private const string DllName = "fti_osc.so";
-#else
-    private const string DllName = "fti_osc.dylib";
-#endif
-
     /// <summary>
     /// Parses a byte buffer of specified length into a single pointer to an osc message
     /// </summary>
@@ -98,7 +80,7 @@ public static class FtiOsc
     /// <param name="byteIndex">The index of the first byte of the message. This is modified after a message is parsed
     /// This way we can sequentially read messages by passing in the value this int was last modified to be</param>
     /// <returns>Pointer to an OscMessageMeta struct</returns>
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("fti_osc", CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr parse_osc(byte[] buffer, int bufferLength, ref int byteIndex);
 
     /// <summary>
@@ -107,7 +89,7 @@ public static class FtiOsc
     /// <param name="buf">Target write buffer</param>
     /// <param name="osc_template">Target OscMessageMeta to serialize</param>
     /// <returns>Amount of bytes written to <paramref name="buf"/></returns>
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("fti_osc", CallingConvention = CallingConvention.Cdecl)]
     public static extern int create_osc_message([MarshalAs(UnmanagedType.LPArray, SizeConst = 4096)] byte[] buf, ref OscMessageMeta oscTemplate);
 
     /// <summary>
@@ -118,7 +100,7 @@ public static class FtiOsc
     /// <param name="len">Length of <paramref name="messages"/></param>
     /// <param name="messageIndex">Index of the last message written to <paramref name="buf"/> before it was filled</param>
     /// <returns></returns>
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("fti_osc", CallingConvention = CallingConvention.Cdecl)]
     public static extern int create_osc_bundle(
         [MarshalAs(UnmanagedType.LPArray, SizeConst = 4096)] byte[] buf,
         [MarshalAs(UnmanagedType.LPArray)] OscMessageMeta[] messages,
@@ -129,6 +111,6 @@ public static class FtiOsc
     /// Free memory allocated to OscMessageMeta by fti_osc lib
     /// </summary>
     /// <param name="oscMessage">Target message pointer</param>
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("fti_osc", CallingConvention = CallingConvention.Cdecl)]
     public static extern void free_osc_message(IntPtr oscMessage);
 }

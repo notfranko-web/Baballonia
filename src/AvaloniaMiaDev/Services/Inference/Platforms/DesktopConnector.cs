@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using AvaloniaMiaDev.Contracts;
-using AvaloniaMiaDev.Services.Camera.Captures;
+using AvaloniaMiaDev.Services.Inference.Captures;
 using Microsoft.Extensions.Logging;
 
-namespace AvaloniaMiaDev.Services.Camera.Platforms;
+namespace AvaloniaMiaDev.Services.Inference.Platforms;
 
 /// <summary>
 /// Base class for camera capture and frame processing

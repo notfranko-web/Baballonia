@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
-using AvaloniaMiaDev.Services.Camera.Captures;
-using AvaloniaMiaDev.Services.Camera.Models;
+using AvaloniaMiaDev.Services.Inference.Captures;
+using AvaloniaMiaDev.Services.Inference.Models;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 
-namespace AvaloniaMiaDev.Services.Camera.Platforms;
+namespace AvaloniaMiaDev.Services.Inference.Platforms;
 
 /// <summary>
 /// Manages what Captures are allowed to run on what platforms, as well as their Urls, etc.
