@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.OSC;
 using AvaloniaMiaDev.Services.Inference.Enums;
+using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using Microsoft.Extensions.Hosting;
 
 namespace AvaloniaMiaDev.Services;
@@ -16,63 +17,20 @@ public class ParameterSenderService : BackgroundService
     // we might want to allow a way for the user to specify bundle or single message sends in the future
     private static readonly Queue<OscMessage> SendQueue = new();
 
+    private readonly Camera[] _cameras = [Camera.Face]; // Enum.GetValues<Camera>();
+
     private readonly IInferenceService _inferenceService;
+    private readonly FaceCalibrationViewModel _faceCalibrationViewModel;
     private readonly OscSendService _sendService;
 
-    private readonly Camera[] _cameras = Enum.GetValues<Camera>();
-    private readonly string[] _faceExpressionStrings =
-    [
-        "/cheekPuffLeft",
-        "/cheekPuffRight",
-        "/cheekSuckLeft",
-        "/cheekSuckRight",
-        "/jawOpen",
-        "/jawForward",
-        "/jawLeft",
-        "/jawRight",
-        "/noseSneerLeft",
-        "/noseSneerRight",
-        "/mouthFunnel",
-        "/mouthPucker",
-        "/mouthLeft",
-        "/mouthRight",
-        "/mouthRollUpper",
-        "/mouthRollLower",
-        "/mouthShrugUpper",
-        "/mouthShrugLower",
-        "/mouthClose",
-        "/mouthSmileLeft",
-        "/mouthSmileRight",
-        "/mouthFrownLeft",
-        "/mouthFrownRight",
-        "/mouthDimpleLeft",
-        "/mouthDimpleRight",
-        "/mouthUpperUpLeft",
-        "/mouthUpperUpRight",
-        "/mouthLowerDownLeft",
-        "/mouthLowerDownRight",
-        "/mouthPressLeft",
-        "/mouthPressRight",
-        "/mouthStretchLeft",
-        "/mouthStretchRight",
-        "/tongueOut",
-        "/tongueUp",
-        "/tongueDown",
-        "/tongueLeft",
-        "/tongueRight",
-        "/tongueRoll",
-        "/tongueBendDown",
-        "/tongueCurlUp",
-        "/tongueSquish",
-        "/tongueFlat",
-        "/tongueTwistLeft",
-        "/tongueTwistRight"
-    ];
-
-    public ParameterSenderService(IInferenceService inferenceService, OscSendService sendService)
+    public ParameterSenderService(
+        IInferenceService inferenceService,
+        OscSendService sendService,
+        FaceCalibrationViewModel faceCalibrationViewModel)
     {
         _inferenceService = inferenceService;
         _sendService = sendService;
+        _faceCalibrationViewModel = faceCalibrationViewModel;
     }
 
     public static void Enqueue(OscMessage message) => SendQueue.Enqueue(message);
@@ -90,16 +48,15 @@ public class ParameterSenderService : BackgroundService
                     // Right now this just sends lower mouth information!
                     if (_inferenceService.GetExpressionData(camera, out var arKitExpressions))
                     {
-                        var expressions = _faceExpressionStrings.Zip(arKitExpressions);
+                        var expressions = _faceCalibrationViewModel.CalibrationItems.Zip(arKitExpressions);
+
                         foreach (var exp in expressions)
                         {
-                            var message = new OscMessage(exp.First, typeof(float))
+                            var message = new OscMessage(exp.First.ShapeName!, typeof(float))
                             {
-                                Value = exp.Second
+                                Value = Math.Clamp(exp.Second, exp.First.Min, exp.First.Max)
                             };
                             SendQueue.Enqueue(message);
-
-                            await Task.Delay(10, cancellationToken);
                         }
                     }
 

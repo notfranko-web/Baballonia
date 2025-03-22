@@ -17,8 +17,7 @@ public class ViewLocator : IDataTemplate
     public ViewLocator()
     {
         RegisterViewFactory<MainViewModel, MainWindow>();
-        RegisterViewFactory<EyeHomePageViewModel, EyeHomeView>();
-        RegisterViewFactory<FaceHomeViewModel, FaceHomeView>();
+        RegisterViewFactory<HomePageViewModel, HomePageView>();
         RegisterViewFactory<FaceCalibrationViewModel, FaceCalibrationView>();
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<EyeCalibrationViewModel, EyeCalibrationView>();

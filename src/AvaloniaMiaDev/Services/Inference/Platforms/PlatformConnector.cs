@@ -126,8 +126,10 @@ public abstract class PlatformConnector
         var rotationRadians = settings.RotationRadians;
         var useRedChannel = settings.UseRedChannel;
 
-        Mat sourceMat = Capture.RawMat, resultMat = new Mat(sourceMat, (roiX == 0 || roiY == 0 || roiWidth == 0 || roiHeight == 0 ||
-            roiWidth == sourceMat.Width || roiHeight == sourceMat.Height) ? new Rect(0, 0, sourceMat.Width, sourceMat.Height) : new Rect(roiX, roiY, roiWidth, roiHeight));
+        Mat sourceMat = Capture.RawMat, resultMat = new(sourceMat, (roiX == 0 || roiY == 0 || roiWidth == 0 ||
+            roiHeight == 0 || roiWidth == sourceMat.Width || roiHeight == sourceMat.Height) ?
+                new Rect(0, 0, sourceMat.Width, sourceMat.Height) :
+                new Rect(roiX, roiY, roiWidth, roiHeight));
         if (resultMat.Channels() >= 2)
         {
             var newMat = new Mat();

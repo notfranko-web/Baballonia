@@ -94,12 +94,10 @@ public partial class App : Application
                 services.AddTransient<OutputPageView>();
                 services.AddTransient<AppSettingsViewModel>();
                 services.AddTransient<AppSettingsView>();
-                services.AddTransient<EyeHomePageViewModel>();
-                services.AddTransient<EyeHomeView>();
+                services.AddTransient<HomePageViewModel>();
+                services.AddTransient<HomePageView>();
                 services.AddTransient<EyeCalibrationViewModel>();
                 services.AddTransient<EyeCalibrationView>();
-                services.AddTransient<FaceHomeViewModel>();
-                services.AddTransient<FaceHomeView>();
                 services.AddTransient<FaceCalibrationViewModel>();
                 services.AddTransient<FaceCalibrationView>();
 

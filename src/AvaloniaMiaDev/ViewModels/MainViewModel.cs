@@ -20,16 +20,15 @@ public partial class MainViewModel : ViewModelBase
     {
         Items = new ObservableCollection<ListItemTemplate>(_templates);
 
-        SelectedListItem = Items.First(vm => vm.ModelType == typeof(EyeHomePageViewModel));
+        SelectedListItem = Items.First(vm => vm.ModelType == typeof(HomePageViewModel));
     }
 
     private readonly List<ListItemTemplate> _templates =
     [
-        new ListItemTemplate(typeof(EyeHomePageViewModel), "EyeTrackingRegular", "Eye Tracking Home"),
-        new ListItemTemplate(typeof(EyeCalibrationViewModel), "EyeTrackingSettingsRegular", "Eye Tracking Calibration"),
-        new ListItemTemplate(typeof(FaceHomeViewModel), "EmojiLaughRegular", "Face Tracking Home"),
-        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EmojiLaughSettingsRegular", "Face Tracking Calibration"),
-        new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", Localizer.Get("Shell_Output.Content")),
+        new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", "Home"),
+        new ListItemTemplate(typeof(EyeCalibrationViewModel), "EyeTrackingSettingsRegular", "Eye Calibration"),
+        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EmojiLaughSettingsRegular", "Face Calibration"),
+        new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
         new ListItemTemplate(typeof(AppSettingsViewModel), "SettingsRegular", "App Settings"),
     ];
 

@@ -10,8 +10,53 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
-public partial class FaceHomeViewModel : ViewModelBase
+public partial class HomePageViewModel : ViewModelBase
 {
+    // Left eye properties
+    public WriteableBitmap LeftEyeBitmap { get; set; }
+
+    public WriteableBitmap RightEyeBitmap { get; set; }
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_LeftCameraIndex", "0")]
+    private string _leftCameraAddress;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_LeftCameraROI")]
+    private Rect _leftOverlayRectangle;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_FlipLeftEyeXAxis", false)]
+    private bool _flipLeftEyeXAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_FlipLeftEyeYAxis", false)]
+    private bool _flipLeftEyeYAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_LeftEyeRotation", 0f)]
+    private float _leftEyeRotation;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_RightCameraIndex", "0")]
+    private string _rightCameraAddress;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_RightCameraROI")]
+    private Rect _rightOverlayRectangle;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_FlipRightEyeXAxis", false)]
+    private bool _flipRightEyeXAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_FlipRightEyeYAxis", false)]
+    private bool _flipRightEyeYAxis;
+
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_RightEyeRotation", 0f)]
+    private float _rightEyeRotation;
+
     public WriteableBitmap FaceBitmap { get; set; }
 
     [ObservableProperty]
@@ -48,7 +93,7 @@ public partial class FaceHomeViewModel : ViewModelBase
 
     private readonly DispatcherTimer _msgCounterTimer;
 
-    public FaceHomeViewModel()
+    public HomePageViewModel()
     {
         // Services
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;
@@ -85,7 +130,7 @@ public partial class FaceHomeViewModel : ViewModelBase
     private void MessageReceived(OscMessage msg) => _messagesRecvd++;
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
 
-    ~FaceHomeViewModel()
+    ~HomePageViewModel()
     {
         OscRecvService.OnMessageReceived -= MessageReceived;
         OscSendService.OnMessagesDispatched -= MessageDispatched;

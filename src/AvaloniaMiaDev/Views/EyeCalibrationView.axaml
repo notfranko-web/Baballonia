@@ -18,7 +18,7 @@
 
     <ScrollViewer>
         <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="Eye Tracking Calibration" />
+            <TextBlock Classes="Header" Text="Eye Calibration" />
 
             <Expander
                 HorizontalAlignment="Stretch"
