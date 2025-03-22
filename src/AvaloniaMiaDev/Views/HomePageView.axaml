@@ -33,112 +33,101 @@
 
             <Grid ColumnDefinitions="*,12,*,12,*">
                 <!--  Left Panel  -->
-                <StackPanel Grid.Column="0">
+                <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
+                        Grid.Row="0"
                         Margin="0,0,12,12"
                         Text="Left Eye Camera" />
 
-                    <StackPanel>
-                        <!--  Camera address section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16,16,16,16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Left Camera Configuration" />
+                    <!--  Camera address section  -->
+                    <Border
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        CornerRadius="8"
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Padding="16,16,16,16">
+                        <StackPanel>
+                            <TextBlock FontSize="14" Text="Left Camera Address" />
 
-                                <TextBlock FontSize="14" Text="Left Camera Address" />
-
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <AutoCompleteBox
-                                        FilterMode="Contains"
-                                        FontSize="13"
-                                        Grid.Column="0"
-                                        Height="36"
-                                        Margin="0,8"
-                                        Text="{Binding LeftCameraAddress}"
-                                        Watermark="Start typing..."
-                                        x:Name="LeftCameraAddressEntry" />
-                                    <Button
-                                        Click="LeftCameraAddressClicked"
-                                        Content="Save &amp; Restart"
-                                        FontSize="13"
-                                        Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Padding="12,8"
-                                        x:Name="LeftSaveAndRestartTrackingText" />
-                                </Grid>
-
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <RadioButton
-                                        Click="LeftOnTrackingModeClicked"
-                                        Content="Tracking"
-                                        GroupName="LeftImageControlGroup"
-                                        IsChecked="True"
-                                        x:Name="LeftTrackingModeButton" />
-                                    <RadioButton
-                                        Click="LeftOnCroppingModeClicked"
-                                        Content="Cropping"
-                                        GroupName="LeftImageControlGroup"
-                                        x:Name="LeftCroppingModeButton" />
-                                </StackPanel>
-
+                            <Grid ColumnDefinitions="*,Auto">
+                                <AutoCompleteBox
+                                    FilterMode="Contains"
+                                    FontSize="13"
+                                    Grid.Column="0"
+                                    Height="36"
+                                    Margin="0,8"
+                                    Text="{Binding LeftCameraAddress}"
+                                    Watermark="Start typing..."
+                                    x:Name="LeftCameraAddressEntry" />
                                 <Button
-                                    Click="LeftSelectEntireFrameClicked"
-                                    Content="Select Entire Frame"
+                                    Click="LeftCameraAddressClicked"
+                                    Content="Save &amp; Restart"
                                     FontSize="13"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    Margin="0,8,0,0"
-                                    Padding="0,8"
-                                    x:Name="LeftSelectEntireFrame" />
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Camera view section  -->
-                        <Viewbox x:Name="LeftViewBox">
-                            <Grid>
-                                <Image
-                                    HorizontalAlignment="Center"
-                                    IsHitTestVisible="True"
-                                    Source="{Binding LeftEyeBitmap}"
-                                    x:Name="LeftMouthWindow" />
-                                <Canvas
-                                    Background="Transparent"
-                                    IsHitTestVisible="False"
-                                    x:Name="LeftCanvasWindow">
-                                    <Rectangle
-                                        Fill="Transparent"
-                                        IsHitTestVisible="False"
-                                        Stroke="{DynamicResource Accent}"
-                                        StrokeThickness="24"
-                                        x:Name="LeftRectangleWindow" />
-                                </Canvas>
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    Padding="12,8"
+                                    x:Name="LeftSaveAndRestartTrackingText" />
                             </Grid>
-                        </Viewbox>
 
-                        <!--  Camera settings section (removed from expander)  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            IsVisible="{Binding IsLeftTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}"
-                            Padding="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <RadioButton
+                                    Click="LeftOnTrackingModeClicked"
+                                    Content="Tracking"
+                                    GroupName="LeftImageControlGroup"
+                                    IsChecked="True"
+                                    x:Name="LeftTrackingModeButton" />
+                                <RadioButton
+                                    Click="LeftOnCroppingModeClicked"
+                                    Content="Cropping"
+                                    GroupName="LeftImageControlGroup"
+                                    x:Name="LeftCroppingModeButton" />
+                            </StackPanel>
+
+                            <Button
+                                Click="LeftSelectEntireFrameClicked"
+                                Content="Select Entire Frame"
+                                FontSize="13"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,8,0,0"
+                                Padding="0,8"
+                                x:Name="LeftSelectEntireFrame" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Camera view section  -->
+                    <Viewbox Grid.Row="2" x:Name="LeftViewBox">
+                        <Grid>
+                            <Image
+                                HorizontalAlignment="Center"
+                                IsHitTestVisible="True"
+                                Source="{Binding LeftEyeBitmap}"
+                                x:Name="LeftMouthWindow" />
+                            <Canvas
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                x:Name="LeftCanvasWindow">
+                                <Rectangle
+                                    Fill="Transparent"
+                                    IsHitTestVisible="False"
+                                    Stroke="{DynamicResource Accent}"
+                                    StrokeThickness="24"
+                                    x:Name="LeftRectangleWindow" />
+                            </Canvas>
+                        </Grid>
+                    </Viewbox>
+
+                    <!--  Camera settings section in Expander  -->
+                    <Expander
+                        Grid.Row="3"
+                        Header="Left Camera Settings"
+                        HorizontalAlignment="Stretch"
+                        IsExpanded="False"
+                        IsVisible="{Binding IsLeftTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}">
+                        <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
                             <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Text="Left Camera Settings" />
-                                <TextBlock
-                                    FontSize="13"
-                                    Margin="0,0,0,12"
-                                    Text="Adjust your left camera settings" />
 
                                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                                     <StackPanel Grid.Column="0" Grid.Row="0">
@@ -177,6 +166,7 @@
                                     </StackPanel>
                                     <Slider
                                         Grid.Column="0"
+                                        Grid.ColumnSpan="3"
                                         Grid.Row="3"
                                         Maximum="6.28"
                                         Minimum="0"
@@ -185,116 +175,105 @@
                                 </Grid>
                             </StackPanel>
                         </Border>
-                    </StackPanel>
-                </StackPanel>
+                    </Expander>
+                </Grid>
 
                 <!--  Right Panel  -->
-                <StackPanel Grid.Column="2">
+                <Grid Grid.Column="2" RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
+                        Grid.Row="0"
                         Margin="0,0,12,12"
                         Text="Right Eye Camera" />
 
-                    <StackPanel>
-                        <!--  Camera address section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16,16,16,16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Right Camera Configuration" />
+                    <!--  Camera address section  -->
+                    <Border
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        CornerRadius="8"
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Padding="16,16,16,16">
+                        <StackPanel>
+                            <TextBlock FontSize="14" Text="Right Camera Address" />
 
-                                <TextBlock FontSize="14" Text="Right Camera Address" />
-
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <AutoCompleteBox
-                                        FilterMode="Contains"
-                                        FontSize="13"
-                                        Grid.Column="0"
-                                        Height="36"
-                                        Margin="0,8"
-                                        Text="{Binding RightCameraAddress}"
-                                        Watermark="Start typing..."
-                                        x:Name="RightCameraAddressEntry" />
-                                    <Button
-                                        Click="RightCameraAddressClicked"
-                                        Content="Save &amp; Restart"
-                                        FontSize="13"
-                                        Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Padding="12,8"
-                                        x:Name="RightSaveAndRestartTrackingText" />
-                                </Grid>
-
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <RadioButton
-                                        Click="RightOnTrackingModeClicked"
-                                        Content="Tracking"
-                                        GroupName="RightImageControlGroup"
-                                        IsChecked="True"
-                                        x:Name="RightTrackingModeButton" />
-                                    <RadioButton
-                                        Click="RightOnCroppingModeClicked"
-                                        Content="Cropping"
-                                        GroupName="RightImageControlGroup"
-                                        x:Name="RightCroppingModeButton" />
-                                </StackPanel>
-
+                            <Grid ColumnDefinitions="*,Auto">
+                                <AutoCompleteBox
+                                    FilterMode="Contains"
+                                    FontSize="13"
+                                    Grid.Column="0"
+                                    Height="36"
+                                    Margin="0,8"
+                                    Text="{Binding RightCameraAddress}"
+                                    Watermark="Start typing..."
+                                    x:Name="RightCameraAddressEntry" />
                                 <Button
-                                    Click="RightSelectEntireFrameClicked"
-                                    Content="Select Entire Frame"
+                                    Click="RightCameraAddressClicked"
+                                    Content="Save &amp; Restart"
                                     FontSize="13"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    Margin="0,8,0,0"
-                                    Padding="0,8"
-                                    x:Name="RightSelectEntireFrame" />
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Camera view section  -->
-                        <Viewbox x:Name="RightViewBox">
-                            <Grid>
-                                <Image
-                                    HorizontalAlignment="Center"
-                                    IsHitTestVisible="True"
-                                    Source="{Binding RightEyeBitmap}"
-                                    x:Name="RightMouthWindow" />
-                                <Canvas
-                                    Background="Transparent"
-                                    IsHitTestVisible="False"
-                                    x:Name="RightCanvasWindow">
-                                    <Rectangle
-                                        Fill="Transparent"
-                                        IsHitTestVisible="False"
-                                        Stroke="{DynamicResource Accent}"
-                                        StrokeThickness="24"
-                                        x:Name="RightRectangleWindow" />
-                                </Canvas>
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    Padding="12,8"
+                                    x:Name="RightSaveAndRestartTrackingText" />
                             </Grid>
-                        </Viewbox>
 
-                        <!--  Camera settings section (removed from expander)  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            IsVisible="{Binding IsRightTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}"
-                            Padding="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <RadioButton
+                                    Click="RightOnTrackingModeClicked"
+                                    Content="Tracking"
+                                    GroupName="RightImageControlGroup"
+                                    IsChecked="True"
+                                    x:Name="RightTrackingModeButton" />
+                                <RadioButton
+                                    Click="RightOnCroppingModeClicked"
+                                    Content="Cropping"
+                                    GroupName="RightImageControlGroup"
+                                    x:Name="RightCroppingModeButton" />
+                            </StackPanel>
+
+                            <Button
+                                Click="RightSelectEntireFrameClicked"
+                                Content="Select Entire Frame"
+                                FontSize="13"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,8,0,0"
+                                Padding="0,8"
+                                x:Name="RightSelectEntireFrame" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Camera view section  -->
+                    <Viewbox Grid.Row="2" x:Name="RightViewBox">
+                        <Grid>
+                            <Image
+                                HorizontalAlignment="Center"
+                                IsHitTestVisible="True"
+                                Source="{Binding RightEyeBitmap}"
+                                x:Name="RightMouthWindow" />
+                            <Canvas
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                x:Name="RightCanvasWindow">
+                                <Rectangle
+                                    Fill="Transparent"
+                                    IsHitTestVisible="False"
+                                    Stroke="{DynamicResource Accent}"
+                                    StrokeThickness="24"
+                                    x:Name="RightRectangleWindow" />
+                            </Canvas>
+                        </Grid>
+                    </Viewbox>
+
+                    <!--  Camera settings section in Expander  -->
+                    <Expander
+                        Grid.Row="3"
+                        Header="Right Camera Settings"
+                        HorizontalAlignment="Stretch"
+                        IsExpanded="False"
+                        IsVisible="{Binding IsRightTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}">
+                        <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
                             <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Text="Right Camera Settings" />
-                                <TextBlock
-                                    FontSize="13"
-                                    Margin="0,0,0,12"
-                                    Text="Adjust your right camera settings" />
 
                                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                                     <StackPanel Grid.Column="0" Grid.Row="0">
@@ -333,125 +312,114 @@
                                     </StackPanel>
                                     <Slider
                                         Grid.Column="0"
+                                        Grid.ColumnSpan="3"
                                         Grid.Row="3"
                                         Maximum="6.28"
                                         Minimum="0"
                                         Value="{Binding RightEyeRotation}"
-                                        Width="180"
                                         x:Name="RightRotationSlider" />
                                 </Grid>
                             </StackPanel>
                         </Border>
-                    </StackPanel>
-                </StackPanel>
+                    </Expander>
+                </Grid>
 
                 <!--  Face Panel  -->
-                <StackPanel Grid.Column="4">
+                <Grid Grid.Column="4" RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
+                        Grid.Row="0"
                         Margin="0,0,12,12"
                         Text="Face Camera" />
 
-                    <StackPanel>
-                        <!--  Camera address section  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            Margin="0,0,0,16"
-                            Padding="16,16,16,16">
-                            <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"
-                                    Text="Face Camera Configuration" />
+                    <!--  Camera address section  -->
+                    <Border
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        CornerRadius="8"
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Padding="16,16,16,16">
+                        <StackPanel>
+                            <TextBlock FontSize="14" Text="Face Camera Address" />
 
-                                <TextBlock FontSize="14" Text="Face Camera Address" />
-
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <AutoCompleteBox
-                                        FilterMode="Contains"
-                                        FontSize="13"
-                                        Grid.Column="0"
-                                        Height="36"
-                                        Margin="0,8"
-                                        Text="{Binding FaceCameraAddress}"
-                                        Watermark="Start typing..."
-                                        x:Name="FaceCameraAddressEntry" />
-                                    <Button
-                                        Click="FaceCameraAddressClicked"
-                                        Content="Save &amp; Restart"
-                                        FontSize="13"
-                                        Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Padding="12,8"
-                                        x:Name="FaceSaveAndRestartTrackingText" />
-                                </Grid>
-
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <RadioButton
-                                        Click="FaceOnTrackingModeClicked"
-                                        Content="Tracking"
-                                        GroupName="FaceImageControlGroup"
-                                        IsChecked="True"
-                                        x:Name="FaceTrackingModeButton" />
-                                    <RadioButton
-                                        Click="FaceOnCroppingModeClicked"
-                                        Content="Cropping"
-                                        GroupName="FaceImageControlGroup"
-                                        x:Name="FaceCroppingModeButton" />
-                                </StackPanel>
-
+                            <Grid ColumnDefinitions="*,Auto">
+                                <AutoCompleteBox
+                                    FilterMode="Contains"
+                                    FontSize="13"
+                                    Grid.Column="0"
+                                    Height="36"
+                                    Margin="0,8"
+                                    Text="{Binding FaceCameraAddress}"
+                                    Watermark="Start typing..."
+                                    x:Name="FaceCameraAddressEntry" />
                                 <Button
-                                    Click="FaceSelectEntireFrameClicked"
-                                    Content="Select Entire Frame"
+                                    Click="FaceCameraAddressClicked"
+                                    Content="Save &amp; Restart"
                                     FontSize="13"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    Margin="0,8,0,0"
-                                    Padding="0,8"
-                                    x:Name="FaceSelectEntireFrame" />
-                            </StackPanel>
-                        </Border>
-
-                        <!--  Camera view section  -->
-                        <Viewbox x:Name="FaceViewBox">
-                            <Grid>
-                                <Image
-                                    HorizontalAlignment="Center"
-                                    IsHitTestVisible="True"
-                                    Source="{Binding FaceBitmap}"
-                                    x:Name="FaceMouthWindow" />
-                                <Canvas
-                                    Background="Transparent"
-                                    IsHitTestVisible="False"
-                                    x:Name="FaceCanvasWindow">
-                                    <Rectangle
-                                        Fill="Transparent"
-                                        IsHitTestVisible="False"
-                                        Stroke="{DynamicResource Accent}"
-                                        StrokeThickness="24"
-                                        x:Name="FaceRectangleWindow" />
-                                </Canvas>
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    Padding="12,8"
+                                    x:Name="FaceSaveAndRestartTrackingText" />
                             </Grid>
-                        </Viewbox>
 
-                        <!--  Camera settings section (removed from expander)  -->
-                        <Border
-                            Background="{DynamicResource SystemChromeMediumLowColor}"
-                            CornerRadius="8"
-                            IsVisible="{Binding IsFaceTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}"
-                            Padding="16">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <RadioButton
+                                    Click="FaceOnTrackingModeClicked"
+                                    Content="Tracking"
+                                    GroupName="FaceImageControlGroup"
+                                    IsChecked="True"
+                                    x:Name="FaceTrackingModeButton" />
+                                <RadioButton
+                                    Click="FaceOnCroppingModeClicked"
+                                    Content="Cropping"
+                                    GroupName="FaceImageControlGroup"
+                                    x:Name="FaceCroppingModeButton" />
+                            </StackPanel>
+
+                            <Button
+                                Click="FaceSelectEntireFrameClicked"
+                                Content="Select Entire Frame"
+                                FontSize="13"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,8,0,0"
+                                Padding="0,8"
+                                x:Name="FaceSelectEntireFrame" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Camera view section  -->
+                    <Viewbox Grid.Row="2" x:Name="FaceViewBox">
+                        <Grid>
+                            <Image
+                                HorizontalAlignment="Center"
+                                IsHitTestVisible="True"
+                                Source="{Binding FaceBitmap}"
+                                x:Name="FaceMouthWindow" />
+                            <Canvas
+                                Background="Transparent"
+                                IsHitTestVisible="False"
+                                x:Name="FaceCanvasWindow">
+                                <Rectangle
+                                    Fill="Transparent"
+                                    IsHitTestVisible="False"
+                                    Stroke="{DynamicResource Accent}"
+                                    StrokeThickness="24"
+                                    x:Name="FaceRectangleWindow" />
+                            </Canvas>
+                        </Grid>
+                    </Viewbox>
+
+                    <!--  Camera settings section in Expander  -->
+                    <Expander
+                        Grid.Row="3"
+                        Header="Face Camera Settings"
+                        HorizontalAlignment="Stretch"
+                        IsExpanded="False"
+                        IsVisible="{Binding IsFaceTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}">
+                        <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
                             <StackPanel>
-                                <TextBlock
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Text="Face Camera Settings" />
-                                <TextBlock
-                                    FontSize="13"
-                                    Margin="0,0,0,12"
-                                    Text="Adjust your face camera settings" />
 
                                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                                     <StackPanel Grid.Column="0" Grid.Row="0">
@@ -490,17 +458,17 @@
                                     </StackPanel>
                                     <Slider
                                         Grid.Column="0"
+                                        Grid.ColumnSpan="3"
                                         Grid.Row="3"
                                         Maximum="6.28"
                                         Minimum="0"
                                         Value="{Binding FaceRotation}"
-                                        Width="180"
                                         x:Name="FaceRotationSlider" />
                                 </Grid>
                             </StackPanel>
                         </Border>
-                    </StackPanel>
-                </StackPanel>
+                    </Expander>
+                </Grid>
             </Grid>
         </StackPanel>
     </ScrollViewer>

@@ -97,8 +97,8 @@ public class CameraController
         var isCroppingModeUiVisible = _camViewMode == CamViewMode.Cropping;
         _rectangleWindow.IsVisible = isCroppingModeUiVisible;
         _selectEntireFrameButton.IsVisible = isCroppingModeUiVisible;
-        _viewBox.MaxHeight = isCroppingModeUiVisible ? double.MaxValue : 128;
-        _viewBox.MaxWidth = isCroppingModeUiVisible ? double.MaxValue : 128;
+        _viewBox.MaxHeight = isCroppingModeUiVisible ? double.MaxValue : 192;
+        _viewBox.MaxWidth = isCroppingModeUiVisible ? double.MaxValue : 192;
 
         bool valid;
         bool useColor;
