@@ -20,7 +20,6 @@ public class InferenceService : IInferenceService
     public (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
         = new (PlatformSettings settings, PlatformConnector connector)[3];
 
-    private readonly string[] _onnxModels = ["leftEyeModel.onnx", "rightEyeModel.onnx", "faceModel.onnx"];
     private readonly Stopwatch _sw = Stopwatch.StartNew();
     private readonly ILogger<InferenceService> _logger;
     private readonly ILocalSettingsService _localSettingsService;
@@ -33,32 +32,57 @@ public class InferenceService : IInferenceService
         Task.Run(async () =>
         {
             logger.LogInformation("Starting Inference Service...");
-
-            SessionOptions sessionOptions = SetupSessionOptions();
-            ConfigurePlatformSpecificGpu(sessionOptions);
-
-            var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
-            var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
-
-            for (var index = 0; index < _onnxModels.Length; index++)
-            {
-                var modelName = _onnxModels[index];
-                var filter = new OneEuroFilter(
-                    minCutoff: minCutoff,
-                    beta: speedCoeff
-                );
-
-                var session = new InferenceSession(modelName, sessionOptions);
-                var inputName = session.InputMetadata.Keys.First();
-                var dimensions = session.InputMetadata.Values.First().Dimensions;
-                var inputSize = new Size(dimensions[2], dimensions[3]);
-                var tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
-                var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
-                PlatformConnectors[index] = (platformSettings, null)!;
-            }
-
+            var onnxModels = new[] {"leftEyeModel.onnx", "rightEyeModel.onnx", "faceModel.onnx"};
+            await SetupInference(settingsService, onnxModels);
             logger.LogInformation("Inference started!");
         });
+    }
+
+    /// <summary>
+    /// Loads/reloads the ONNX model for the left, right and face cameras
+    /// </summary>
+    /// <param name="settingsService"></param>
+    /// <param name="models"></param>
+    public async Task SetupInference(ILocalSettingsService settingsService, string[] models)
+    {
+        if (models.Length != 3) return;
+
+        SessionOptions sessionOptions = SetupSessionOptions();
+        await ConfigurePlatformSpecificGpu(sessionOptions);
+
+        var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+        var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+
+        for (var index = 0; index < models.Length; index++)
+        {
+            await SetupInference(models[index], (Camera)index, minCutoff, speedCoeff, sessionOptions);
+        }
+    }
+
+    /// <summary>
+    /// Loads/reloads the ONNX model for a specified camera
+    /// </summary>
+    /// <param name="model"></param>
+    /// <param name="index"></param>
+    /// <param name="minCutoff"></param>
+    /// <param name="speedCoeff"></param>
+    /// <param name="sessionOptions"></param>
+    public async Task SetupInference(string model, Camera index, float minCutoff, float speedCoeff,
+        SessionOptions sessionOptions)
+    {
+        var modelName = model;
+        var filter = new OneEuroFilter(
+            minCutoff: minCutoff,
+            beta: speedCoeff
+        );
+
+        var session = new InferenceSession(modelName, sessionOptions);
+        var inputName = session.InputMetadata.Keys.First();
+        var dimensions = session.InputMetadata.Values.First().Dimensions;
+        var inputSize = new Size(dimensions[2], dimensions[3]);
+        var tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
+        var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
+        PlatformConnectors[(int)index] = (platformSettings, null)!;
     }
 
     /// <summary>
@@ -182,27 +206,6 @@ public class InferenceService : IInferenceService
     }
 
     /// <summary>
-    /// Make our SessionOptions *fancy*
-    /// </summary>
-    /// <returns></returns>
-    private SessionOptions SetupSessionOptions()
-    {
-        // Random environment variable(s) to speed up webcam opening on the MSMF backend.
-        // https://github.com/opencv/opencv/issues/17687
-        Environment.SetEnvironmentVariable("OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS", "0");
-        Environment.SetEnvironmentVariable("OMP_NUM_THREADS", "1");
-
-        // Setup inference backend
-        var sessionOptions = new SessionOptions();
-        sessionOptions.InterOpNumThreads = 1;
-        sessionOptions.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
-        // ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
-        sessionOptions.AddSessionConfigEntry("session.intra_op.allow_spinning", "0");
-        sessionOptions.EnableMemoryPattern = true;
-        return sessionOptions;
-    }
-
-    /// <summary>
     /// Creates the proper video streaming classes based on the platform we're deploying to.
     /// EmguCV doesn't have support for VideoCapture on Android, iOS, or UWP
     /// We have a custom implementations for IP Cameras, the de-facto use case on mobile
@@ -225,12 +228,36 @@ public class InferenceService : IInferenceService
     }
 
     /// <summary>
+    /// Make our SessionOptions *fancy*
+    /// </summary>
+    /// <returns></returns>
+    private SessionOptions SetupSessionOptions()
+    {
+        // Random environment variable(s) to speed up webcam opening on the MSMF backend.
+        // https://github.com/opencv/opencv/issues/17687
+        Environment.SetEnvironmentVariable("OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS", "0");
+        Environment.SetEnvironmentVariable("OMP_NUM_THREADS", "1");
+
+        // Setup inference backend
+        var sessionOptions = new SessionOptions();
+        sessionOptions.InterOpNumThreads = 1;
+        sessionOptions.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
+        // ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
+        sessionOptions.AddSessionConfigEntry("session.intra_op.allow_spinning", "0");
+        sessionOptions.EnableMemoryPattern = true;
+        return sessionOptions;
+    }
+
+    /// <summary>
     /// Per-platform hardware accel. detection/activation
     /// </summary>
     /// <param name="sessionOptions"></param>
-    private void ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
+    private async Task ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
     {
         sessionOptions.AppendExecutionProvider_CPU();
+
+        var useGpu = await _localSettingsService.ReadSettingAsync<bool>("AppSettings_UseGPU");
+        if (!useGpu) return;
 
         // "The Android Neural Networks API (NNAPI) is an Android C API designed for
         // running computationally intensive operations for machine learning on Android devices."

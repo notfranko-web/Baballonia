@@ -8,8 +8,6 @@ namespace AvaloniaMiaDev.Contracts;
 
 public interface IInferenceService
 {
-    public (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
-
     public bool GetExpressionData(Camera cameraSettings, out float[] arKitExpressions);
 
     public bool GetRawImage(CameraSettings cameraSettings, ColorType color, out byte[] image, out (int width, int height) dimensions);

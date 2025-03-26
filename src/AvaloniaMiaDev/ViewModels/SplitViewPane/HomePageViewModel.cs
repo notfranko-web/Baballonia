@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -22,7 +23,6 @@ public partial class HomePageViewModel : ViewModelBase
     private string _leftCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeHome_LeftCameraROI")]
     private Rect _leftOverlayRectangle;
 
     [ObservableProperty]
@@ -42,7 +42,6 @@ public partial class HomePageViewModel : ViewModelBase
     private string _rightCameraAddress;
 
     [ObservableProperty]
-    [property: SavedSetting("EyeHome_RightCameraROI")]
     private Rect _rightOverlayRectangle;
 
     [ObservableProperty]
@@ -121,10 +120,15 @@ public partial class HomePageViewModel : ViewModelBase
         };
         _msgCounterTimer.Start();
 
-        PropertyChanged += (_, _) =>
-        {
-            LocalSettingsService.Save(this);
-        };
+        PropertyChanged += OnPropertyChangedEventHandler;
+    }
+
+    private void OnPropertyChangedEventHandler(object? o, PropertyChangedEventArgs propertyChangedEventArgs)
+    {
+        if (propertyChangedEventArgs.PropertyName is "MessagesOutPerSecCount" or "MessagesInPerSecCount")
+            return;
+
+        LocalSettingsService.Save(this);
     }
 
     private void MessageReceived(OscMessage msg) => _messagesRecvd++;

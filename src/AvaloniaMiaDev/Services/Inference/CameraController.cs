@@ -40,7 +40,10 @@ public class CameraController
     private WriteableBitmap _bitmap;
 
     // Settings keys
-    private readonly string _roiSettingKey;
+    private readonly string _roiSettingKeyX;
+    private readonly string _roiSettingKeyY;
+    private readonly string _roiSettingKeyWidth;
+    private readonly string _roiSettingKeyHeight;
     private readonly string _rotationSettingKey;
     private readonly string _flipXSettingKey;
     private readonly string _flipYSettingKey;
@@ -58,7 +61,10 @@ public class CameraController
         Viewbox viewBox,
         Image mouthWindow,
         Canvas canvas,
-        string roiSettingKey,
+        string roiSettingKeyX,
+        string roiSettingKeyY,
+        string roiSettingKeyWidth,
+        string roiSettingKeyHeight,
         string rotationSettingKey,
         string flipXSettingKey,
         string flipYSettingKey,
@@ -73,7 +79,10 @@ public class CameraController
         _viewBox = viewBox;
         _mouthWindow = mouthWindow;
         _canvas = canvas;
-        _roiSettingKey = roiSettingKey;
+        _roiSettingKeyX = roiSettingKeyX;
+        _roiSettingKeyY = roiSettingKeyY;
+        _roiSettingKeyWidth = roiSettingKeyWidth;
+        _roiSettingKeyHeight = roiSettingKeyHeight;
         _rotationSettingKey = rotationSettingKey;
         _flipXSettingKey = flipXSettingKey;
         _flipYSettingKey = flipYSettingKey;
@@ -104,6 +113,15 @@ public class CameraController
         bool useColor;
         byte[]? image;
         (int width, int height) dims;
+
+        if (_overlayRectangle is { X: 0, Y: 0, Width: 0, Height: 0 })
+        {
+            var x = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyX);
+            var y = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyY);
+            var width = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyWidth);
+            var height = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyHeight);
+            _overlayRectangle = new Rect(x, y, width, height);
+        }
 
         var cameraSettings = new CameraSettings
         {
@@ -231,7 +249,6 @@ public class CameraController
         _dragStartX = position.X;
         _dragStartY = position.Y;
 
-        await _localSettingsService.SaveSettingAsync(_roiSettingKey, _overlayRectangle);
         _isCropping = true;
     }
 
@@ -268,14 +285,17 @@ public class CameraController
         }
 
         _overlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
-
-        await _localSettingsService.SaveSettingAsync(_roiSettingKey, _overlayRectangle);
     }
 
-    private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    private async void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (!_isCropping) return;
 
         _isCropping = false;
+
+        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyX, _overlayRectangle.X);
+        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyY, _overlayRectangle.Y);
+        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyWidth, _overlayRectangle.Width);
+        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyHeight, _overlayRectangle.Height);
     }
 }
