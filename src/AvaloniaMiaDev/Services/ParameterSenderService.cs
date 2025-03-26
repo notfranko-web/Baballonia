@@ -12,7 +12,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace AvaloniaMiaDev.Services;
 
-public class ParameterSenderService : BackgroundService
+public class ParameterSenderService(
+    IInferenceService inferenceService,
+    OscSendService sendService,
+    FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
     // We probably don't need a queue since we use osc message bundles, but for now, we're keeping it as
     // we might want to allow a way for the user to specify bundle or single message sends in the future
@@ -32,20 +35,6 @@ public class ParameterSenderService : BackgroundService
         new CalibrationItem { ShapeName = "/RightEyeY", Min = -1, Max = 1 }
     ];
 
-    private readonly IInferenceService _inferenceService;
-    private readonly FaceCalibrationViewModel _faceCalibrationViewModel;
-    private readonly OscSendService _sendService;
-
-    public ParameterSenderService(
-        IInferenceService inferenceService,
-        OscSendService sendService,
-        FaceCalibrationViewModel faceCalibrationViewModel)
-    {
-        _inferenceService = inferenceService;
-        _sendService = sendService;
-        _faceCalibrationViewModel = faceCalibrationViewModel;
-    }
-
     public static void Enqueue(OscMessage message) => SendQueue.Enqueue(message);
     public static void Clear() => SendQueue.Clear();
 
@@ -57,10 +46,8 @@ public class ParameterSenderService : BackgroundService
             {
                 for (var index = 0; index < _cameras.Length; index++)
                 {
-                    // TODO: Switch string expressions on camera type
-                    // Right now this just sends lower mouth information!
                     var camera = _cameras[index];
-                    if (_inferenceService.GetExpressionData(camera, out var expressions))
+                    if (inferenceService.GetExpressionData(camera, out var expressions))
                     {
                         (CalibrationItem calibrationItem, float weight)[] weights = null!;
                         switch (index)
@@ -72,7 +59,7 @@ public class ParameterSenderService : BackgroundService
                                 weights = _rightEyeCalibrationItems.Zip(expressions).ToArray();
                                 break;
                             case 2:
-                                weights = _faceCalibrationViewModel.CalibrationItems.Zip(expressions).ToArray();
+                                weights = faceCalibrationViewModel.CalibrationItems.Zip(expressions).ToArray();
                                 break;
                         }
 
@@ -95,13 +82,13 @@ public class ParameterSenderService : BackgroundService
                     continue;
                 }
 
-                await _sendService.Send(SendQueue.ToArray(), cancellationToken);
+                await sendService.Send(SendQueue.ToArray(), cancellationToken);
 
                 SendQueue.Clear();
 
                 await Task.Delay(10, cancellationToken);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // ignore!
             }
