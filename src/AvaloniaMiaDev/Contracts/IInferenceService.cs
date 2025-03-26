@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.Services.Inference.Models;
 using AvaloniaMiaDev.Services.Inference.Platforms;
@@ -7,9 +8,7 @@ namespace AvaloniaMiaDev.Contracts;
 
 public interface IInferenceService
 {
-    public PlatformConnector[] PlatformConnectors { get; }
-    public int Fps => (int) MathF.Floor(1000f / Ms);
-    public float Ms { get; set; }
+    public (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
 
     public bool GetExpressionData(Camera cameraSettings, out float[] arKitExpressions);
 

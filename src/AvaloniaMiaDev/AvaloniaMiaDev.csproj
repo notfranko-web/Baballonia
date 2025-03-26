@@ -11,9 +11,6 @@
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
         <None Remove="model.onnx" />
-        <Content Include="model.onnx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 
 
@@ -80,11 +77,6 @@
 
 
     <ItemGroup>
-      <Folder Include="Services\Inference\Platforms\" />
-    </ItemGroup>
-
-
-    <ItemGroup>
       <UpToDateCheckInput Remove="Assets\Images\chocolate_sample.jpg" />
       <UpToDateCheckInput Remove="Assets\Images\logo_big.png" />
       <UpToDateCheckInput Remove="Assets\Images\snow.jpg" />
@@ -105,6 +97,19 @@
     <!-- Linux-specific -->
     <Content Include="fti_osc.so" Link="fti_osc.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="leftEyeModel" />
+    <None Remove="rightEyeModel.onnx" />
+    <Content Include="rightEyeModel.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="leftEyeModel.onnx" />
+    <Content Include="leftEyeModel.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="faceModel.onnx" />
+    <Content Include="faceModel.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 </ItemGroup>
 

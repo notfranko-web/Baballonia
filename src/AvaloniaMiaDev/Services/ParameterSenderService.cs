@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
+using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.OSC;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
@@ -17,7 +18,19 @@ public class ParameterSenderService : BackgroundService
     // we might want to allow a way for the user to specify bundle or single message sends in the future
     private static readonly Queue<OscMessage> SendQueue = new();
 
-    private readonly Camera[] _cameras = [Camera.Face]; // Enum.GetValues<Camera>();
+    private readonly Camera[] _cameras = Enum.GetValues<Camera>();
+
+    private CalibrationItem[] _leftEyeCalibrationItems =
+    [
+        new CalibrationItem { ShapeName = "/LeftEyeX", Min = -1, Max = 1 },
+        new CalibrationItem { ShapeName = "/LeftEyeY", Min = -1, Max = 1 }
+    ];
+
+    private CalibrationItem[] _rightEyeCalibrationItems =
+    [
+        new CalibrationItem { ShapeName = "/RightEyeX", Min = -1, Max = 1 },
+        new CalibrationItem { ShapeName = "/RightEyeY", Min = -1, Max = 1 }
+    ];
 
     private readonly IInferenceService _inferenceService;
     private readonly FaceCalibrationViewModel _faceCalibrationViewModel;
@@ -42,19 +55,32 @@ public class ParameterSenderService : BackgroundService
         {
             try
             {
-                foreach (var camera in _cameras)
+                for (var index = 0; index < _cameras.Length; index++)
                 {
                     // TODO: Switch string expressions on camera type
                     // Right now this just sends lower mouth information!
-                    if (_inferenceService.GetExpressionData(camera, out var arKitExpressions))
+                    var camera = _cameras[index];
+                    if (_inferenceService.GetExpressionData(camera, out var expressions))
                     {
-                        var expressions = _faceCalibrationViewModel.CalibrationItems.Zip(arKitExpressions);
-
-                        foreach (var exp in expressions)
+                        (CalibrationItem calibrationItem, float weight)[] weights = null!;
+                        switch (index)
                         {
-                            var message = new OscMessage(exp.First.ShapeName!, typeof(float))
+                            case 0:
+                                weights = _leftEyeCalibrationItems.Zip(expressions).ToArray();
+                                break;
+                            case 1:
+                                weights = _rightEyeCalibrationItems.Zip(expressions).ToArray();
+                                break;
+                            case 2:
+                                weights = _faceCalibrationViewModel.CalibrationItems.Zip(expressions).ToArray();
+                                break;
+                        }
+
+                        foreach (var exp in weights)
+                        {
+                            var message = new OscMessage(exp.calibrationItem.ShapeName!, typeof(float))
                             {
-                                Value = Math.Clamp(exp.Second, exp.First.Min, exp.First.Max)
+                                Value = Math.Clamp(exp.weight, exp.calibrationItem.Min, exp.calibrationItem.Max)
                             };
                             SendQueue.Enqueue(message);
                         }
@@ -75,7 +101,7 @@ public class ParameterSenderService : BackgroundService
 
                 await Task.Delay(10, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // ignore!
             }

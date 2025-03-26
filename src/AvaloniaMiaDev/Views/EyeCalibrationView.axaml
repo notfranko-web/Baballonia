@@ -389,58 +389,81 @@
                 </ListBox>
             </Expander>
 
-            <controls:SettingsExpander
-                Description="Falloff settings"
-                IconPath="DataBarVerticalRegular"
-                Title="Falloff Settings">
-                <controls:SettingsExpander.ExpanderContent>
-                    <StackPanel Spacing="12">
-                        <Grid
-                            ColumnDefinitions="Auto,*,Auto"
-                            Margin="0,4"
-                            RowDefinitions="Auto,Auto,Auto">
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource DataBarVerticalRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="Falloff Settings" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Falloff settings" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel Spacing="12">
+                    <Grid
+                        ColumnDefinitions="Auto,*,Auto"
+                        Margin="0,4"
+                        RowDefinitions="Auto,Auto,Auto">
 
-                            <StackPanel Grid.Column="0" Grid.Row="0">
-                                <TextBlock FontWeight="Bold" Text="Outer Eye Falloff" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <CheckBox
-                                Grid.Column="2"
-                                Grid.Row="0"
-                                IsChecked="{Binding OuterEyeFalloff}" />
+                        <StackPanel Grid.Column="0" Grid.Row="0">
+                            <TextBlock FontWeight="Bold" Text="Outer Eye Falloff" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <CheckBox
+                            Grid.Column="2"
+                            Grid.Row="0"
+                            IsChecked="{Binding OuterEyeFalloff}" />
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="1"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="Force Eye Dominant" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <ComboBox
-                                Grid.Column="2"
-                                Grid.Row="1"
-                                Margin="0,8"
-                                SelectedIndex="{Binding EyeDominantIndex, Mode=TwoWay}"
-                                Width="300">
-                                <ComboBoxItem>None</ComboBoxItem>
-                                <ComboBoxItem>Left Eye</ComboBoxItem>
-                                <ComboBoxItem>Right Eye</ComboBoxItem>
-                            </ComboBox>
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="Force Eye Dominant" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <ComboBox
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            Margin="0,8"
+                            SelectedIndex="{Binding EyeDominantIndex, Mode=TwoWay}"
+                            Width="300">
+                            <ComboBoxItem>None</ComboBoxItem>
+                            <ComboBoxItem>Left Eye</ComboBoxItem>
+                            <ComboBoxItem>Right Eye</ComboBoxItem>
+                        </ComboBox>
 
-                            <StackPanel Grid.Column="0" Grid.Row="2">
-                                <TextBlock FontWeight="Bold" Text="Eye Difference Threshold" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <NumericUpDown
-                                Grid.Column="2"
-                                Grid.Row="2"
-                                TextAlignment="Center"
-                                Value="{Binding EyeDifferenceThreshold, Mode=TwoWay}" />
-                        </Grid>
+                        <StackPanel Grid.Column="0" Grid.Row="2">
+                            <TextBlock FontWeight="Bold" Text="Eye Difference Threshold" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="2"
+                            TextAlignment="Center"
+                            Value="{Binding EyeDifferenceThreshold, Mode=TwoWay}" />
+                    </Grid>
 
-                    </StackPanel>
-                </controls:SettingsExpander.ExpanderContent>
-            </controls:SettingsExpander>
+                </StackPanel>
+            </Expander>
 
             <Expander
                 HorizontalAlignment="Stretch"
@@ -561,109 +584,132 @@
                 </StackPanel>
             </Expander>
 
-            <controls:SettingsExpander
-                Description="Fine-tune blink detection"
-                IconPath="EyeTrackingRegular"
-                Title="Blink Detection">
-                <controls:SettingsExpander.ExpanderContent>
-                    <StackPanel Spacing="8">
-                        <Grid
-                            ColumnDefinitions="Auto,*,Auto"
-                            Margin="0,4"
-                            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                            <Grid.Styles>
-                                <Style Selector="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Margin" Value="0,0,16,0" />
-                                </Style>
-                                <Style Selector="NumericUpDown">
-                                    <Setter Property="Margin" Value="0,4" />
-                                </Style>
-                            </Grid.Styles>
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource EyeTrackingRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="Blink Detection" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Fine-tune blink detection" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <StackPanel Spacing="8">
+                    <Grid
+                        ColumnDefinitions="Auto,*,Auto"
+                        Margin="0,4"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                        <Grid.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Margin" Value="0,0,16,0" />
+                            </Style>
+                            <Style Selector="NumericUpDown">
+                                <Setter Property="Margin" Value="0,4" />
+                            </Style>
+                        </Grid.Styles>
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="1"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="Blink Detection Algorithm" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <ComboBox
-                                Grid.Column="2"
-                                Grid.Row="0"
-                                Margin="0,8"
-                                SelectedIndex="{Binding BlinkDetectionAlgorithmIndex, Mode=TwoWay}"
-                                Width="300">
-                                <ComboBoxItem>Intensity Based Openness</ComboBoxItem>
-                                <ComboBoxItem>RANSAC Quick Blink Algo</ComboBoxItem>
-                                <ComboBoxItem>Binary Blink Algo</ComboBoxItem>
-                                <ComboBoxItem>LEAP Lid</ComboBoxItem>
-                            </ComboBox>
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="Blink Detection Algorithm" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <ComboBox
+                            Grid.Column="2"
+                            Grid.Row="0"
+                            Margin="0,8"
+                            SelectedIndex="{Binding BlinkDetectionAlgorithmIndex, Mode=TwoWay}"
+                            Width="300">
+                            <ComboBoxItem>Intensity Based Openness</ComboBoxItem>
+                            <ComboBoxItem>RANSAC Quick Blink Algo</ComboBoxItem>
+                            <ComboBoxItem>Binary Blink Algo</ComboBoxItem>
+                            <ComboBoxItem>LEAP Lid</ComboBoxItem>
+                        </ComboBox>
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="0"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="LEAP Calibration Samples" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <NumericUpDown
-                                Grid.Column="2"
-                                Grid.Row="1"
-                                Margin="0,8"
-                                TextAlignment="Center"
-                                Value="{Binding LeapCalibrationSamples, Mode=TwoWay}"
-                                Width="300" />
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="LEAP Calibration Samples" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding LeapCalibrationSamples, Mode=TwoWay}"
+                            Width="300" />
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="2"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="IBO Filter Sample Size" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <NumericUpDown
-                                Grid.Column="2"
-                                Grid.Row="2"
-                                Margin="0,8"
-                                TextAlignment="Center"
-                                Value="{Binding IboFilterSampleSize, Mode=TwoWay}"
-                                Width="300" />
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="2"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="IBO Filter Sample Size" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="2"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding IboFilterSampleSize, Mode=TwoWay}"
+                            Width="300" />
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="3"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="Calibration Samples" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <NumericUpDown
-                                Grid.Column="2"
-                                Grid.Row="3"
-                                Margin="0,8"
-                                TextAlignment="Center"
-                                Value="{Binding CalibrationSamples, Mode=TwoWay}"
-                                Width="300" />
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="3"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="Calibration Samples" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="3"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding CalibrationSamples, Mode=TwoWay}"
+                            Width="300" />
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Grid.Row="4"
-                                Margin="0,8">
-                                <TextBlock FontWeight="Bold" Text="IBO Close Threshold" />
-                                <TextBlock Text="Description" />
-                            </StackPanel>
-                            <NumericUpDown
-                                Grid.Column="2"
-                                Grid.Row="4"
-                                Increment="0.1"
-                                Margin="0,8"
-                                TextAlignment="Center"
-                                Value="{Binding IboCloseThreshold, Mode=TwoWay}"
-                                Width="300" />
-                        </Grid>
-                    </StackPanel>
-                </controls:SettingsExpander.ExpanderContent>
-            </controls:SettingsExpander>
+                        <StackPanel
+                            Grid.Column="0"
+                            Grid.Row="4"
+                            Margin="0,8">
+                            <TextBlock FontWeight="Bold" Text="IBO Close Threshold" />
+                            <TextBlock Text="Description" />
+                        </StackPanel>
+                        <NumericUpDown
+                            Grid.Column="2"
+                            Grid.Row="4"
+                            Increment="0.1"
+                            Margin="0,8"
+                            TextAlignment="Center"
+                            Value="{Binding IboCloseThreshold, Mode=TwoWay}"
+                            Width="300" />
+                    </Grid>
+                </StackPanel>
+            </Expander>
 
             <controls:SettingsToggle
                 Description="Use eclipse-based dilation?"

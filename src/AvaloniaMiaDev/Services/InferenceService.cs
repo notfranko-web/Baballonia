@@ -17,21 +17,13 @@ namespace AvaloniaMiaDev.Services;
 
 public class InferenceService : IInferenceService
 {
-    public PlatformConnector[] PlatformConnectors { get; } = new PlatformConnector[3];
-    public int Fps => (int) MathF.Floor(1000f / Ms);
-    public float Ms { get; set; }
-    public bool IsRunning { get; private set; }
+    public (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
+        = new (PlatformSettings settings, PlatformConnector connector)[3];
 
-    private readonly DenseTensor<float> _inputTensor = new DenseTensor<float>([1, 1, 256, 256]);
+    private readonly string[] _onnxModels = ["leftEyeModel.onnx", "rightEyeModel.onnx", "faceModel.onnx"];
     private readonly Stopwatch _sw = Stopwatch.StartNew();
     private readonly ILogger<InferenceService> _logger;
     private readonly ILocalSettingsService _localSettingsService;
-
-    private Size _inputSize = new Size(256, 256);
-    private InferenceSession? _session;
-    private OneEuroFilter? _floatFilter;
-    private float _lastTime = 0;
-    private string? _inputName;
 
     public InferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
     {
@@ -47,16 +39,23 @@ public class InferenceService : IInferenceService
 
             var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
             var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
-            _floatFilter = new OneEuroFilter(
-                minCutoff: minCutoff,
-                beta: speedCoeff
-            );
 
-            _session = new InferenceSession("model.onnx", sessionOptions);
-            _inputName = _session.InputMetadata.Keys.First();
-            int[] dimensions = _session.InputMetadata.Values.First().Dimensions;
-            _inputSize = new(dimensions[2], dimensions[3]);
-            IsRunning = true;
+            for (var index = 0; index < _onnxModels.Length; index++)
+            {
+                var modelName = _onnxModels[index];
+                var filter = new OneEuroFilter(
+                    minCutoff: minCutoff,
+                    beta: speedCoeff
+                );
+
+                var session = new InferenceSession(modelName, sessionOptions);
+                var inputName = session.InputMetadata.Keys.First();
+                var dimensions = session.InputMetadata.Values.First().Dimensions;
+                var inputSize = new Size(dimensions[2], dimensions[3]);
+                var tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
+                var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
+                PlatformConnectors[index] = (platformSettings, null)!;
+            }
 
             logger.LogInformation("Inference started!");
         });
@@ -71,38 +70,37 @@ public class InferenceService : IInferenceService
     public bool GetExpressionData(Camera camera, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
-        if (!IsRunning)
-        {
-            return false;
-        }
 
-        if (PlatformConnectors[(int)camera] is null)
+        var index = (int)camera;
+        var platformSettings = PlatformConnectors[index].Item1;
+        var platformConnector = PlatformConnectors[index].Item2;
+        if (platformConnector is null)
         {
             return false;
         }
 
         // Test if the camera is not ready or connecting to new source
-        if (!PlatformConnectors[(int)camera].Capture!.IsReady) return false;
+        if (!platformConnector.Capture!.IsReady) return false;
 
         // Camera ready, prepare Mat as DenseTensor
         var inputs = new List<NamedOnnxValue>
         {
-            NamedOnnxValue.CreateFromTensor(_inputName, _inputTensor)
+            NamedOnnxValue.CreateFromTensor(platformSettings.InputName, platformSettings.Tensor)
         };
 
         // Run inference!
-        using var results = _session!.Run(inputs);
+        using var results = platformSettings.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
         float time = (float)_sw.Elapsed.TotalSeconds;
-        Ms = (time - _lastTime) * 1000;
+        platformSettings.Ms = (time - platformSettings.LastTime) * 1000;
 
         // Filter ARKit Expressions
         for (int i = 0; i < arKitExpressions.Length; i++)
         {
-            arKitExpressions[i] = _floatFilter!.Filter(arKitExpressions[i], time - _lastTime);
+            arKitExpressions[i] = platformSettings.Filter.Filter(arKitExpressions[i], time - platformSettings.LastTime);
         }
 
-        _lastTime = time;
+        platformSettings.LastTime = time;
         return true;
     }
 
@@ -110,34 +108,38 @@ public class InferenceService : IInferenceService
     /// Gets the pre-transform lip image for this frame
     /// This image will be (dimensions.width)px * (dimensions.height)px in provided ColorType
     /// </summary>
+    /// <param name="color"></param>
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
+    /// <param name="cameraSettings"></param>
     /// <returns></returns>
     public bool GetRawImage(CameraSettings cameraSettings, ColorType color, out byte[] image, out (int width, int height) dimensions)
     {
-        if (PlatformConnectors is null)
+        var index = (int)cameraSettings.Camera;
+        var platformConnector = PlatformConnectors[index].Item2;
+        if (platformConnector is null)
         {
             dimensions = (0, 0);
-            image = Array.Empty<byte>();
+            image = [];
             return false;
         }
 
-        if (PlatformConnectors[(int)cameraSettings.Camera]?.Capture!.RawMat is null)
+        if (platformConnector.Capture!.RawMat is null)
         {
             dimensions = (0, 0);
-            image = Array.Empty<byte>();
+            image = [];
             return false;
         }
 
-        dimensions = PlatformConnectors[(int)cameraSettings.Camera].Capture!.Dimensions;
-        if (color == ((PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.Channels() == 1) ? ColorType.Gray8 : ColorType.Bgr24))
+        dimensions = platformConnector.Capture!.Dimensions;
+        if (color == (platformConnector.Capture!.RawMat.Channels() == 1 ? ColorType.Gray8 : ColorType.Bgr24))
         {
-            image = PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.AsSpan<byte>().ToArray();
+            image = platformConnector.Capture!.RawMat.AsSpan<byte>().ToArray();
         }
         else
         {
             using var convertedMat = new Mat();
-            Cv2.CvtColor(PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat, convertedMat, (PlatformConnectors[(int)cameraSettings.Camera].Capture!.RawMat.Channels() == 1) ? color switch
+            Cv2.CvtColor(platformConnector.Capture!.RawMat, convertedMat, (platformConnector.Capture!.RawMat.Channels() == 1) ? color switch
             {
                 ColorType.Bgr24 => ColorConversionCodes.GRAY2BGR,
                 ColorType.Rgb24 => ColorConversionCodes.GRAY2RGB,
@@ -158,6 +160,7 @@ public class InferenceService : IInferenceService
     /// Gets the prost-transform lip image for this frame
     /// This image will be 256*256px, single-channel
     /// </summary>
+    /// <param name="cameraSettings"></param>
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
@@ -165,11 +168,13 @@ public class InferenceService : IInferenceService
     {
         image = null;
         dimensions = (0, 0);
-        if (PlatformConnectors is null) return false;
+        var platformSettings = PlatformConnectors[(int)cameraSettings.Camera].Item1;
+        var platformConnector = PlatformConnectors[(int)cameraSettings.Camera].Item2;
+        if (platformConnector is null) return false;
 
-        byte[] data = new byte[_inputSize.Width * _inputSize.Height];
-        using var imageMat = Mat<byte>.FromPixelData(_inputSize.Height, _inputSize.Width, data);
-        if (PlatformConnectors[(int)cameraSettings.Camera]?.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
+        byte[] data = new byte[platformSettings.InputSize.Width * platformSettings.InputSize.Height];
+        using var imageMat = Mat<byte>.FromPixelData(platformSettings.InputSize.Height, platformSettings.InputSize.Width, data);
+        if (platformConnector.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
 
         image = data;
         dimensions = (imageMat.Width, imageMat.Height);
@@ -207,15 +212,15 @@ public class InferenceService : IInferenceService
     {
         if (OperatingSystem.IsAndroid())
         {
-            PlatformConnectors[(int)camera] = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
-            PlatformConnectors[(int)camera].Initialize(cameraIndex);
+            PlatformConnectors[(int)camera].Item2 = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
         }
         else
         {
             // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
             // Use the standard EmguCV VideoCapture backend
-            PlatformConnectors[(int)camera] = new DesktopConnector(cameraIndex, _logger, _localSettingsService);
-            PlatformConnectors[(int)camera].Initialize(cameraIndex);
+            PlatformConnectors[(int)camera].Item2 = new DesktopConnector(cameraIndex, _logger, _localSettingsService);
+            PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
         }
     }
 
