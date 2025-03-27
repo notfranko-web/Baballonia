@@ -298,8 +298,7 @@ public class InferenceService : IInferenceService
                 _logger.LogWarning("Failed to create DML Execution Provider on Windows. Falling back to CUDA...");
             }
         }
-
-
+        
         // If the user's system does not support DirectML (for whatever reason,
         // it's shipped with Windows 10, version 1903(10.0; Build 18362)+
         // Fallback on good ol' CUDA
@@ -312,7 +311,21 @@ public class InferenceService : IInferenceService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to configure Gpu.");
-            _logger.LogWarning("Failed to create CUDA Execution Provider on Windows.");
+            _logger.LogWarning("Failed to create CUDA Execution Provider.");
+        }
+
+        // And, if CUDA fails (or we have an AMD card)
+        // Try one more time with ROCm
+        try
+        {
+            sessionOptions.AppendExecutionProvider_ROCm();
+            _logger.LogInformation("Initialized ExecutionProvider: ROCm");
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to configure ROCm.");
+            _logger.LogWarning("Failed to create ROCm Execution Provider.");
         }
 
         _logger.LogWarning("No GPU acceleration will be applied.");

@@ -14,6 +14,9 @@ public class DesktopConnector : PlatformConnector
     private static readonly HashSet<string> SerialConnections
         = new(StringComparer.OrdinalIgnoreCase) { "com" };
 
+    private static readonly HashSet<string> VftConnections
+        = new(StringComparer.OrdinalIgnoreCase) { "/dev" };
+
     private static readonly HashSet<string> IpConnectionsPrefixes
         = new(StringComparer.OrdinalIgnoreCase) { "http", };
 
@@ -30,5 +33,10 @@ public class DesktopConnector : PlatformConnector
             { (IpConnectionsPrefixes, false), typeof(IpCameraCapture) },
             { (IpConnectionsSuffixes, true), typeof(IpCameraCapture) }
         };
+
+        if (OperatingSystem.IsLinux())
+        {
+            Captures.Add((VftConnections, false), typeof(VftCapture));
+        }
     }
 }
