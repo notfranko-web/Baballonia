@@ -124,10 +124,10 @@ public sealed class OpenCvCapture : Capture
     /// <xlinka>
     /// Disposes of the VideoCapture instance and sets IsReady to false to ensure resources are released.
     /// </xlinka>
-    public override bool StopCapture()
+    public override Task<bool> StopCapture()
     {
         if (_videoCapture is null)
-            return false;
+            return Task.FromResult(false);
 
         if (_updateTask != null) {
             _updateTaskCTS.Cancel();
@@ -138,6 +138,6 @@ public sealed class OpenCvCapture : Capture
         _videoCapture.Release();
         _videoCapture.Dispose();
         _videoCapture = null;
-        return true;
+        return Task.FromResult(true);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,18 +63,7 @@ public class VftCapture : Capture
             try
             {
                 // Open the VFT device and initialize it.
-                var fd = ViveFacialTracker.open(Url, ViveFacialTracker.FileOpenFlags.O_RDWR);
-                if (fd != -1)
-                {
-                    try
-                    {
-                        await ViveFacialTracker.activate_tracker(fd);
-                    }
-                    finally
-                    {
-                        ViveFacialTracker.close(fd);
-                    }
-                }
+                await SetTrackerState(setActive: true);
 
                 // Initialize VideoCapture with URL, timeout for robustness
                 // Set capture mode to YUYV
@@ -85,8 +75,9 @@ public class VftCapture : Capture
                 _loop = true;
                 _ = Task.Run(VideoCapture_UpdateLoop);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 IsReady = false;
                 return IsReady;
             }
@@ -124,11 +115,35 @@ public class VftCapture : Capture
         return Task.CompletedTask;
     }
 
+    private async Task SetTrackerState(bool setActive)
+    {
+        // Prev: var fd = ViveFacialTracker.open(Url, ViveFacialTracker.FileOpenFlags.O_RDWR);
+        var vftFileStream = File.Open(Url, FileMode.Open, FileAccess.ReadWrite);
+        var fd = vftFileStream.SafeFileHandle.DangerousGetHandle();
+        if (fd != IntPtr.Zero)
+        {
+            try
+            {
+                // Activate the tracker and give it some time to warm up/cool down
+                if (setActive)
+                    await ViveFacialTracker.activate_tracker((int)fd);
+                else
+                    await ViveFacialTracker.deactivate_tracker((int)fd);
+                // await Task.Delay(1000);
+            }
+            finally
+            {
+                // Prev: ViveFacialTracker.close((int)fd);
+                vftFileStream.Close();
+            }
+        }
+    }
+
     /// <summary>
     /// Stops video capture and cleans up resources.
     /// </summary>
     /// <returns>True if capture stopped successfully, otherwise false.</returns>
-    public override bool StopCapture()
+    public override async Task<bool> StopCapture()
     {
         if (_videoCapture is null)
             return false;
@@ -138,6 +153,7 @@ public class VftCapture : Capture
         _videoCapture.Release();
         _videoCapture.Dispose();
         _videoCapture = null;
+        await SetTrackerState(false);
         return true;
     }
 }

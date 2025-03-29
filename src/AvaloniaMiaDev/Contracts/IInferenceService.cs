@@ -15,4 +15,6 @@ public interface IInferenceService
     public bool GetImage(CameraSettings cameraSettings, out byte[]? image, out (int width, int height) dimensions);
 
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex);
+
+    public void Shutdown();
 }

@@ -50,7 +50,7 @@ public abstract class Capture
     /// Stop Capture on this source
     /// </summary>
     /// <returns></returns>
-    public abstract bool StopCapture();
+    public abstract Task<bool> StopCapture();
 
     public Capture(string url)
     {

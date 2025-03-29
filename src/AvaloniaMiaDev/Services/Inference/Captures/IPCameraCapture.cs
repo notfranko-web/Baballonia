@@ -157,11 +157,11 @@ public sealed class IpCameraCapture(string url) : Capture(url)
         } while (idx < streamLength);
     }
 
-    public override bool StopCapture()
+    public override Task<bool> StopCapture()
     {
         _cancellationTokenSource.Cancel();
         IsReady = false;
-        return true;
+        return Task.FromResult(true);
     }
 
     public static byte[] TrimEnd(byte[] array)

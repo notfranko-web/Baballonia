@@ -89,7 +89,6 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static void xu_set_cur(int fd, byte selector, byte[] data)
         {
-            Console.WriteLine("xu_set_cur");
             unsafe
             {
                 fixed (byte* dataptr = &data[0])
@@ -109,7 +108,6 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static byte[] xu_get_cur(int fd, byte selector, int len)
         {
-            //Console.WriteLine("get_cur");
             byte[] data = new byte[len];
             unsafe
             {
@@ -132,13 +130,11 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static void set_cur_no_resp(int fd, byte[] data)
         {
-            Console.WriteLine("set_cur_no_resp: " + string.Join(",", data));
             xu_set_cur(fd, 2, data);
         }
 
         public static bool set_cur(int fd, byte[] data, int timeout = 1000)
         {
-            Console.WriteLine("set_cur: " + string.Join(", ", data));
             xu_set_cur(fd, 2, data);
             CancellationTokenSource cts = new CancellationTokenSource(timeout);
             while (!cts.Token.IsCancellationRequested)
@@ -149,28 +145,16 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
                     case 0x55:
                         break;
                     case 0x56:
-                        if (Enumerable.SequenceEqual(data[0..16], rcvdata[1..17]))
-                        {
-                            Console.WriteLine("Equal");
-                            return true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Non-Equal");
-                            return false;
-                        }
+                        return Enumerable.SequenceEqual(data[0..16], rcvdata[1..17]);
                     default:
-                        Console.WriteLine("Invalid Response");
                         return false;
                 }
             }
-            Console.WriteLine("set_cur timed out");
             return false;
         }
 
         public static void set_register(int fd, int reg, int addr, int value)
         {
-            Console.WriteLine("set_register");
             byte[] data = new byte[384];
 
             data[0] = _XU_TASK_SET;
@@ -199,7 +183,6 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static int get_register(int fd, int reg, int addr)
         {
-            Console.WriteLine("get_register");
             byte[] data = new byte[384];
 
             data[0] = _XU_TASK_GET;
@@ -231,19 +214,16 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static void set_register_sensor(int fd, int addr, int value)
         {
-            Console.WriteLine("set_register_sensor");
             set_register(fd, _XU_REG_SENSOR, addr, value);
         }
 
         public static void get_register_sensor(int fd, int addr)
         {
-            Console.WriteLine("get_register_sensor");
             get_register(fd, _XU_REG_SENSOR, addr);
         }
 
         public static void set_enable_stream(int fd, bool enable)
         {
-            Console.WriteLine("set_enable_stream");
             byte[] data = new byte[384];
             data[0] = _XU_TASK_SET;
             data[1] = 0x14;
@@ -256,7 +236,6 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public static uint get_len(int fd)
         {
-            Console.WriteLine("get_len");
             uint length = 0;
             unsafe
             {
@@ -275,7 +254,6 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
 
         public async static Task<bool> activate_tracker(int fd)
         {
-            Console.WriteLine("activate_tracker");
             //uint l = get_len(fd);
             byte[] data = new byte[384];
             data[0] = 0x51;
@@ -294,6 +272,36 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
             set_register_sensor(fd, 0x02, 0xFF); //IR ON
             set_register_sensor(fd, 0x03, 0xFF); // IR ON
             set_register_sensor(fd, 0x04, 0xFF); // IR ON
+            set_register_sensor(fd, 0x0e, 0x00);
+            set_register_sensor(fd, 0x05, 0xb2);
+            set_register_sensor(fd, 0x06, 0xb2);
+            set_register_sensor(fd, 0x07, 0xb2);
+            set_register_sensor(fd, 0x0f, 0x03);
+            set_cur(fd, data);
+            set_enable_stream(fd, true);
+            return true;
+        }
+
+        public async static Task<bool> deactivate_tracker(int fd)
+        {
+            //uint l = get_len(fd);
+            byte[] data = new byte[384];
+            data[0] = 0x51;
+            data[1] = 0x52;
+            data[254] = 0x53;
+            data[255] = 0x54;
+
+            set_cur(fd, data);
+            set_enable_stream(fd, false);
+            set_cur(fd, data);
+
+            // 0x02, 0x03 and 0x04 all control IR intensity.
+            set_register_sensor(fd, 0x00, 0x40);
+            set_register_sensor(fd, 0x08, 0x01);
+            set_register_sensor(fd, 0x70, 0x00);
+            set_register_sensor(fd, 0x02, 0x00); //IR Off
+            set_register_sensor(fd, 0x03, 0x00); // IR Off
+            set_register_sensor(fd, 0x04, 0x00); // IR Off
             set_register_sensor(fd, 0x0e, 0x00);
             set_register_sensor(fd, 0x05, 0xb2);
             set_register_sensor(fd, 0x06, 0xb2);

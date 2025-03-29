@@ -50,17 +50,17 @@ public sealed class SerialCameraCapture(string portName) : Capture(portName), ID
         return Task.FromResult(IsReady);
     }
 
-    public override bool StopCapture()
+    public override Task<bool> StopCapture()
     {
         try
         {
             _serialPort.Close();
             IsReady = false;
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception)
         {
-            return false;
+            return Task.FromResult(false);
         }
     }
 

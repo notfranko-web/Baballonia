@@ -298,7 +298,7 @@ public class InferenceService : IInferenceService
                 _logger.LogWarning("Failed to create DML Execution Provider on Windows. Falling back to CUDA...");
             }
         }
-        
+
         // If the user's system does not support DirectML (for whatever reason,
         // it's shipped with Windows 10, version 1903(10.0; Build 18362)+
         // Fallback on good ol' CUDA
@@ -329,5 +329,20 @@ public class InferenceService : IInferenceService
         }
 
         _logger.LogWarning("No GPU acceleration will be applied.");
+    }
+
+    /// <summary>
+    /// Shutdown and cleanup
+    /// </summary>
+    public void Shutdown()
+    {
+        foreach (var platformConnector in PlatformConnectors)
+        {
+            var pc = platformConnector.Item2;
+            if (pc != null)
+            {
+                pc.Terminate();
+            }
+        }
     }
 }

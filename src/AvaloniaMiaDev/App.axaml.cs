@@ -151,6 +151,9 @@ public partial class App : Application
 
         var vrcft = Ioc.Default.GetRequiredService<IMainService>();
         Task.Run(vrcft.Teardown);
+
+        var infer = Ioc.Default.GetRequiredService<IInferenceService>();
+        infer.Shutdown();
     }
 
     private void OnTrayShutdownClicked(object? sender, EventArgs e)
