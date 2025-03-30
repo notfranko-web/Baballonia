@@ -15,7 +15,6 @@ namespace AvaloniaMiaDev.Services;
 public class ParameterSenderService(
     IInferenceService inferenceService,
     OscSendService sendService,
-    ILocalSettingsService localSettingsService,
     FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
     // We probably don't need a queue since we use osc message bundles, but for now, we're keeping it as
@@ -66,18 +65,9 @@ public class ParameterSenderService(
 
                         foreach (var exp in weights)
                         {
-                            // CalibrationItems is updated only once at the start, so we poll settings to get calibration values here
-                            // Don't worry bro it's a dictionary O(1)
-
-                            var calibrationItemKey = FaceCalibrationViewModel.GetCalibrationItemKey(exp.calibrationItem.ShapeName!);
-                            var updatedExp = await localSettingsService.ReadSettingAsync<CalibrationItem>(calibrationItemKey);
-
-                            var message = new OscMessage(updatedExp.ShapeName!, typeof(float))
+                            var message = new OscMessage(exp.calibrationItem.ShapeName!, typeof(float))
                             {
-                                Value = Math.Clamp(
-                                    exp.weight,
-                                    updatedExp.Min,
-                                    updatedExp.Max)
+                                Value = Math.Clamp(exp.weight, exp.calibrationItem.Min, exp.calibrationItem.Max)
                             };
                             SendQueue.Enqueue(message);
                         }

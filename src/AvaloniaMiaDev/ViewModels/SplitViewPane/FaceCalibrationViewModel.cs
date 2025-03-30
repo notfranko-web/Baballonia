@@ -1,9 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,121 +8,65 @@ namespace AvaloniaMiaDev.ViewModels.SplitViewPane;
 
 public partial class FaceCalibrationViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    private ObservableCollection<CalibrationItem> _calibrationItems;
-
-    private ILocalSettingsService SettingsService { get; }
-    private const string CalibrationItemKeyPrefix = "FaceHome_CalibrationItem";
-    private bool _isInitializing = true;
-
-    private static readonly string[] DefaultCalibrationShapes =
+    public ObservableCollection<CalibrationItem> CalibrationItems { get; } =
     [
-        "/cheekPuffLeft",
-        "/cheekPuffRight",
-        "/cheekSuckLeft",
-        "/cheekSuckRight",
-        "/jawOpen",
-        "/jawForward",
-        "/jawLeft",
-        "/jawRight",
-        "/noseSneerLeft",
-        "/noseSneerRight",
-        "/mouthFunnel",
-        "/mouthPucker",
-        "/mouthLeft",
-        "/mouthRight",
-        "/mouthRollUpper",
-        "/mouthRollLower",
-        "/mouthShrugUpper",
-        "/mouthShrugLower",
-        "/mouthClose",
-        "/mouthSmileLeft",
-        "/mouthSmileRight",
-        "/mouthFrownLeft",
-        "/mouthFrownRight",
-        "/mouthDimpleLeft",
-        "/mouthDimpleRight",
-        "/mouthUpperUpLeft",
-        "/mouthUpperUpRight",
-        "/mouthLowerDownLeft",
-        "/mouthLowerDownRight",
-        "/mouthPressLeft",
-        "/mouthPressRight",
-        "/mouthStretchLeft",
-        "/mouthStretchRight",
-        "/tongueOut",
-        "/tongueUp",
-        "/tongueDown",
-        "/tongueLeft",
-        "/tongueRight",
-        "/tongueRoll",
-        "/tongueBendDown",
-        "/tongueCurlUp",
-        "/tongueSquish",
-        "/tongueFlat",
-        "/tongueTwistLeft",
-        "/tongueTwistRight"
+        new CalibrationItem { ShapeName = "/cheekPuffLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/cheekPuffRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/cheekSuckLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/cheekSuckRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/jawOpen", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/jawForward", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/jawLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/jawRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/noseSneerLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/noseSneerRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthFunnel", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthPucker", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthRollUpper", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthRollLower", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthShrugUpper", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthShrugLower", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthClose", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthSmileLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthSmileRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthFrownLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthFrownRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthDimpleLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthDimpleRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthUpperUpLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthUpperUpRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthLowerDownLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthLowerDownRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthPressLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthPressRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthStretchLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/mouthStretchRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueOut", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueUp", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueDown", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueRight", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueRoll", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueBendDown", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueCurlUp", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueSquish", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueFlat", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueTwistLeft", Min = 0, Max = 1 },
+        new CalibrationItem { ShapeName = "/tongueTwistRight", Min = 0, Max = 1 }
     ];
+
+    private ILocalSettingsService _settingsService { get; }
 
     public FaceCalibrationViewModel()
     {
-        SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
-        SettingsService.Load(this);
+        _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        _settingsService.Load(this);
 
-        Task.Run(async () =>
+        PropertyChanged += (_, _) =>
         {
-            _calibrationItems = [];
-            await LoadIndividualItemSettings();
-            SubscribeToItemPropertyChanges();
-            _isInitializing = false;
-            return Task.CompletedTask;
-        });
-
-        PropertyChanged += (_, args) =>
-        {
-            SettingsService.Save(this);
+            _settingsService.Save(this);
         };
-    }
-
-    private async Task LoadIndividualItemSettings()
-    {
-        foreach (var item in DefaultCalibrationShapes)
-        {
-            var savedItem = await SettingsService.ReadSettingAsync<CalibrationItem>(GetCalibrationItemKey(item));
-            _calibrationItems.Add(savedItem);
-        }
-    }
-
-    private void SubscribeToItemPropertyChanges()
-    {
-        foreach (var item in _calibrationItems)
-        {
-            if (item is INotifyPropertyChanged notifyItem)
-            {
-                notifyItem.PropertyChanged += (sender, args) =>
-                {
-                    if (!_isInitializing && sender is CalibrationItem changedItem)
-                    {
-                        SaveCalibrationItem(changedItem);
-                    }
-                };
-            }
-        }
-    }
-
-    private void SaveCalibrationItem(CalibrationItem item)
-    {
-        var key = GetCalibrationItemKey(item);
-        SettingsService.SaveSettingAsync(key, item).ConfigureAwait(false);
-    }
-
-    public static string GetCalibrationItemKey(CalibrationItem item)
-    {
-        return $"{CalibrationItemKeyPrefix}{item.ShapeName!.Replace("/", "_")}";
-    }
-
-    public static string GetCalibrationItemKey(string item)
-    {
-        return $"{CalibrationItemKeyPrefix}{item.Replace("/", "_")}";
     }
 }
