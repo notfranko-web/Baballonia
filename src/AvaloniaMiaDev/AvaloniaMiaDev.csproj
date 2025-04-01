@@ -9,8 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Assets\**" />
         <None Remove="model.onnx" />
+        <None Update="LocalSettings.json">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 
@@ -42,14 +45,6 @@
 
 
     <ItemGroup>
-      <ProjectReference Include="..\HyperText.Avalonia\HyperText.Avalonia\HyperText.Avalonia.csproj" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-      <None Update="LocalSettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="Languages\en.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

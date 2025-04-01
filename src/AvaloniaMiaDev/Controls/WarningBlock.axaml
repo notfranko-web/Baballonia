@@ -4,7 +4,6 @@
     mc:Ignorable="d"
     x:Class="AvaloniaMiaDev.Controls.WarningBlock"
     xmlns="https://github.com/avaloniaui"
-    xmlns:controls="clr-namespace:HyperText.Avalonia.Controls;assembly=HyperText.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:templates="clr-namespace:AvaloniaMiaDev.Controls"
@@ -38,11 +37,6 @@
                 FontSize="14"
                 Foreground="{DynamicResource SystemChromeGrayColor}"
                 Text="{Binding $parent[templates:WarningBlock].Subheader}" />
-            <controls:Hyperlink
-                Alias="{Binding $parent[templates:WarningBlock].Caption}"
-                Command="{Binding $parent[templates:WarningBlock].NavigateCommand}"
-                FontSize="14"
-                Url="{Binding $parent[templates:WarningBlock].Caption}" />
         </StackPanel>
 
         <Button

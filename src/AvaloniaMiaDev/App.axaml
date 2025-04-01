@@ -2,7 +2,6 @@
     RequestedThemeVariant="Dark"
     x:Class="AvaloniaMiaDev.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:avalonia="clr-namespace:HyperText.Avalonia;assembly=HyperText.Avalonia"
     xmlns:avaloniaMiaDev="clr-namespace:AvaloniaMiaDev"
     xmlns:themes="using:RangeSlider.Avalonia.Themes.Fluent"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -13,7 +12,6 @@
 
     <!--  Made using https://theme.xaml.live/  -->
     <Application.Styles>
-        <avalonia:HyperLinkStyle />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <FluentTheme>
             <FluentTheme.Palettes>
