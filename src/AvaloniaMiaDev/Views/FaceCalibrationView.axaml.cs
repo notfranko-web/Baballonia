@@ -11,31 +11,22 @@ namespace AvaloniaMiaDev.Views;
 
 public partial class FaceCalibrationView : UserControl
 {
-    private readonly FaceCalibrationViewModel _viewModel;
+    private FaceCalibrationViewModel _viewModel;
 
     public FaceCalibrationView()
     {
-        _viewModel = Ioc.Default.GetService<FaceCalibrationViewModel>()!;
-
         InitializeComponent();
-
-        DataContext = _viewModel;
+        _viewModel = Ioc.Default.GetService<FaceCalibrationViewModel>()!;
     }
 
-    public void OnResetMinClicked(object? sender, RoutedEventArgs e)
+    private void ResetMin(object? sender, RoutedEventArgs e)
     {
-        foreach (var item in _viewModel.CalibrationItems)
-        {
-            item.Min = 0.0f;
-        }
+        _viewModel.ResetCalibrationValues(FaceCalibrationViewModel.Selection.Min);
     }
 
-    public void OnResetMaxClicked(object? sender, RoutedEventArgs e)
+    private void ResetMax(object? sender, RoutedEventArgs e)
     {
-        foreach (var item in _viewModel.CalibrationItems)
-        {
-            item.Max = 1.0f;
-        }
+        _viewModel.ResetCalibrationValues(FaceCalibrationViewModel.Selection.Max);
     }
 }
 

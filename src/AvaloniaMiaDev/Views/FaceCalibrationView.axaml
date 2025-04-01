@@ -7,64 +7,1106 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:AvaloniaMiaDev.Models"
     xmlns:splitViewPane="clr-namespace:AvaloniaMiaDev.ViewModels.SplitViewPane"
     xmlns:twoRangeSlider="https://github.com/DmitryNizhebovsky/Avalonia.RangeSlider"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ScrollViewer>
         <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="Face Tracking Calibration" />
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                <TextBlock
+                    Classes="Header"
+                    Grid.Column="0"
+                    Text="Face Tracking Calibration" />
+                <StackPanel
+                    Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <TextBlock Text="(Reload page to see changes)" VerticalAlignment="Center" />
+                    <Button Click="ResetMin" Content="Reset Minimums" />
+                    <Button Click="ResetMax" Content="Reset Maximums" />
+                </StackPanel>
+            </Grid>
 
+            <!--  Cheek Puff Left  -->
             <Border
                 Background="{DynamicResource SystemChromeMediumLowColor}"
-                CornerRadius="3"
-                Padding="15">
-                <DataGrid
-                    AutoGenerateColumns="False"
-                    BorderBrush="Gray"
-                    BorderThickness="1"
-                    CanUserReorderColumns="False"
-                    CanUserResizeColumns="False"
-                    GridLinesVisibility="All"
-                    ItemsSource="{Binding CalibrationItems}"
-                    Margin="20">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Binding="{Binding ShapeName}"
-                            Header="Shape Name"
-                            IsReadOnly="True"
-                            Width="Auto" />
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Cheek Puff Left: " />
+                            <Run Text="{Binding CheekPuffLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding CheekPuffLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding CheekPuffLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding CheekPuffLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                        <DataGridTextColumn
-                            Binding="{Binding Min, StringFormat={}{0:0.00}}"
-                            Header="Min"
-                            IsReadOnly="True"
-                            Width="Auto" />
+            <!--  Cheek Puff Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Cheek Puff Right: " />
+                            <Run Text="{Binding CheekPuffRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding CheekPuffRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding CheekPuffRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding CheekPuffRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                        <DataGridTextColumn
-                            Binding="{Binding Max, StringFormat={}{0:0.00}}"
-                            Header="Max"
-                            IsReadOnly="True"
-                            Width="Auto" />
+            <!--  Cheek Suck Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Cheek Suck Left: " />
+                            <Run Text="{Binding CheekSuckLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding CheekSuckLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding CheekSuckLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding CheekSuckLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                        <DataGridTemplateColumn Header="Slider" Width="*">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate DataType="models:CalibrationItem">
-                                    <StackPanel Margin="8,8,8,8">
-                                        <twoRangeSlider:RangeSlider
-                                            LowerSelectedValue="{Binding Min, Mode=TwoWay}"
-                                            Margin="10,5"
-                                            Maximum="1"
-                                            Minimum="0"
-                                            TickFrequency="0.01"
-                                            UpperSelectedValue="{Binding Max, Mode=TwoWay}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+            <!--  Cheek Suck Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Cheek Suck Right: " />
+                            <Run Text="{Binding CheekSuckRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding CheekSuckRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding CheekSuckRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding CheekSuckRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Jaw Open  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Jaw Open: " />
+                            <Run Text="{Binding JawOpenLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding JawOpenUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding JawOpenLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding JawOpenUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Jaw Forward  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Jaw Forward: " />
+                            <Run Text="{Binding JawForwardLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding JawForwardUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding JawForwardLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding JawForwardUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Jaw Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Jaw Left: " />
+                            <Run Text="{Binding JawLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding JawLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding JawLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding JawLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Jaw Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Jaw Right: " />
+                            <Run Text="{Binding JawRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding JawRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding JawRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding JawRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Nose Sneer Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Nose Sneer Left: " />
+                            <Run Text="{Binding NoseSneerLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding NoseSneerLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding NoseSneerLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding NoseSneerLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Nose Sneer Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Nose Sneer Right: " />
+                            <Run Text="{Binding NoseSneerRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding NoseSneerRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding NoseSneerRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding NoseSneerRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Funnel  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Funnel: " />
+                            <Run Text="{Binding MouthFunnelLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthFunnelUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthFunnelLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthFunnelUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Pucker  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Pucker: " />
+                            <Run Text="{Binding MouthPuckerLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthPuckerUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthPuckerLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthPuckerUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Left: " />
+                            <Run Text="{Binding MouthLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Right: " />
+                            <Run Text="{Binding MouthRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Roll Upper  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Roll Upper: " />
+                            <Run Text="{Binding MouthRollUpperLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthRollUpperUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthRollUpperLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthRollUpperUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Roll Lower  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Roll Lower: " />
+                            <Run Text="{Binding MouthRollLowerLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthRollLowerUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthRollLowerLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthRollLowerUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Shrug Upper  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Shrug Upper: " />
+                            <Run Text="{Binding MouthShrugUpperLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthShrugUpperUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthShrugUpperLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthShrugUpperUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Shrug Lower  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Shrug Lower: " />
+                            <Run Text="{Binding MouthShrugLowerLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthShrugLowerUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthShrugLowerLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthShrugLowerUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Close  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Close: " />
+                            <Run Text="{Binding MouthCloseLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthCloseUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthCloseLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthCloseUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Smile Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Smile Left: " />
+                            <Run Text="{Binding MouthSmileLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthSmileLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthSmileLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthSmileLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Smile Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Smile Right: " />
+                            <Run Text="{Binding MouthSmileRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthSmileRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthSmileRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthSmileRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Frown Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Frown Left: " />
+                            <Run Text="{Binding MouthFrownLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthFrownLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthFrownLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthFrownLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Frown Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Frown Right: " />
+                            <Run Text="{Binding MouthFrownRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthFrownRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthFrownRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthFrownRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Dimple Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Dimple Left: " />
+                            <Run Text="{Binding MouthDimpleLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthDimpleLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthDimpleLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthDimpleLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Dimple Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Dimple Right: " />
+                            <Run Text="{Binding MouthDimpleRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthDimpleRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthDimpleRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthDimpleRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Upper Up Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Upper Up Left: " />
+                            <Run Text="{Binding MouthUpperUpLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthUpperUpLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthUpperUpLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthUpperUpLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Upper Up Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Upper Up Right: " />
+                            <Run Text="{Binding MouthUpperUpRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthUpperUpRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthUpperUpRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthUpperUpRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Lower Down Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Lower Down Left: " />
+                            <Run Text="{Binding MouthLowerDownLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthLowerDownLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthLowerDownLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthLowerDownLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Lower Down Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Lower Down Right: " />
+                            <Run Text="{Binding MouthLowerDownRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthLowerDownRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthLowerDownRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthLowerDownRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Press Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Press Left: " />
+                            <Run Text="{Binding MouthPressLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthPressLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthPressLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthPressLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Press Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Press Right: " />
+                            <Run Text="{Binding MouthPressRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthPressRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthPressRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthPressRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Stretch Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Stretch Left: " />
+                            <Run Text="{Binding MouthStretchLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthStretchLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthStretchLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthStretchLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Mouth Stretch Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Mouth Stretch Right: " />
+                            <Run Text="{Binding MouthStretchRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding MouthStretchRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding MouthStretchRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding MouthStretchRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Out  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Out: " />
+                            <Run Text="{Binding TongueOutLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueOutUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueOutLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueOutUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Up  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Up: " />
+                            <Run Text="{Binding TongueUpLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueUpUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueUpLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueUpUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Down  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Down: " />
+                            <Run Text="{Binding TongueDownLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueDownUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueDownLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueDownUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Left: " />
+                            <Run Text="{Binding TongueLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Right: " />
+                            <Run Text="{Binding TongueRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Roll  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Roll: " />
+                            <Run Text="{Binding TongueRollLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueRollUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueRollLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueRollUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Bend Down  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Bend Down: " />
+                            <Run Text="{Binding TongueBendDownLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueBendDownUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueBendDownLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueBendDownUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Curl Up Down  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Curl Up: " />
+                            <Run Text="{Binding TongueCurlUpLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueCurlUpUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueCurlUpLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueCurlUpUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Squish  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Squish: " />
+                            <Run Text="{Binding TongueSquishLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueSquishUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueSquishLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueSquishUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Flat  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Flat: " />
+                            <Run Text="{Binding TongueFlatLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueFlatUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueFlatLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueFlatUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Twist Left  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Twist Left: " />
+                            <Run Text="{Binding TongueTwistLeftLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueTwistLeftUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueTwistLeftLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueTwistLeftUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Tongue Twist Right  -->
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="8"
+                Margin="0,0,0,8"
+                Padding="16">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Tongue Twist Right: " />
+                            <Run Text="{Binding TongueTwistRightLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding TongueTwistRightUpper, StringFormat={}{0:0.00}}" />
+                        </TextBlock>
+                        <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding TongueTwistRightLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding TongueTwistRightUpper, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
         </StackPanel>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AvaloniaMiaDev.Contracts;
+using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.OSC;
 using AvaloniaMiaDev.Services.Inference.Enums;
@@ -17,26 +18,22 @@ public class ParameterSenderService(
     OscSendService sendService,
     FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
-    // We probably don't need a queue since we use osc message bundles, but for now, we're keeping it as
-    // we might want to allow a way for the user to specify bundle or single message sends in the future
-    private static readonly Queue<OscMessage> SendQueue = new();
+    private readonly Queue<OscMessage> _sendQueue = new();
 
-    private readonly Camera[] _cameras = Enum.GetValues<Camera>();
-
-    private CalibrationItem[] _leftEyeCalibrationItems =
+    private readonly CalibrationItem[] _leftEyeCalibrationItems =
     [
         new CalibrationItem { ShapeName = "/LeftEyeX", Min = -1, Max = 1 },
         new CalibrationItem { ShapeName = "/LeftEyeY", Min = -1, Max = 1 }
     ];
 
-    private CalibrationItem[] _rightEyeCalibrationItems =
+    private readonly CalibrationItem[] _rightEyeCalibrationItems =
     [
         new CalibrationItem { ShapeName = "/RightEyeX", Min = -1, Max = 1 },
         new CalibrationItem { ShapeName = "/RightEyeY", Min = -1, Max = 1 }
     ];
 
-    public static void Enqueue(OscMessage message) => SendQueue.Enqueue(message);
-    public static void Clear() => SendQueue.Clear();
+    public void Enqueue(OscMessage message) => _sendQueue.Enqueue(message);
+    public void Clear() => _sendQueue.Clear();
 
     protected async override Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -44,48 +41,11 @@ public class ParameterSenderService(
         {
             try
             {
-                for (var index = 0; index < _cameras.Length; index++)
-                {
-                    var camera = _cameras[index];
-                    if (inferenceService.GetExpressionData(camera, out var expressions))
-                    {
-                        (CalibrationItem calibrationItem, float weight)[] weights = null!;
-                        switch (index)
-                        {
-                            case 0:
-                                weights = _leftEyeCalibrationItems.Zip(expressions).ToArray();
-                                break;
-                            case 1:
-                                weights = _rightEyeCalibrationItems.Zip(expressions).ToArray();
-                                break;
-                            case 2:
-                                weights = faceCalibrationViewModel.CalibrationItems.Zip(expressions).ToArray();
-                                break;
-                        }
+                ProcessExpressionData(Camera.Left, _leftEyeCalibrationItems);
+                ProcessExpressionData(Camera.Right, _rightEyeCalibrationItems);
+                ProcessExpressionData(Camera.Face, faceCalibrationViewModel.GetCalibrationValues());
 
-                        foreach (var exp in weights)
-                        {
-                            var message = new OscMessage(exp.calibrationItem.ShapeName!, typeof(float))
-                            {
-                                Value = Math.Clamp(exp.weight, exp.calibrationItem.Min, exp.calibrationItem.Max)
-                            };
-                            SendQueue.Enqueue(message);
-                        }
-                    }
-
-                    await Task.Delay(10, cancellationToken);
-                }
-
-                // Send all messages in OSCParams.SendQueue
-                if (SendQueue.Count <= 0)
-                {
-                    continue;
-                }
-
-                await sendService.Send(SendQueue.ToArray(), cancellationToken);
-
-                SendQueue.Clear();
-
+                await SendAndClearQueue(cancellationToken);
                 await Task.Delay(10, cancellationToken);
             }
             catch (Exception)
@@ -93,5 +53,42 @@ public class ParameterSenderService(
                 // ignore!
             }
         }
+    }
+
+    private void ProcessExpressionData(Camera camera, Dictionary<string, (double Lower, double Upper)> calibrationItems)
+    {
+        if (!inferenceService.GetExpressionData(camera, out var expressions))
+            return;
+
+        foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
+        {
+            _sendQueue.Enqueue(new OscMessage(remappedExpression.Key, typeof(float))
+            {
+                Value = weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper)
+            });
+        }
+    }
+
+    private void ProcessExpressionData(Camera camera, CalibrationItem[] calibrationItems)
+    {
+        if (!inferenceService.GetExpressionData(camera, out var expressions))
+            return;
+
+        foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
+        {
+            _sendQueue.Enqueue(new OscMessage(remappedExpression.ShapeName!, typeof(float))
+            {
+                Value = Math.Clamp(weight, remappedExpression.Min, remappedExpression.Max)
+            });
+        }
+    }
+
+    private async Task SendAndClearQueue(CancellationToken cancellationToken)
+    {
+        if (_sendQueue.Count == 0)
+            return;
+
+        await sendService.Send(_sendQueue.ToArray(), cancellationToken);
+        _sendQueue.Clear();
     }
 }
