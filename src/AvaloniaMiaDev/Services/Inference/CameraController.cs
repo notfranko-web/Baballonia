@@ -215,9 +215,14 @@ public class CameraController
 
     public WriteableBitmap Bitmap => _bitmap;
 
-    public void ConfigureCamera(string cameraAddress)
+    public void StartCamera(string cameraAddress)
     {
         _inferenceService.ConfigurePlatformConnectors(_camera, cameraAddress);
+    }
+
+    public void StopCamera(Camera camera)
+    {
+        _inferenceService.Shutdown(camera);
     }
 
     public void SetTrackingMode()

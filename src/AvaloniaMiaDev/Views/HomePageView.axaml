@@ -51,24 +51,42 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Left Camera Address" />
 
-                            <Grid ColumnDefinitions="*,Auto">
+                            <Grid RowDefinitions="Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
-                                    Grid.Column="0"
+                                    Grid.Row="0"
                                     Height="36"
                                     Margin="0,8"
                                     Text="{Binding LeftCameraAddress}"
                                     Watermark="Start typing..."
                                     x:Name="LeftCameraAddressEntry" />
-                                <Button
-                                    Click="LeftCameraAddressClicked"
-                                    Content="Save &amp; Restart"
-                                    FontSize="13"
-                                    Grid.Column="1"
-                                    Margin="8,0,0,0"
-                                    Padding="12,8"
-                                    x:Name="LeftSaveAndRestartTrackingText" />
+
+                                <Grid
+                                    ColumnDefinitions="*,*"
+                                    Grid.Row="1"
+                                    Margin="0,4,0,8">
+
+                                    <Button
+                                        Click="LeftCameraStart"
+                                        Content="Start Camera"
+                                        FontSize="13"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="0,0,4,0"
+                                        Padding="12,8" />
+
+                                    <Button
+                                        Click="LeftCameraStopped"
+                                        Content="Stop Camera"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="4,0,0,0"
+                                        Padding="12,8" />
+                                </Grid>
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -197,24 +215,42 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Right Camera Address" />
 
-                            <Grid ColumnDefinitions="*,Auto">
+                            <Grid RowDefinitions="Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
-                                    Grid.Column="0"
+                                    Grid.Row="0"
                                     Height="36"
                                     Margin="0,8"
-                                    Text="{Binding RightCameraAddress}"
+                                    Text="{Binding LeftCameraAddress}"
                                     Watermark="Start typing..."
                                     x:Name="RightCameraAddressEntry" />
-                                <Button
-                                    Click="RightCameraAddressClicked"
-                                    Content="Save &amp; Restart"
-                                    FontSize="13"
-                                    Grid.Column="1"
-                                    Margin="8,0,0,0"
-                                    Padding="12,8"
-                                    x:Name="RightSaveAndRestartTrackingText" />
+
+                                <Grid
+                                    ColumnDefinitions="*,*"
+                                    Grid.Row="1"
+                                    Margin="0,4,0,8">
+
+                                    <Button
+                                        Click="RightCameraStart"
+                                        Content="Start Camera"
+                                        FontSize="13"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="0,0,4,0"
+                                        Padding="12,8" />
+
+                                    <Button
+                                        Click="RightCameraStopped"
+                                        Content="Stop Camera"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="4,0,0,0"
+                                        Padding="12,8" />
+                                </Grid>
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -343,24 +379,42 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Face Camera Address" />
 
-                            <Grid ColumnDefinitions="*,Auto">
+                            <Grid RowDefinitions="Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
-                                    Grid.Column="0"
+                                    Grid.Row="0"
                                     Height="36"
                                     Margin="0,8"
-                                    Text="{Binding FaceCameraAddress}"
+                                    Text="{Binding LeftCameraAddress}"
                                     Watermark="Start typing..."
                                     x:Name="FaceCameraAddressEntry" />
-                                <Button
-                                    Click="FaceCameraAddressClicked"
-                                    Content="Save &amp; Restart"
-                                    FontSize="13"
-                                    Grid.Column="1"
-                                    Margin="8,0,0,0"
-                                    Padding="12,8"
-                                    x:Name="FaceSaveAndRestartTrackingText" />
+
+                                <Grid
+                                    ColumnDefinitions="*,*"
+                                    Grid.Row="1"
+                                    Margin="0,4,0,8">
+
+                                    <Button
+                                        Click="FaceCameraStart"
+                                        Content="Start Camera"
+                                        FontSize="13"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="0,0,4,0"
+                                        Padding="12,8" />
+
+                                    <Button
+                                        Click="FaceCameraStopped"
+                                        Content="Stop Camera"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="4,0,0,0"
+                                        Padding="12,8" />
+                                </Grid>
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" Spacing="8">

@@ -334,6 +334,18 @@ public class InferenceService : IInferenceService
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
+    public void Shutdown(Camera camera)
+    {
+        var pc = PlatformConnectors[(int)camera].Item2;
+        if (pc != null)
+        {
+            pc.Terminate();
+        }
+    }
+
+    /// <summary>
+    /// Shutdown and cleanup
+    /// </summary>
     public void Shutdown()
     {
         foreach (var platformConnector in PlatformConnectors)

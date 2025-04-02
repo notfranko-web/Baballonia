@@ -16,5 +16,6 @@ public interface IInferenceService
 
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex);
 
+    public void Shutdown(Camera camera);
     public void Shutdown();
 }

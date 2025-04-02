@@ -171,9 +171,14 @@ public partial class HomePageView : UserControl
     }
 
     // Event handlers for left camera
-    public void LeftCameraAddressClicked(object? sender, RoutedEventArgs e)
+    public void LeftCameraStart(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.ConfigureCamera(_viewModel.LeftCameraAddress);
+        _leftCameraController.StartCamera(_viewModel.LeftCameraAddress);
+    }
+
+    private void LeftCameraStopped(object? sender, RoutedEventArgs e)
+    {
+        _leftCameraController.StopCamera(Camera.Left);
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -192,9 +197,14 @@ public partial class HomePageView : UserControl
     }
 
     // Event handlers for right camera
-    public void RightCameraAddressClicked(object? sender, RoutedEventArgs e)
+    public void RightCameraStart(object? sender, RoutedEventArgs e)
     {
-        _rightCameraController.ConfigureCamera(_viewModel.RightCameraAddress);
+        _rightCameraController.StartCamera(_viewModel.RightCameraAddress);
+    }
+
+    public void RightCameraStopped(object? sender, RoutedEventArgs e)
+    {
+        _rightCameraController.StopCamera(Camera.Right);
     }
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -213,9 +223,14 @@ public partial class HomePageView : UserControl
     }
 
     // Event handlers for face camera
-    public void FaceCameraAddressClicked(object? sender, RoutedEventArgs e)
+    public void FaceCameraStart(object? sender, RoutedEventArgs e)
     {
-        _faceCameraController.ConfigureCamera(_viewModel.FaceCameraAddress);
+        _faceCameraController.StartCamera(_viewModel.FaceCameraAddress);
+    }
+
+    public void FaceCameraStopped(object? sender, RoutedEventArgs e)
+    {
+        _faceCameraController.StopCamera(Camera.Face);
     }
 
     public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)
