@@ -182,7 +182,7 @@ public partial class HomePageView : UserControl
     // Event handlers for left camera
     public void LeftCameraStart(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.StartMjpegStreaming(8080);
+        _leftCameraController.StartCamera(_viewModel.LeftCameraAddress);
     }
 
     private void LeftCameraStopped(object? sender, RoutedEventArgs e)
@@ -209,7 +209,7 @@ public partial class HomePageView : UserControl
     // Event handlers for right camera
     public void RightCameraStart(object? sender, RoutedEventArgs e)
     {
-        _rightCameraController.StartMjpegStreaming(8081);
+        _rightCameraController.StartCamera(_viewModel.RightCameraAddress);
     }
 
     public void RightCameraStopped(object? sender, RoutedEventArgs e)
@@ -236,7 +236,7 @@ public partial class HomePageView : UserControl
     // Event handlers for face camera
     public void FaceCameraStart(object? sender, RoutedEventArgs e)
     {
-        _faceCameraController.StartMjpegStreaming(8082);
+        _faceCameraController.StartCamera(_viewModel.FaceCameraAddress);
     }
 
     public void FaceCameraStopped(object? sender, RoutedEventArgs e)
