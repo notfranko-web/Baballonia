@@ -1,6 +1,6 @@
 namespace AvaloniaMiaDev.Helpers;
 
-internal enum CamViewMode
+public enum CamViewMode
 {
     Tracking,
     Cropping

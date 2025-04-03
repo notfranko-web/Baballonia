@@ -20,7 +20,7 @@ public class MainStandalone : IMainService
 
     public Task Teardown()
     {
-        _logger.LogInformation("VRCFT Standalone Exiting!");
+        _logger.LogInformation("Exiting!");
 
         _logger.LogDebug("Resetting our time end period...");
         if (OperatingSystem.IsWindows())

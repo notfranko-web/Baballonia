@@ -20,6 +20,7 @@
                     Grid.Column="0"
                     Text="Home" />
                 <Button
+                  Click="OnVRCalibrationRequested"
                     CornerRadius="4"
                     Grid.Column="1"
                     Padding="12,8"

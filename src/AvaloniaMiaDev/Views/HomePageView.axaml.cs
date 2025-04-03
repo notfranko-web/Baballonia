@@ -1,14 +1,18 @@
 ﻿using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
+using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.Services.Inference;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using Path = System.IO.Path;
 
 namespace AvaloniaMiaDev.Views;
 
@@ -42,6 +46,7 @@ public partial class HomePageView : UserControl
     }
 
     private readonly IInferenceService _inferenceService;
+    private readonly IVRService _vrService;
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -60,6 +65,7 @@ public partial class HomePageView : UserControl
         _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
         _inferenceService = Ioc.Default.GetService<IInferenceService>()!;
+        _vrService = Ioc.Default.GetService<IVRService>()!;
         _localSettingsService.Load(this);
 
         try
@@ -147,6 +153,9 @@ public partial class HomePageView : UserControl
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
     {
+        _leftCameraController.StopMjpegStreaming();
+        _rightCameraController.StopMjpegStreaming();
+        _faceCameraController.StopMjpegStreaming();
         _isVisible = false;
     }
 
@@ -173,12 +182,13 @@ public partial class HomePageView : UserControl
     // Event handlers for left camera
     public void LeftCameraStart(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.StartCamera(_viewModel.LeftCameraAddress);
+        _leftCameraController.StartMjpegStreaming(8080);
     }
 
     private void LeftCameraStopped(object? sender, RoutedEventArgs e)
     {
         _leftCameraController.StopCamera(Camera.Left);
+        _leftCameraController.StopMjpegStreaming();
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -199,12 +209,13 @@ public partial class HomePageView : UserControl
     // Event handlers for right camera
     public void RightCameraStart(object? sender, RoutedEventArgs e)
     {
-        _rightCameraController.StartCamera(_viewModel.RightCameraAddress);
+        _rightCameraController.StartMjpegStreaming(8081);
     }
 
     public void RightCameraStopped(object? sender, RoutedEventArgs e)
     {
         _rightCameraController.StopCamera(Camera.Right);
+        _rightCameraController.StopMjpegStreaming();
     }
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -225,12 +236,13 @@ public partial class HomePageView : UserControl
     // Event handlers for face camera
     public void FaceCameraStart(object? sender, RoutedEventArgs e)
     {
-        _faceCameraController.StartCamera(_viewModel.FaceCameraAddress);
+        _faceCameraController.StartMjpegStreaming(8082);
     }
 
     public void FaceCameraStopped(object? sender, RoutedEventArgs e)
     {
         _faceCameraController.StopCamera(Camera.Face);
+        _faceCameraController.StopMjpegStreaming();
     }
 
     public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -246,5 +258,52 @@ public partial class HomePageView : UserControl
     public void FaceSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
         _faceCameraController.SelectEntireFrame();
+    }
+
+    private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
+    {
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            var model = new VRCalibration
+            {
+                ModelSavePath = Path.GetTempPath(),
+                CalibrationInstructions = [11],
+                FOV = 1f,
+                LeftEye =
+                {
+                    DeviceName = await _localSettingsService.ReadSettingAsync<string>("EyeHome_LeftCameraIndex"),
+                    Crop =
+                    {
+                        X = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIX"),
+                        Y = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIY"),
+                        W = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIWidth"),
+                        H = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIHeight")
+                    },
+                    Rotation = await _localSettingsService.ReadSettingAsync<float>("EyeHome_LeftEyeRotation"),
+                    HasHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeXAxis"),
+                    HasVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeYAxis")
+                },
+                    RightEye =
+                {
+                    DeviceName = await _localSettingsService.ReadSettingAsync<string>("EyeHome_RightCameraIndex"),
+                    Crop =
+                    {
+                        X = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIX"),
+                        Y = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIY"),
+                        W = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIWidth"),
+                        H = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIHeight")
+                    },
+                    Rotation = await _localSettingsService.ReadSettingAsync<float>("EyeHome_RightEyeRotation"),
+                    HasHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeXAxis"),
+                    HasVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeYAxis")
+                }
+            };
+
+            _leftCameraController.StartMjpegStreaming(8080);
+            _rightCameraController.StartMjpegStreaming(8081);
+            _faceCameraController.StartMjpegStreaming(8082);
+
+            await _vrService.StartCamerasAsync();
+        }
     }
 }

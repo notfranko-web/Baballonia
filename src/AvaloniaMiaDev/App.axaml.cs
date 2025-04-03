@@ -24,8 +24,6 @@ namespace AvaloniaMiaDev;
 
 public partial class App : Application
 {
-    public static event Action<NotificationModel> SendNotification;
-
     private IHost? _host;
 
     public override void Initialize()
@@ -73,6 +71,7 @@ public partial class App : Application
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
                 services.AddSingleton<IInferenceService, InferenceService>();
+                services.AddSingleton<IVRService, VRCalibrationService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();

@@ -148,7 +148,28 @@ public class InferenceService : IInferenceService
             return false;
         }
 
+        if (platformConnector.Capture is null)
+        {
+            dimensions = (0, 0);
+            image = [];
+            return false;
+        }
+
+        if (!platformConnector.Capture.IsReady)
+        {
+            dimensions = (0, 0);
+            image = [];
+            return false;
+        }
+
         if (platformConnector.Capture!.RawMat is null)
+        {
+            dimensions = (0, 0);
+            image = [];
+            return false;
+        }
+
+        if (platformConnector.Capture.Dimensions == (0, 0))
         {
             dimensions = (0, 0);
             image = [];
