@@ -572,12 +572,11 @@ public class CameraController : IDisposable
         {
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                // Save the current bitmap as JPEG
-                _bitmap.Save(memoryStream);
-
                 // Update the current frame
                 lock (_streamLock)
                 {
+                    // Save the current bitmap as JPEG
+                    _bitmap.Save(memoryStream);
                     _currentJpegFrame = memoryStream.ToArray();
                 }
             }

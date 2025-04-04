@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -140,10 +141,7 @@ public partial class HomePageView : UserControl
 
         StartImageUpdates();
 
-        PropertyChanged += (_, _) =>
-        {
-            _localSettingsService.Save(this);
-        };
+        PropertyChanged += (_, _) => { _localSettingsService.Save(this); };
     }
 
     private void CamView_OnLoaded(object? sender, RoutedEventArgs e)
@@ -155,7 +153,6 @@ public partial class HomePageView : UserControl
     {
         _leftCameraController.StopMjpegStreaming();
         _rightCameraController.StopMjpegStreaming();
-        _faceCameraController.StopMjpegStreaming();
         _isVisible = false;
     }
 
@@ -242,7 +239,6 @@ public partial class HomePageView : UserControl
     public void FaceCameraStopped(object? sender, RoutedEventArgs e)
     {
         _faceCameraController.StopCamera(Camera.Face);
-        _faceCameraController.StopMjpegStreaming();
     }
 
     public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -262,48 +258,23 @@ public partial class HomePageView : UserControl
 
     private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        const int leftPort = 8080;
+        const int rightPort = 8081;
+
+        if (!OperatingSystem.IsWindows()) return;
+
+        var model = new VRCalibration
         {
-            var model = new VRCalibration
-            {
-                ModelSavePath = Path.GetTempPath(),
-                CalibrationInstructions = [11],
-                FOV = 1f,
-                LeftEye =
-                {
-                    DeviceName = await _localSettingsService.ReadSettingAsync<string>("EyeHome_LeftCameraIndex"),
-                    Crop =
-                    {
-                        X = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIX"),
-                        Y = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIY"),
-                        W = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIWidth"),
-                        H = await _localSettingsService.ReadSettingAsync<double>("EyeHome_LeftCameraROIHeight")
-                    },
-                    Rotation = await _localSettingsService.ReadSettingAsync<float>("EyeHome_LeftEyeRotation"),
-                    HasHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeXAxis"),
-                    HasVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipLeftEyeYAxis")
-                },
-                    RightEye =
-                {
-                    DeviceName = await _localSettingsService.ReadSettingAsync<string>("EyeHome_RightCameraIndex"),
-                    Crop =
-                    {
-                        X = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIX"),
-                        Y = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIY"),
-                        W = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIWidth"),
-                        H = await _localSettingsService.ReadSettingAsync<double>("EyeHome_RightCameraROIHeight")
-                    },
-                    Rotation = await _localSettingsService.ReadSettingAsync<float>("EyeHome_RightEyeRotation"),
-                    HasHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeXAxis"),
-                    HasVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>("EyeHome_FlipRightEyeYAxis")
-                }
-            };
+            ModelSavePath = Path.GetTempPath(),
+            CalibrationInstructions = [11],
+            FOV = 1f,
+            LeftEyeMjpegSource = $"http://localhost:{leftPort}/",
+            RightEyeMjpegSource = $"http://localhost:{rightPort}/",
+        };
 
-            _leftCameraController.StartMjpegStreaming(8080);
-            _rightCameraController.StartMjpegStreaming(8081);
-            _faceCameraController.StartMjpegStreaming(8082);
+        _leftCameraController.StartMjpegStreaming(leftPort);
+        _rightCameraController.StartMjpegStreaming(rightPort);
 
-            await _vrService.StartCamerasAsync();
-        }
+        // await _vrService.StartCamerasAsync(model);
     }
 }

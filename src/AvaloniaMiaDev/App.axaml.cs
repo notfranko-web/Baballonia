@@ -71,7 +71,7 @@ public partial class App : Application
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
                 services.AddSingleton<IInferenceService, InferenceService>();
-                services.AddSingleton<IVRService, VRCalibrationService>();
+                services.AddSingleton<IVRService, VrCalibrationService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();

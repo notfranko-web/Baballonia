@@ -13,28 +13,10 @@ namespace AvaloniaMiaDev.Models;
 
 public class VRCalibration
 {
-    public const string LeftModelName = "leftEyeModel.onnx";
-    public const string RightModelName = "rightEyeModel.onnx";
+    public const string ModelName = "eyeModel.onnx";
     public string ModelSavePath { get; set; }
     public uint[] CalibrationInstructions { get; set; }
     public float FOV { get; set; }
-    public EyeInformation LeftEye { get; set; }
-    public EyeInformation RightEye  { get; set; }
-}
-
-public class EyeInformation
-{
-    public string DeviceName { get; set; }
-    public Crop Crop { get; set; }
-    public float Rotation { get; set; }
-    public bool HasHorizontalFlip  { get; set; }
-    public bool HasVerticalFlip { get; set; }
-}
-
-public class Crop
-{
-    public double X;
-    public double Y;
-    public double W;
-    public double H;
+    public string LeftEyeMjpegSource { get; set; }
+    public string RightEyeMjpegSource  { get; set; }
 }
