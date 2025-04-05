@@ -8,20 +8,15 @@ namespace AvaloniaMiaDev.Services.Inference.Platforms;
 
 /// <summary>
 /// Base class for camera capture and frame processing
+/// Use OpenCV's IP capture class here!
 /// </summary>
 public class DesktopConnector : PlatformConnector
 {
     private static readonly HashSet<string> SerialConnections
-        = new(StringComparer.OrdinalIgnoreCase) { "com" };
+        = new(StringComparer.OrdinalIgnoreCase) { "com", "dev/ttyacm" };
 
     private static readonly HashSet<string> VftConnections
-        = new(StringComparer.OrdinalIgnoreCase) { "/dev" };
-
-    private static readonly HashSet<string> IpConnectionsPrefixes
-        = new(StringComparer.OrdinalIgnoreCase) { "http", };
-
-    private static readonly HashSet<string> IpConnectionsSuffixes
-        = new(StringComparer.OrdinalIgnoreCase) { "local", "local/" };
+        = new(StringComparer.OrdinalIgnoreCase) { "/dev/video" };
 
     protected override Type DefaultCapture => typeof(OpenCvCapture);
 
@@ -29,14 +24,12 @@ public class DesktopConnector : PlatformConnector
     {
         Captures = new()
         {
-            { (SerialConnections, false), typeof(SerialCameraCapture) },
-            { (IpConnectionsPrefixes, false), typeof(IpCameraCapture) },
-            { (IpConnectionsSuffixes, true), typeof(IpCameraCapture) }
+            { (SerialConnections, areSuffixes: false), typeof(SerialCameraCapture) },
         };
 
         if (OperatingSystem.IsLinux())
         {
-            Captures.Add((VftConnections, false), typeof(VftCapture));
+            Captures.Add((VftConnections, areSuffixes: false), typeof(VftCapture));
         }
     }
 }

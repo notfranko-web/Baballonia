@@ -24,8 +24,8 @@ public class AndroidConnector : PlatformConnector
     {
         Captures = new()
         {
-            { (IpConnectionsPrefixes, false), typeof(IpCameraCapture) },
-            { (IpConnectionsSuffixes, true), typeof(IpCameraCapture) }
+            { (IpConnectionsPrefixes, areSuffixes: false), typeof(IpCameraCapture) },
+            { (IpConnectionsSuffixes, areSuffixes: true), typeof(IpCameraCapture) }
         };
     }
 }
