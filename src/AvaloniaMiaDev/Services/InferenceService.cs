@@ -103,6 +103,11 @@ public class InferenceService : IInferenceService
             return false;
         }
 
+        if (platformConnector.Capture is null)
+        {
+            return false;
+        }
+
         // Test if the camera is not ready or connecting to new source
         if (!platformConnector.Capture!.IsReady) return false;
 

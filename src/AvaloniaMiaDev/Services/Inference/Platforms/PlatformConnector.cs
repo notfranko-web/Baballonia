@@ -113,33 +113,48 @@ public abstract class PlatformConnector
 
     public unsafe Task<bool> TransformRawImage(Mat outputMat, CameraSettings settings)
     {
-        // If this method is called from above, then the below checks don't apply
-        // We need this in case we poll from Babble.Core.cs, in which the developer
-        // Just wants the frame data, not expression data
         if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null)
             return Task.FromResult(false);
 
-        var roiX = settings.RoiX;
-        var roiY = settings.RoiY;
-        var roiWidth = settings.RoiWidth;
-        var roiHeight = settings.RoiHeight;
-        var rotationRadians = settings.RotationRadians;
-        var useRedChannel = settings.UseRedChannel;
+        var sourceMat = Capture.RawMat;
 
-        Mat sourceMat = Capture.RawMat, resultMat = new(sourceMat, (roiX == 0 || roiY == 0 || roiWidth == 0 ||
-            roiHeight == 0 || roiWidth == sourceMat.Width || roiHeight == sourceMat.Height) ?
-                new Rect(0, 0, sourceMat.Width, sourceMat.Height) :
-                new Rect(roiX, roiY, roiWidth, roiHeight));
+        int roiX = settings.RoiX;
+        int roiY = settings.RoiY;
+        int roiWidth = settings.RoiWidth;
+        int roiHeight = settings.RoiHeight;
+        int maxWidth = sourceMat.Width;
+        int maxHeight = sourceMat.Height;
+
+        // Ensure ROI is within bounds
+        Rect roi;
+        if (roiX < 0 || roiY < 0 || roiWidth <= 0 || roiHeight <= 0 ||
+            roiX + roiWidth > maxWidth || roiY + roiHeight > maxHeight ||
+            roiWidth == maxWidth || roiHeight == maxHeight)
+        {
+            roi = new Rect(0, 0, maxWidth, maxHeight);
+        }
+        else
+        {
+            roi = new Rect(roiX, roiY, roiWidth, roiHeight);
+        }
+
+        using var roiMat = new Mat(sourceMat, roi);
+        Mat resultMat = roiMat.Clone();
+
+        // Convert to grayscale or extract red channel
         if (resultMat.Channels() >= 2)
         {
             var newMat = new Mat();
-            if (useRedChannel)
+            if (settings.UseRedChannel)
                 Cv2.ExtractChannel(resultMat, newMat, 0);
             else
                 Cv2.CvtColor(resultMat, newMat, ColorConversionCodes.BGR2GRAY);
+
             resultMat.Dispose();
             resultMat = newMat;
         }
+
+        // Adjust brightness and type conversion
         if (resultMat.Type() != outputMat.Type() || settings.Brightness != 1)
         {
             var newMat = new Mat();
@@ -147,10 +162,11 @@ public abstract class PlatformConnector
             resultMat.Dispose();
             resultMat = newMat;
         }
-        Size size = outputMat.Size();
 
-        var hFlip = settings.UseHorizontalFlip;
-        var vFlip = settings.UseVerticalFlip;
+        Size targetSize = outputMat.Size();
+        double rotationRadians = settings.RotationRadians;
+        bool hFlip = settings.UseHorizontalFlip;
+        bool vFlip = settings.UseVerticalFlip;
 
         if (rotationRadians != 0 || hFlip || vFlip)
         {
@@ -158,31 +174,37 @@ public abstract class PlatformConnector
             double scale = 1.0 / (Math.Abs(cos) + Math.Abs(sin));
             double hscale = (hFlip ? -1.0 : 1.0) * scale;
             double vscale = (vFlip ? -1.0 : 1.0) * scale;
+
             using var matrix = new Mat<double>(2, 3);
             Span<double> data = matrix.AsSpan<double>();
-            data[0] = (double)size.Width / (double)resultMat.Width * cos * hscale;
-            data[1] = (double)size.Height / (double)resultMat.Height * sin * hscale;
-            data[2] = ((double)size.Width - ((double)size.Width * cos + (double)size.Height * sin) * hscale) * 0.5;
-            data[3] = -(double)size.Width / (double)resultMat.Width * sin * vscale;
-            data[4] = (double)size.Height / (double)resultMat.Height * cos * vscale;
-            data[5] = ((double)size.Height + ((double)size.Width * sin - (double)size.Height * cos) * vscale) * 0.5;
-            Cv2.WarpAffine(resultMat, outputMat, matrix, size);
+
+            data[0] = (double)targetSize.Width / resultMat.Width * cos * hscale;
+            data[1] = (double)targetSize.Height / resultMat.Height * sin * hscale;
+            data[2] = ((double)targetSize.Width - ((double)targetSize.Width * cos + (double)targetSize.Height * sin) * hscale) * 0.5;
+
+            data[3] = -(double)targetSize.Width / resultMat.Width * sin * vscale;
+            data[4] = (double)targetSize.Height / resultMat.Height * cos * vscale;
+            data[5] = ((double)targetSize.Height + ((double)targetSize.Width * sin - (double)targetSize.Height * cos) * vscale) * 0.5;
+
+            Cv2.WarpAffine(resultMat, outputMat, matrix, targetSize);
         }
         else
         {
             try
             {
-                Cv2.Resize(resultMat, outputMat, size);
+                Cv2.Resize(resultMat, outputMat, targetSize);
             }
-            catch (Exception)
+            catch
             {
                 resultMat.Dispose();
                 return Task.FromResult(false);
             }
         }
+
         resultMat.Dispose();
         return Task.FromResult(true);
     }
+
 
     /// <summary>
     /// Shuts down the current Capture source

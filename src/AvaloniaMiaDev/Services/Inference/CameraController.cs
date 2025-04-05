@@ -177,6 +177,11 @@ public class CameraController : IDisposable
                 return;
             }
 
+            if (cameraSettings.RoiWidth == 0 || cameraSettings.RoiHeight == 0)
+            {
+                SelectEntireFrame();
+            }
+
             // Create or update bitmap if needed
             if (_bitmap is null ||
                 _bitmap.PixelSize.Width != dims.width ||
