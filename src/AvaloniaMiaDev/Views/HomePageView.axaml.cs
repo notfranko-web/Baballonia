@@ -258,23 +258,23 @@ public partial class HomePageView : UserControl
 
     private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
+        if (!OperatingSystem.IsWindows()) return;
+
         const int leftPort = 8080;
         const int rightPort = 8081;
-
-        if (!OperatingSystem.IsWindows()) return;
 
         var model = new VRCalibration
         {
             ModelSavePath = Path.GetTempPath(),
             CalibrationInstructions = [11],
             FOV = 1f,
-            LeftEyeMjpegSource = $"http://localhost:{leftPort}/",
-            RightEyeMjpegSource = $"http://localhost:{rightPort}/",
+            LeftEyeMjpegSource = $"http://localhost:{leftPort}/mjpeg",
+            RightEyeMjpegSource = $"http://localhost:{rightPort}/mjpeg",
         };
 
         _leftCameraController.StartMjpegStreaming(leftPort);
         _rightCameraController.StartMjpegStreaming(rightPort);
 
-        // await _vrService.StartCamerasAsync(model);
+        await _vrService.StartCamerasAsync(model);
     }
 }

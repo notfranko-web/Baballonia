@@ -43,15 +43,25 @@ namespace AvaloniaMiaDev.Services
 
         public async Task<VRCalibrationStatus> GetStatusAsync()
         {
-            var response = await _httpClient.GetStringAsync($"{_baseUrl}/status");
+            await StartVRProcess();
+            var response = await _httpClient.GetStringAsync($"{_baseUrl}/settings");
             return JsonConvert.DeserializeObject<VRCalibrationStatus>(response)!;
+        }
+
+        public async Task Start(VRCalibration calibration)
+        {
+            var uri = new Uri($"{_baseUrl}/start_cameras?left={calibration.LeftEyeMjpegSource}?right={calibration.RightEyeMjpegSource}");
+            _logger.LogInformation($"Starting VR Calibration for {uri}");
+            await StartVRProcess();
         }
 
         public async Task<bool> StartCamerasAsync(VRCalibration calibration)
         {
             await StartVRProcess();
 
-            var response = await _httpClient.GetStringAsync($"{_baseUrl}/start_cameras?left={calibration.LeftEyeMjpegSource}?right={calibration.RightEyeMjpegSource}");
+            await Task.Delay(2000);
+
+            var response = await _httpClient.GetStringAsync(new Uri($"{_baseUrl}/start_cameras?left={calibration.LeftEyeMjpegSource}&right={calibration.RightEyeMjpegSource}"));
             var result = JsonConvert.DeserializeObject<ApiResponse>(response);
             return result!.Result == "ok";
         }
@@ -99,8 +109,8 @@ namespace AvaloniaMiaDev.Services
                     FileName = CalibratorPath,
                     UseShellExecute = false,
                     CreateNoWindow = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    //RedirectStandardOutput = true,
+                    //RedirectStandardError = true
                 },
                 EnableRaisingEvents = true
             };
@@ -113,8 +123,8 @@ namespace AvaloniaMiaDev.Services
             };
 
             _vrProcess.Start();
-            _vrProcess.BeginOutputReadLine();
-            _vrProcess.BeginErrorReadLine();
+            // _vrProcess.BeginOutputReadLine();
+            // _vrProcess.BeginErrorReadLine();
         }
 
         private void ProcessOutputHandler(object sender, DataReceivedEventArgs e)
@@ -126,6 +136,7 @@ namespace AvaloniaMiaDev.Services
             ProcessOutputReceived?.Invoke(this, new ProcessOutputEventArgs(e.Data, false));
 
             // Process against known patterns
+            _logger.LogInformation(e.Data);
             ProcessOutput(e.Data);
         }
 
@@ -138,6 +149,7 @@ namespace AvaloniaMiaDev.Services
             ProcessOutputReceived?.Invoke(this, new ProcessOutputEventArgs(e.Data, true));
 
             // Process against known patterns (errors might contain important information too)
+            _logger.LogError(e.Data);
             ProcessOutput(e.Data);
         }
 

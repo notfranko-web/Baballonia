@@ -86,7 +86,7 @@ public abstract class PlatformConnector
         if (Capture is not null)
         {
             Capture.StartCapture();
-            Logger.LogInformation($"Starting {DefaultCapture.Name} capture source...");
+            Logger.LogInformation($"Starting {Capture.GetType().Name} capture source...");
         }
     }
 

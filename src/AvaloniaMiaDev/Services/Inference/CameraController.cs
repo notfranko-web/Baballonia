@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,6 +20,7 @@ using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.Services.Inference.Models;
 using AvaloniaMiaDev.Views;
+using SkiaSharp;
 
 namespace AvaloniaMiaDev.Services.Inference;
 
@@ -42,6 +45,12 @@ public class CameraController : IDisposable
     private double _dragStartX;
     private double _dragStartY;
     private WriteableBitmap _bitmap;
+
+    /// <summary>
+    /// Force an image resize if we go from cropping to tracking mode or vice versa
+    /// This handles the edge case where the dim size doesn't change, but color space does
+    /// </summary>
+    private bool _edgeCaseFlip;
 
     // Settings keys
     private readonly string _roiSettingKeyX;
@@ -184,6 +193,7 @@ public class CameraController : IDisposable
 
             // Create or update bitmap if needed
             if (_bitmap is null ||
+                _edgeCaseFlip ||
                 _bitmap.PixelSize.Width != dims.width ||
                 _bitmap.PixelSize.Height != dims.height)
             {
@@ -201,7 +211,7 @@ public class CameraController : IDisposable
             }
 
             // Update MJPEG frame
-            UpdateMjpegFrame();
+            UpdateMjpegFrame(ref image);
 
             if (_mouthWindow.Width != dims.width || _mouthWindow.Height != dims.height)
             {
@@ -252,6 +262,7 @@ public class CameraController : IDisposable
     public void SetTrackingMode()
     {
         _camViewMode = CamViewMode.Tracking;
+        _edgeCaseFlip = true;
         _isCropping = false;
         _view.SetValue(_isTrackingModeProperty, true);
         OnPointerReleased(null, null!); // Close and save any open crops
@@ -260,6 +271,7 @@ public class CameraController : IDisposable
     public void SetCroppingMode()
     {
         _camViewMode = CamViewMode.Cropping;
+        _edgeCaseFlip = true;
         _view.SetValue(_isTrackingModeProperty, false);
     }
 
@@ -424,60 +436,56 @@ public class CameraController : IDisposable
 
         try
         {
+            response.SendChunked = false;
             response.ContentType = $"multipart/x-mixed-replace; boundary={_mjpegBoundary}";
             response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
             response.Headers.Add("Pragma", "no-cache");
             response.Headers.Add("Expires", "0");
 
-            using (var outputStream = response.OutputStream)
+            await using var outputStream = response.OutputStream;
+            while (_isStreaming && !cancellationToken.IsCancellationRequested)
             {
-                while (_isStreaming && !cancellationToken.IsCancellationRequested)
+
+                if (_currentJpegFrame.Length == 0)
                 {
-                    byte[] frameData;
-
-                    if (_currentJpegFrame.Length == 0)
-                    {
-                        await Task.Delay(33, cancellationToken); // ~30fps
-                        continue;
-                    }
-
-                    frameData = _currentJpegFrame;
-
-                    try
-                    {
-                        // Write multipart boundary
-                        string header = $"\r\n--{_mjpegBoundary}\r\n" +
-                                        "Content-Type: image/jpeg\r\n" +
-                                        $"Content-Length: {frameData.Length}\r\n\r\n";
-
-                        byte[] headerBytes = Encoding.ASCII.GetBytes(header);
-                        await outputStream.WriteAsync(headerBytes, 0, headerBytes.Length, cancellationToken);
-
-                        // Write JPEG data
-                        await outputStream.WriteAsync(frameData, 0, frameData.Length, cancellationToken);
-                        await outputStream.FlushAsync(cancellationToken);
-
-                        // Control frame rate
-                        await Task.Delay(33, cancellationToken); // ~30fps
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        break;
-                    }
+                    await Task.Delay(33, cancellationToken); // ~30fps
+                    continue;
                 }
+
+                byte[] frameData = _currentJpegFrame;
+
+                // Write multipart boundary
+                string header = $"\r\n--{_mjpegBoundary}\r\n" +
+                                "Content-Type: image/jpeg\r\n" +
+                                $"Content-Length: {frameData.Length}\r\n\r\n";
+
+                byte[] headerBytes = Encoding.ASCII.GetBytes(header);
+                await outputStream.WriteAsync(headerBytes, 0, headerBytes.Length, cancellationToken);
+
+                // Write JPEG data
+                await outputStream.WriteAsync(frameData, 0, frameData.Length, cancellationToken);
+                await outputStream.FlushAsync(cancellationToken);
+
+                // Control frame rate
+                await Task.Delay(33, cancellationToken); // ~30fps
+
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-
+            // Handle exceptions
+            Console.WriteLine(e.Message);
         }
         finally
         {
-            response.Close();
+            try
+            {
+                response.Close();
+            }
+            catch
+            {
+                // Ignore errors on close
+            }
         }
     }
 
@@ -568,28 +576,34 @@ public class CameraController : IDisposable
         }
     }
 
-    private void UpdateMjpegFrame()
+    private void UpdateMjpegFrame(ref byte[] arr)
     {
         if (_bitmap == null || !_isStreaming)
             return;
 
         try
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            // Update the current frame
+            lock (_streamLock)
             {
-                // Update the current frame
-                lock (_streamLock)
-                {
-                    // Save the current bitmap as JPEG
-                    _bitmap.Save(memoryStream);
-                    _currentJpegFrame = memoryStream.ToArray();
-                }
+                _currentJpegFrame = CreateImageFromGray8UsingBitmap(arr, (int)_bitmap.Size.Width, (int)_bitmap.Size.Height);
             }
         }
         catch (Exception ex)
         {
 
         }
+    }
+
+    private byte[] CreateImageFromGray8UsingBitmap(byte[] pixelData, int width, int height)
+    {
+        var bitmap = new SKBitmap(width, height, SKColorType.Gray8, SKAlphaType.Opaque);
+
+        // Copy the pixel data to the bitmap
+        bitmap.SetPixels(Marshal.UnsafeAddrOfPinnedArrayElement(pixelData, 0));
+
+        // Create an SKImage from the bitmap
+        return SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Jpeg, quality: 80).ToArray();
     }
 
     #endregion
