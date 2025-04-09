@@ -432,60 +432,74 @@ public class CameraController : IDisposable
 
     private async Task HandleMjpegRequest(HttpListenerContext context, CancellationToken cancellationToken)
     {
-        HttpListenerResponse response = context.Response;
+        // Get the underlying TCP connection
+        var response = context.Response;
 
         try
         {
-            response.SendChunked = false;
-            response.ContentType = $"multipart/x-mixed-replace; boundary={_mjpegBoundary}";
-            response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
-            response.Headers.Add("Pragma", "no-cache");
-            response.Headers.Add("Expires", "0");
+            // Write the HTTP response headers manually
+            string responseHeaders =
+                "HTTP/1.1 200 OK\r\n" +
+                $"Content-Type: multipart/x-mixed-replace; boundary={_mjpegBoundary}\r\n" +
+                "Cache-Control: no-cache, no-store, must-revalidate\r\n" +
+                "Pragma: no-cache\r\n" +
+                "Expires: 0\r\n" +
+                "Connection: close\r\n\r\n";
 
-            await using var outputStream = response.OutputStream;
+            byte[] headerBytes = Encoding.ASCII.GetBytes(responseHeaders);
+
+            // Get the raw output stream
+            using var outputStream = response.OutputStream;
+            await outputStream.WriteAsync(headerBytes, 0, headerBytes.Length, cancellationToken);
+
+            // Initial boundary
+            string initialBoundary = $"--{_mjpegBoundary}\r\n";
+            byte[] boundaryBytes = Encoding.ASCII.GetBytes(initialBoundary);
+            await outputStream.WriteAsync(boundaryBytes, 0, boundaryBytes.Length, cancellationToken);
+
+            // Stream frames
             while (_isStreaming && !cancellationToken.IsCancellationRequested)
             {
-
-                if (_currentJpegFrame.Length == 0)
+                if (_currentJpegFrame == null || _currentJpegFrame.Length == 0)
                 {
-                    await Task.Delay(33, cancellationToken); // ~30fps
+                    await Task.Delay(33, cancellationToken);
                     continue;
                 }
 
                 byte[] frameData = _currentJpegFrame;
 
-                // Write multipart boundary
-                string header = $"\r\n--{_mjpegBoundary}\r\n" +
-                                "Content-Type: image/jpeg\r\n" +
-                                $"Content-Length: {frameData.Length}\r\n\r\n";
+                try
+                {
+                    // Frame headers
+                    string frameHeader = "Content-Type: image/jpeg\r\n" +
+                                        $"Content-Length: {frameData.Length}\r\n\r\n";
+                    byte[] frameHeaderBytes = Encoding.ASCII.GetBytes(frameHeader);
 
-                byte[] headerBytes = Encoding.ASCII.GetBytes(header);
-                await outputStream.WriteAsync(headerBytes, 0, headerBytes.Length, cancellationToken);
+                    await outputStream.WriteAsync(frameHeaderBytes, 0, frameHeaderBytes.Length, cancellationToken);
+                    await outputStream.WriteAsync(frameData, 0, frameData.Length, cancellationToken);
 
-                // Write JPEG data
-                await outputStream.WriteAsync(frameData, 0, frameData.Length, cancellationToken);
-                await outputStream.FlushAsync(cancellationToken);
+                    // Next boundary
+                    string nextBoundary = $"\r\n--{_mjpegBoundary}\r\n";
+                    byte[] nextBoundaryBytes = Encoding.ASCII.GetBytes(nextBoundary);
+                    await outputStream.WriteAsync(nextBoundaryBytes, 0, nextBoundaryBytes.Length, cancellationToken);
 
-                // Control frame rate
-                await Task.Delay(33, cancellationToken); // ~30fps
+                    await outputStream.FlushAsync(cancellationToken);
+                }
+                catch (IOException)
+                {
+                    break;
+                }
 
+                await Task.Delay(33, cancellationToken);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            // Handle exceptions
-            Console.WriteLine(e.Message);
+            Console.WriteLine($"Error in MJPEG stream: {ex.Message}");
         }
         finally
         {
-            try
-            {
-                response.Close();
-            }
-            catch
-            {
-                // Ignore errors on close
-            }
+            try { response.Abort(); } catch { }
         }
     }
 
@@ -509,14 +523,14 @@ public class CameraController : IDisposable
 
             if (frameData.Length > 0)
             {
-                response.ContentLength64 = frameData.Length;
+                //response.ContentLength64 = frameData.Length;
                 response.OutputStream.Write(frameData, 0, frameData.Length);
             }
             else
             {
                 response.StatusCode = 503; // Service Unavailable
                 byte[] errorMsg = Encoding.UTF8.GetBytes("No image available");
-                response.ContentLength64 = errorMsg.Length;
+                //response.ContentLength64 = errorMsg.Length;
                 response.OutputStream.Write(errorMsg, 0, errorMsg.Length);
             }
         }
@@ -563,7 +577,7 @@ public class CameraController : IDisposable
 
             byte[] buffer = Encoding.UTF8.GetBytes(html);
             response.ContentType = "text/html";
-            response.ContentLength64 = buffer.Length;
+            //response.ContentLength64 = buffer.Length;
             response.OutputStream.Write(buffer, 0, buffer.Length);
         }
         catch (Exception ex)
