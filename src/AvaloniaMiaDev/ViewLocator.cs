@@ -22,6 +22,7 @@ public class ViewLocator : IDataTemplate
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<EyeCalibrationViewModel, EyeCalibrationView>();
         RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
+        RegisterViewFactory<OnboardingViewModel, OnboardingView>();
     }
 
     public Control Build(object? data)

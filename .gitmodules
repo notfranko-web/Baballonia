@@ -1,0 +1,3 @@
+[submodule "src/HyperText.Avalonia"]
+	path = src/HyperText.Avalonia
+	url = https://github.com/Project-Babble/HyperText.Avalonia

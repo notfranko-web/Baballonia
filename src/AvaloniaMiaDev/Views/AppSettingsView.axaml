@@ -170,6 +170,40 @@
                 SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}"
                 Title="Check For Updates" />
 
+            <Border
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                CornerRadius="6"
+                Padding="15,5,15,5">
+                <Grid ColumnDefinitions="Auto, Auto,*,Auto" VerticalAlignment="Center">
+                    <PathIcon
+                        Data="{StaticResource QuestionCircleRegular}"
+                        Grid.Column="0"
+                        Margin="10,10,20,10"
+                        VerticalAlignment="Center"
+                        Width="32" />
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,10,0,10">
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Margin="5"
+                            Text="Launch first time setup" />
+                        <TextBlock
+                            FontSize="14"
+                            Foreground="{DynamicResource SystemChromeGrayColor}"
+                            Margin="5"
+                            Text="Relaunches the first time setup" />
+                    </StackPanel>
+                    <Button
+                        Click="LaunchFirstTimeSetUp"
+                        Content="Launch"
+                        Grid.Column="3"
+                        x:DataType="controls:SettingsToggle" />
+                </Grid>
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>
