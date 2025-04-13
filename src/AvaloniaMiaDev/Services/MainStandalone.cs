@@ -16,15 +16,24 @@ public class MainStandalone : IMainService
         )
     {
         _logger = logger;
+
+        if (!OperatingSystem.IsWindows()) return;
+
+        _logger.LogDebug("Setting our time begin period...");
+        var timeEndRes = Utils.TimeBeginPeriod(1);
+        if (timeEndRes != 0)
+        {
+            _logger.LogWarning($"TimeBeginPeriod failed with HRESULT {timeEndRes}");
+        }
     }
 
     public Task Teardown()
     {
         _logger.LogInformation("Exiting!");
 
-        _logger.LogDebug("Resetting our time end period...");
         if (OperatingSystem.IsWindows())
         {
+            _logger.LogDebug("Resetting our time end period...");
             var timeEndRes = Utils.TimeEndPeriod(1);
             if (timeEndRes != 0)
             {

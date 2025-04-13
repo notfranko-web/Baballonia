@@ -17,7 +17,7 @@
         <PathGeometry x:Key="RightArrowIcon">M9.75739 6.34317L15.4142 12L9.75739 17.6569L8.34317 16.2426L12.5858 12L8.34317 7.75739L9.75739 6.34317Z</PathGeometry>
     </UserControl.Resources>
 
-    <Grid Background="Transparent">
+    <Grid Background="{DynamicResource SystemBaseLowColor}">
         <Border
             Background="{DynamicResource SystemChromeMediumLowColor}"
             BorderBrush="{DynamicResource SystemBaseLowColor}"
