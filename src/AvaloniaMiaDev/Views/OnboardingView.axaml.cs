@@ -26,9 +26,13 @@ namespace AvaloniaMiaDev.Views
             InitializeComponent();
 
             _viewModel = Ioc.Default.GetRequiredService<OnboardingViewModel>();
+
             DataContext = _viewModel;
 
             _viewModel.OnboardingCompleted += (_, _) => OnboardingCompleted?.Invoke(this, EventArgs.Empty);
+
+            // Initialize the view model asynchronously
+            Task.Run(async () => await _viewModel.InitializeAsync());
         }
 
         private void InitializeComponent()

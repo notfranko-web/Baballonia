@@ -45,22 +45,23 @@ namespace AvaloniaMiaDev.ViewModels
         {
             _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>();
 
-            Task.Run(async () =>
+            // Initialize commands
+            NextCommand = new RelayCommand(GoToNext);
+            FinishCommand = new RelayCommand(FinishOnboarding);
+
+            // Initialize slide indicators
+            for (int i = 0; i < 5; i++) // 5 slides total
             {
-                // Load the user preference
-                // var showOnStartup = await _localSettingsService.ReadSettingAsync<bool>("ShowOnboardingOnStartup");
+                SlideIndicators.Add(new SlideIndicator { IsActive = false });
+            }
 
-                NextCommand = new RelayCommand(GoToNext);
-                FinishCommand = new RelayCommand(FinishOnboarding);
+            UpdateCurrentSlide();
+        }
 
-                // Initialize slide indicators
-                for (int i = 0; i < 5; i++) // 5 slides total
-                {
-                    SlideIndicators.Add(new SlideIndicator { IsActive = false });
-                }
-
-                UpdateCurrentSlide();
-            });
+        public async Task InitializeAsync()
+        {
+            // Load the user preference
+            var showOnStartup = await _localSettingsService.ReadSettingAsync<bool>("ShowOnboardingOnStartup");
         }
 
         private void UpdateCurrentSlide()
