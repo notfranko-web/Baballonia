@@ -147,6 +147,9 @@ public partial class HomePageView : UserControl
     private void CamView_OnLoaded(object? sender, RoutedEventArgs e)
     {
         _isVisible = true;
+        UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
+        UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
+        UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
     }
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
@@ -276,5 +279,43 @@ public partial class HomePageView : UserControl
         _rightCameraController.StartMjpegStreaming(rightPort);
 
         await _vrService.StartCamerasAsync(model);
+    }
+
+    private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (sender is not AutoCompleteBox entry) return;
+
+        // Determine which hint TextBlock corresponds to the sender
+        TextBlock? hintBlock = entry.Name switch
+        {
+            nameof(LeftCameraAddressEntry) => LeftAddressHint,
+            nameof(RightCameraAddressEntry) => RightAddressHint,
+            nameof(FaceCameraAddressEntry) => FaceAddressHint,
+            _ => null
+        };
+
+        if (hintBlock != null)
+        {
+            UpdateAddressHint(entry, hintBlock);
+        }
+    }
+
+    private void UpdateAddressHint(AutoCompleteBox entry, TextBlock hint)
+    {
+        string? address = entry.Text;
+        bool showHint = false;
+
+        if (!string.IsNullOrWhiteSpace(address))
+        {
+            // Basic check: Does it contain ".local" but not "http://"?
+            if (address.EndsWith(".local", StringComparison.OrdinalIgnoreCase) &&
+                !address.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                showHint = true;
+                hint.Text = "Address might need to start with 'http://' (e.g., http://openiristracker.local/)";
+            }
+        }
+
+        hint.IsVisible = showHint;
     }
 }
