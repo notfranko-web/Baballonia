@@ -30,7 +30,7 @@
             VerticalAlignment="Center">
 
             <Grid RowDefinitions="Auto,*,Auto">
-                <!--  Header with progress indicators  -->
+                <!--  Header with title and skip button  -->
                 <Grid
                     ColumnDefinitions="*,Auto"
                     Grid.Row="0"
@@ -42,24 +42,13 @@
                         Text="{Binding CurrentSlideName}"
                         VerticalAlignment="Center" />
 
-                    <ItemsControl
+                    <Button
+                        Command="{Binding FinishCommand}"
+                        Content="Skip"
                         Grid.Column="1"
                         HorizontalAlignment="Right"
-                        ItemsSource="{Binding SlideIndicators}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Ellipse
-                                    Fill="{Binding IsActive, Converter={x:Static helpers:BoolToColorConverter.Instance}}"
-                                    Height="8"
-                                    Width="8" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        Padding="12,6"
+                        VerticalAlignment="Center" />
                 </Grid>
 
                 <!--  Content area  -->
@@ -230,7 +219,7 @@
                     </StackPanel>
                 </Carousel>
 
-                <!--  Navigation buttons  -->
+                <!--  Navigation buttons with progress indicators in the middle  -->
                 <Grid
                     ColumnDefinitions="Auto,*,Auto"
                     Grid.Row="2"
@@ -252,14 +241,25 @@
                         </StackPanel>
                     </Button>
 
-                    <Button
-                        Command="{Binding FinishCommand}"
-                        Content="Skip"
+                    <ItemsControl
                         Grid.Column="1"
                         HorizontalAlignment="Center"
-                        HorizontalContentAlignment="Center"
-                        Padding="0,8"
-                        Width="100" />
+                        ItemsSource="{Binding SlideIndicators}"
+                        VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse
+                                    Fill="{Binding IsActive, Converter={x:Static helpers:BoolToColorConverter.Instance}}"
+                                    Height="8"
+                                    Width="8" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
                     <Button
                         Command="{Binding NextCommand}"
