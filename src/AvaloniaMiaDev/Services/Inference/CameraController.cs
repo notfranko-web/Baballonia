@@ -53,6 +53,7 @@ public class CameraController : IDisposable
     private bool _edgeCaseFlip;
 
     // Settings keys
+    private readonly string _cameraKey;
     private readonly string _roiSettingKeyX;
     private readonly string _roiSettingKeyY;
     private readonly string _roiSettingKeyWidth;
@@ -83,6 +84,7 @@ public class CameraController : IDisposable
         Viewbox viewBox,
         Image mouthWindow,
         Canvas canvas,
+        string cameraKey,
         string roiSettingKeyX,
         string roiSettingKeyY,
         string roiSettingKeyWidth,
@@ -101,6 +103,7 @@ public class CameraController : IDisposable
         _viewBox = viewBox;
         _mouthWindow = mouthWindow;
         _canvas = canvas;
+        _cameraKey = cameraKey;
         _roiSettingKeyX = roiSettingKeyX;
         _roiSettingKeyY = roiSettingKeyY;
         _roiSettingKeyWidth = roiSettingKeyWidth;
@@ -124,6 +127,13 @@ public class CameraController : IDisposable
 
         // Initialize MJPEG streaming
         _currentJpegFrame = [];
+
+        // Open the camera if it was set prior
+        Task.Run(async () =>
+        {
+            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
+            StartCamera(cameraAddress);
+        });
     }
 
     public async Task UpdateImage(bool isVisible)
