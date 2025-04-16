@@ -2,11 +2,13 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Activation;
 using AvaloniaMiaDev.Contracts;
+using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.Services;
 using AvaloniaMiaDev.ViewModels;
@@ -99,6 +101,8 @@ public partial class App : Application
                 services.AddTransient<EyeCalibrationView>();
                 services.AddTransient<FaceCalibrationViewModel>();
                 services.AddTransient<FaceCalibrationView>();
+                services.AddTransient<OnboardingViewModel>();
+                services.AddTransient<OnboardingView>();
 
                 services.AddHostedService(provider => provider.GetService<OscRecvService>()!);
                 services.AddHostedService(provider => provider.GetService<ParameterSenderService>()!);
@@ -129,6 +133,10 @@ public partial class App : Application
         {
             case IClassicDesktopStyleApplicationLifetime desktop:
                 desktop.MainWindow = new MainWindow(vm);
+                desktop.MainWindow.Loaded += (_, _) =>
+                {
+                    desktop.MainWindow.ShowOnboardingIfNeeded();
+                };
                 desktop.ShutdownRequested += OnShutdown;
                 break;
             case ISingleViewApplicationLifetime singleViewPlatform:

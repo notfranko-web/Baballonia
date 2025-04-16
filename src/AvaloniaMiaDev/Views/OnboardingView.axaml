@@ -1,0 +1,283 @@
+<UserControl
+    d:DesignHeight="800"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="AvaloniaMiaDev.Views.OnboardingView"
+    x:DataType="viewModels:OnboardingViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:HyperText.Avalonia.Controls;assembly=HyperText.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="clr-namespace:AvaloniaMiaDev.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:AvaloniaMiaDev.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <PathGeometry x:Key="LeftArrowIcon">M16.2426 6.34317L14.8284 4.92896L7.75739 12L14.8285 19.0711L16.2427 17.6569L10.5858 12L16.2426 6.34317Z</PathGeometry>
+        <PathGeometry x:Key="RightArrowIcon">M9.75739 6.34317L15.4142 12L9.75739 17.6569L8.34317 16.2426L12.5858 12L8.34317 7.75739L9.75739 6.34317Z</PathGeometry>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource SystemBaseLowColor}">
+        <Border
+            Background="{DynamicResource SystemChromeMediumLowColor}"
+            BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="1"
+            CornerRadius="8"
+            HorizontalAlignment="Center"
+            MaxHeight="500"
+            MaxWidth="500"
+            Padding="24"
+            VerticalAlignment="Center">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!--  Header with title and skip button  -->
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    Grid.Row="0"
+                    Margin="0,0,0,8">
+                    <TextBlock
+                        FontSize="24"
+                        FontWeight="Medium"
+                        Grid.Column="0"
+                        Text="{Binding CurrentSlideName}"
+                        VerticalAlignment="Center" />
+
+                    <Button
+                        Command="{Binding FinishCommand}"
+                        Content="Skip"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Padding="12,6"
+                        VerticalAlignment="Center" />
+                </Grid>
+
+                <!--  Content area  -->
+                <Carousel
+                    Grid.Row="1"
+                    Margin="0,8"
+                    SelectedIndex="{Binding CurrentSlideIndex}"
+                    Width="400">
+                    <!--  Welcome Slide  -->
+                    <StackPanel Spacing="16">
+                        <PathIcon
+                            Data="{StaticResource HeadsetVrRegular}"
+                            Height="64"
+                            Width="64" />
+                        <TextBlock
+                            FontSize="16"
+                            HorizontalAlignment="Center"
+                            Text="This wizard will guide you through setting up the new Babble App."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="16">
+                        <StackPanel
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="16">
+                            <PathIcon
+                                Data="{StaticResource DeveloperBoardRegular}"
+                                Height="64"
+                                Width="64" />
+                            <PathIcon
+                                Data="{StaticResource WirelessRegular}"
+                                Height="64"
+                                Width="64" />
+                        </StackPanel>
+
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="Wired or wireless?" />
+
+                        <TextBlock
+                            FontSize="16"
+                            Text="If you want to use your tracker wirelessly, you'll need to flash your device. You can download the firmware flashing app below."
+                            TextWrapping="Wrap" />
+
+                        <Grid ColumnDefinitions="Auto,12,*" RowDefinitions="Auto,Auto">
+                            <TextBlock
+                                FontSize="16"
+                                Grid.Column="0"
+                                Grid.Row="0"
+                                Text="Download link:"
+                                VerticalAlignment="Center" />
+                            <controls:Hyperlink
+                                Alias="EyeTrackVR Firmware Flashing Tool"
+                                Command="{Binding OpenETVRModuleUrl}"
+                                FontSize="16"
+                                Grid.Column="2"
+                                Grid.Row="0"
+                                Url="{Binding EtvrFirmwareFlashingTool}" />
+
+                            <TextBlock
+                                FontSize="16"
+                                Grid.Column="0"
+                                Grid.Row="1"
+                                Text="How to use it:"
+                                VerticalAlignment="Center" />
+                            <controls:Hyperlink
+                                Alias="Babble Docs Page"
+                                Command="{Binding OpenBabbleModuleUrl}"
+                                FontSize="16"
+                                Grid.Column="2"
+                                Grid.Row="1"
+                                Url="{Binding BabbleFirmwareDocs}" />
+                        </Grid>
+
+                        <TextBlock
+                            FontSize="16"
+                            Text="If you want to use your tracker wired, continue!"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!--  Assembly Slide  -->
+                    <StackPanel Spacing="16">
+                        <PathIcon
+                            Data="{StaticResource WrenchRegular}"
+                            Height="64"
+                            Width="64" />
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="Assemble Your Tracker" />
+                        <TextBlock
+                            FontSize="16"
+                            Text="If you need help putting your tracker together, here's a useful Youtube tutorial!"
+                            TextWrapping="Wrap" />
+                        <controls:Hyperlink
+                            Alias="Babble Youtube Page"
+                            Command="{Binding OpenYoutubeUrl}"
+                            FontSize="16"
+                            Url="{Binding YoutubeLink}" />
+                    </StackPanel>
+
+                    <!--  UI Overview Slide  -->
+                    <StackPanel Spacing="16">
+                        <PathIcon
+                            Data="{StaticResource DataTreemapRegular}"
+                            Height="64"
+                            Width="64" />
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="Where is everything?" />
+                        <TextBlock
+                            FontSize="16"
+                            HorizontalAlignment="Center"
+                            MaxWidth="450"
+                            TextWrapping="Wrap">
+
+                            <Run Text="1. The" />
+                            <Run FontWeight="Bold" Text="Home Page" />
+                            <Run Text="is where you can set up your cameras, and" />
+                            <Run FontStyle="Italic" Text="calibrate your eye tracking." />
+                            <LineBreak />
+
+                            <Run Text="2. The" />
+                            <Run FontWeight="Bold" Text="Eye Calibration Page" />
+                            <Run Text="can be used to tweak your eye tracking beyond a standard calibration." />
+                            <LineBreak />
+
+                            <Run Text="3. The" />
+                            <Run FontWeight="Bold" Text="Face Calibration Page" />
+                            <Run Text="similar to the Eye Calibration Page, lets you tweak your face tracking." />
+                            <LineBreak />
+
+                            <Run Text="4. The" />
+                            <Run FontWeight="Bold" Text="Output Page" />
+                            <Run Text="shows the status of the app," />
+                            <Run FontStyle="Italic" Text="errors" />
+                            <Run Text="and other useful information." />
+                            <LineBreak />
+
+                            <Run Text="5. The" />
+                            <Run FontWeight="Bold" Text="Settings Page" />
+                            <Run Text="is for general app settings, such as" />
+                            <Run FontStyle="Italic" Text="theme, language," />
+                            <Run Text="and more." />
+
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!--  Finished Slide  -->
+                    <StackPanel Spacing="16">
+                        <PathIcon
+                            Data="{StaticResource CheckmarkCircleRegular}"
+                            Height="64"
+                            Width="64" />
+                        <TextBlock
+                            FontSize="24"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"
+                            Text="Setup Complete!" />
+                        <TextBlock
+                            FontSize="16"
+                            Text="You're all set to start using the new Babble App!"
+                            TextWrapping="Wrap" />
+                        <TextBlock FontSize="16" Text="You can revisit this page in the settings." />
+                    </StackPanel>
+                </Carousel>
+
+                <!--  Navigation buttons with progress indicators in the middle  -->
+                <Grid
+                    ColumnDefinitions="Auto,*,Auto"
+                    Grid.Row="2"
+                    Margin="0,16,0,0">
+                    <Button
+                        Click="OnPreviousRequested"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="{Binding CanGoBack}"
+                        Padding="4,8"
+                        Width="100">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon
+                                Data="{StaticResource LeftArrowIcon}"
+                                Height="16"
+                                Width="16" />
+                            <TextBlock Text="Previous" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <ItemsControl
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        ItemsSource="{Binding SlideIndicators}"
+                        VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse
+                                    Fill="{Binding IsActive, Converter={x:Static helpers:BoolToColorConverter.Instance}}"
+                                    Height="8"
+                                    Width="8" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button
+                        Command="{Binding NextCommand}"
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Padding="4,8"
+                        Width="100">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding NextButtonText}" VerticalAlignment="Center" />
+                            <PathIcon
+                                Data="{StaticResource RightArrowIcon}"
+                                Height="16"
+                                Width="16" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

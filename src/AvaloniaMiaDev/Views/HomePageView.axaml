@@ -20,7 +20,7 @@
                     Grid.Column="0"
                     Text="Home" />
                 <Button
-                  Click="OnVRCalibrationRequested"
+                    Click="OnVRCalibrationRequested"
                     CornerRadius="4"
                     Grid.Column="1"
                     Padding="12,8"
@@ -52,20 +52,31 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Left Camera Address" />
 
-                            <Grid RowDefinitions="Auto,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
                                     Grid.Row="0"
                                     Height="36"
-                                    Margin="0,8"
+                                    Margin="0,6"
                                     Text="{Binding LeftCameraAddress}"
+                                    TextChanged="CameraAddressEntry_TextChanged"
                                     Watermark="Start typing..."
                                     x:Name="LeftCameraAddressEntry" />
 
+                                <TextBlock
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    Foreground="Orange"
+                                    Grid.Row="1"
+                                    IsVisible="False"
+                                    Margin="0,0,0,4"
+                                    TextWrapping="Wrap"
+                                    x:Name="LeftAddressHint" />
+
                                 <Grid
                                     ColumnDefinitions="*,*"
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     Margin="0,4,0,8">
 
                                     <Button
@@ -216,20 +227,31 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Right Camera Address" />
 
-                            <Grid RowDefinitions="Auto,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
                                     Grid.Row="0"
                                     Height="36"
-                                    Margin="0,8"
+                                    Margin="0,6"
                                     Text="{Binding RightCameraAddress}"
+                                    TextChanged="CameraAddressEntry_TextChanged"
                                     Watermark="Start typing..."
                                     x:Name="RightCameraAddressEntry" />
 
+                                <TextBlock
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    Foreground="Orange"
+                                    Grid.Row="1"
+                                    IsVisible="False"
+                                    Margin="0,0,0,4"
+                                    TextWrapping="Wrap"
+                                    x:Name="RightAddressHint" />
+
                                 <Grid
                                     ColumnDefinitions="*,*"
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     Margin="0,4,0,8">
 
                                     <Button
@@ -380,20 +402,31 @@
                         <StackPanel>
                             <TextBlock FontSize="14" Text="Face Camera Address" />
 
-                            <Grid RowDefinitions="Auto,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
                                 <AutoCompleteBox
                                     FilterMode="Contains"
                                     FontSize="13"
                                     Grid.Row="0"
                                     Height="36"
-                                    Margin="0,8"
+                                    Margin="0,6"
                                     Text="{Binding FaceCameraAddress}"
+                                    TextChanged="CameraAddressEntry_TextChanged"
                                     Watermark="Start typing..."
                                     x:Name="FaceCameraAddressEntry" />
 
+                                <TextBlock
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    Foreground="Orange"
+                                    Grid.Row="1"
+                                    IsVisible="False"
+                                    Margin="0,0,0,4"
+                                    TextWrapping="Wrap"
+                                    x:Name="FaceAddressHint" />
+
                                 <Grid
                                     ColumnDefinitions="*,*"
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     Margin="0,4,0,8">
 
                                     <Button

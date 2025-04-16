@@ -1,4 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
@@ -106,6 +109,16 @@ public partial class AppSettingsView : UserControl
         _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Light.Content"), Name="Light" });
         _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Dark.Content"), Name="Dark" });
         _themeComboBox.SelectedIndex = selectedIndex;
+    }
+
+    private void LaunchFirstTimeSetUp(object? sender, RoutedEventArgs e)
+    {
+        switch (Application.Current?.ApplicationLifetime)
+        {
+            case IClassicDesktopStyleApplicationLifetime desktop:
+                OnboardingView.ShowOnboarding(desktop.MainWindow!);
+                break;
+        }
     }
 }
 
