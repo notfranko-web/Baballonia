@@ -123,7 +123,7 @@ public class CameraController : IDisposable
         _view.SetValue(_isTrackingModeProperty, true);
 
         // Initialize MJPEG streaming
-        _currentJpegFrame = new byte[0];
+        _currentJpegFrame = [];
     }
 
     public async Task UpdateImage(bool isVisible)
@@ -188,7 +188,7 @@ public class CameraController : IDisposable
 
             if (cameraSettings.RoiWidth == 0 || cameraSettings.RoiHeight == 0)
             {
-                SelectEntireFrame();
+                await SelectEntireFrame();
             }
 
             // Create or update bitmap if needed
@@ -275,14 +275,18 @@ public class CameraController : IDisposable
         _view.SetValue(_isTrackingModeProperty, false);
     }
 
-    public void SelectEntireFrame()
+    public async Task SelectEntireFrame()
     {
         if (_bitmap is null) return;
 
         _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, 0);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, 0);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, _bitmap.Size.Width);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, _bitmap.Size.Height);
     }
 
-    private async void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (_camViewMode != CamViewMode.Cropping) return;
 
@@ -293,7 +297,7 @@ public class CameraController : IDisposable
         _isCropping = true;
     }
 
-    private async void OnPointerMoved(object? sender, PointerEventArgs e)
+    private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
         if (!_isCropping) return;
 
@@ -363,7 +367,7 @@ public class CameraController : IDisposable
 
             Task.Run(() => HandleHttpRequests(_streamingCancellationTokenSource.Token));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _isStreaming = false;
         }
@@ -385,9 +389,9 @@ public class CameraController : IDisposable
             _httpListener?.Stop();
             _httpListener?.Close();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
+            // ignored
         }
     }
 
@@ -402,7 +406,7 @@ public class CameraController : IDisposable
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                string requestPath = context.Request.Url.AbsolutePath.ToLowerInvariant();
+                string requestPath = context.Request.Url!.AbsolutePath.ToLowerInvariant();
 
                 if (requestPath == "/mjpeg")
                 {
@@ -420,12 +424,9 @@ public class CameraController : IDisposable
                     HandleDefaultRequest(context);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-
-                }
+                // ignored
             }
         }
     }
@@ -493,13 +494,17 @@ public class CameraController : IDisposable
                 await Task.Delay(33, cancellationToken);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"Error in MJPEG stream: {ex.Message}");
+            // ignored
         }
         finally
         {
-            try { response.Abort(); } catch { }
+            try { response.Abort(); }
+            catch
+            {
+                // ignored
+            }
         }
     }
 
@@ -534,9 +539,9 @@ public class CameraController : IDisposable
                 response.OutputStream.Write(errorMsg, 0, errorMsg.Length);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
+            // ignored
         }
         finally
         {
@@ -580,9 +585,9 @@ public class CameraController : IDisposable
             //response.ContentLength64 = buffer.Length;
             response.OutputStream.Write(buffer, 0, buffer.Length);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
+            // ignored
         }
         finally
         {
@@ -603,9 +608,9 @@ public class CameraController : IDisposable
                 _currentJpegFrame = CreateImageFromGray8UsingBitmap(arr, (int)_bitmap.Size.Width, (int)_bitmap.Size.Height);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
+            // ignored
         }
     }
 

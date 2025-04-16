@@ -17,10 +17,11 @@ namespace AvaloniaMiaDev.Services
 {
     public class VrCalibrationService : IVRService
     {
-        private static readonly string CalibratorPath = Path.Combine(AppContext.BaseDirectory, "Calibration", "gaze_overlay.exe");
+        public static string CalibratorPath { get; }
+
+        public static string Calibrator { get; }
 
         private ILogger<VrCalibrationService> _logger;
-        private readonly LocalSettingsService _localSettingsService;
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
         private Dictionary<string, Action<string>> _responseHandlers;
@@ -28,6 +29,20 @@ namespace AvaloniaMiaDev.Services
 
         // Event to notify subscribers about process output
         public event EventHandler<ProcessOutputEventArgs> ProcessOutputReceived;
+
+        static VrCalibrationService()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                CalibratorPath = Path.Combine(AppContext.BaseDirectory, "Calibration", "Windows");
+                Calibrator = Path.Combine(CalibratorPath, "gaze_overlay.exe");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                CalibratorPath = Path.Combine(AppContext.BaseDirectory, "Calibration", "Linux");
+                Calibrator = Path.Combine(CalibratorPath, "gaze_overlay");
+            }
+        }
 
         public VrCalibrationService(ILogger<VrCalibrationService> logger)
         {
@@ -41,23 +56,16 @@ namespace AvaloniaMiaDev.Services
             };
         }
 
-        public async Task<VRCalibrationStatus> GetStatusAsync()
+        public async Task<VrCalibrationStatus> GetStatusAsync()
         {
-            await StartVRProcess();
-            var response = await _httpClient.GetStringAsync($"{_baseUrl}/settings");
-            return JsonConvert.DeserializeObject<VRCalibrationStatus>(response)!;
+            await StartVrProcess();
+            var response = await _httpClient.GetStringAsync($"{_baseUrl}/status");
+            return JsonConvert.DeserializeObject<VrCalibrationStatus>(response)!;
         }
 
-        public async Task Start(VRCalibration calibration)
+        public async Task<bool> StartCamerasAsync(VrCalibration calibration)
         {
-            var uri = new Uri($"{_baseUrl}/start_cameras?left={calibration.LeftEyeMjpegSource}?right={calibration.RightEyeMjpegSource}");
-            _logger.LogInformation($"Starting VR Calibration for {uri}");
-            await StartVRProcess();
-        }
-
-        public async Task<bool> StartCamerasAsync(VRCalibration calibration)
-        {
-            await StartVRProcess();
+            await StartVrProcess();
 
             await Task.Delay(2000);
 
@@ -66,17 +74,17 @@ namespace AvaloniaMiaDev.Services
             return result!.Result == "ok";
         }
 
-        public async Task<bool> StartCalibrationAsync(VRCalibration calibration)
+        public async Task<bool> StartCalibrationAsync(VrCalibration calibration)
         {
-            var url = $"{_baseUrl}/start_calibration?onnx_filename={Uri.EscapeDataString(calibration.ModelSavePath + VRCalibration.ModelName)}&routine_id={calibration.CalibrationInstructions}";
+            var url = $"{_baseUrl}/start_calibration?onnx_filename={Uri.EscapeDataString(calibration.ModelSavePath + VrCalibration.ModelName)}&routine_id={calibration.CalibrationInstructions}";
             var response = await _httpClient.GetStringAsync(url);
             var result = JsonConvert.DeserializeObject<ApiResponse>(response);
             return result!.Result == "ok";
         }
 
-        public async Task<bool> StartPreviewAsync(VRCalibration calibration)
+        public async Task<bool> StartPreviewAsync(VrCalibration calibration)
         {
-            var modelPath = Uri.EscapeDataString(calibration.ModelSavePath + VRCalibration.ModelName);
+            var modelPath = Uri.EscapeDataString(calibration.ModelSavePath + VrCalibration.ModelName);
             var url = $"{_baseUrl}/start_preview?model_path={Uri.EscapeDataString(modelPath)}";
             var response = await _httpClient.GetStringAsync(url);
             var result = JsonConvert.DeserializeObject<ApiResponse>(response);
@@ -90,23 +98,23 @@ namespace AvaloniaMiaDev.Services
             return result!.Result == "ok";
         }
 
-        private async Task StartVRProcess()
+        private Task StartVrProcess()
         {
-            if (!File.Exists(CalibratorPath))
+            if (!File.Exists(Calibrator))
             {
-                throw new FileNotFoundException("VR calibration executable not found", CalibratorPath);
+                throw new FileNotFoundException("VR calibration executable not found", Calibrator);
             }
 
-            if (Process.GetProcesses().Any(p => p.ProcessName == Path.GetFileNameWithoutExtension(CalibratorPath)))
+            if (Process.GetProcesses().Any(p => p.ProcessName == Path.GetFileNameWithoutExtension(Calibrator)))
             {
-                return;
+                return Task.FromResult(false);
             }
 
             _vrProcess = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = CalibratorPath,
+                    FileName = Calibrator,
                     UseShellExecute = false,
                     CreateNoWindow = false,
                     //RedirectStandardOutput = true,
@@ -117,14 +125,16 @@ namespace AvaloniaMiaDev.Services
 
             _vrProcess.OutputDataReceived += ProcessOutputHandler;
             _vrProcess.ErrorDataReceived += ProcessErrorHandler;
-            _vrProcess.Exited += (sender, args) =>
+            _vrProcess.Exited += (_, _) =>
             {
-                _vrProcess = null;
+                _vrProcess = null!;
             };
 
             _vrProcess.Start();
             // _vrProcess.BeginOutputReadLine();
             // _vrProcess.BeginErrorReadLine();
+
+            return Task.CompletedTask;
         }
 
         private void ProcessOutputHandler(object sender, DataReceivedEventArgs e)
@@ -179,7 +189,7 @@ namespace AvaloniaMiaDev.Services
                 {
                     _logger.LogError($"Error disposing VR process: {ex.Message}");
                 }
-                _vrProcess = null;
+                _vrProcess = null!;
             }
         }
     }
@@ -207,7 +217,7 @@ namespace AvaloniaMiaDev.Services
         public string Message { get; set; }
     }
 
-    public class VRCalibrationStatus
+    public class VrCalibrationStatus
     {
         [JsonProperty("running")]
         public string Running { get; set; }
@@ -218,6 +228,9 @@ namespace AvaloniaMiaDev.Services
         [JsonProperty("calibrationComplete")]
         public string CalibrationComplete { get; set; }
 
+        [JsonProperty("isTrained")]
+        public string Trained { get; set; }
+
         [JsonProperty("currentIndex")]
         public int CurrentIndex { get; set; }
 
@@ -226,6 +239,7 @@ namespace AvaloniaMiaDev.Services
 
         public bool IsRunning => Running == "1";
         public bool IsRecording => Recording == "1";
+        public bool IsTrained => Trained == "1";
         public bool IsCalibrationComplete => CalibrationComplete == "1";
         public double Progress => MaxIndex > 0 ? (double)CurrentIndex / MaxIndex : 0;
     }

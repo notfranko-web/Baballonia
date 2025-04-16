@@ -92,13 +92,13 @@ public sealed class SerialCameraCapture(string portName) : Capture(portName), ID
         catch (ObjectDisposedException)
         {
             // Handle when the device is unplugged
-            StopCapture();
+            await StopCapture();
             Dispose();
 
         }
         catch (Exception)
         {
-            StopCapture();
+            await StopCapture();
         }
     }
 
