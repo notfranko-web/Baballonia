@@ -214,7 +214,8 @@ public abstract class PlatformConnector
     {
         if (Capture is null)
         {
-            throw new InvalidOperationException();
+            // Nothing to terminate
+            return;
         }
 
         Logger.LogInformation("Stopping capture source...");
