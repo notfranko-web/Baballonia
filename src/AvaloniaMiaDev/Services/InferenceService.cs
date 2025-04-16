@@ -43,7 +43,7 @@ public class InferenceService : IInferenceService
     /// </summary>
     /// <param name="settingsService"></param>
     /// <param name="models"></param>
-    public async Task SetupInference(ILocalSettingsService settingsService, string[] models)
+    private async Task SetupInference(ILocalSettingsService settingsService, string[] models)
     {
         if (models.Length != 3) return;
 
@@ -55,7 +55,7 @@ public class InferenceService : IInferenceService
 
         for (var index = 0; index < models.Length; index++)
         {
-            await SetupInference(models[index], (Camera)index, minCutoff, speedCoeff, sessionOptions);
+            SetupInference(models[index], (Camera)index, minCutoff, speedCoeff, sessionOptions);
         }
     }
 
@@ -67,7 +67,7 @@ public class InferenceService : IInferenceService
     /// <param name="minCutoff"></param>
     /// <param name="speedCoeff"></param>
     /// <param name="sessionOptions"></param>
-    public async Task SetupInference(string model, Camera index, float minCutoff, float speedCoeff,
+    private void SetupInference(string model, Camera index, float minCutoff, float speedCoeff,
         SessionOptions sessionOptions)
     {
         var modelName = model;

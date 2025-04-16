@@ -63,7 +63,7 @@ public class VftCapture : Capture
             try
             {
                 // Open the VFT device and initialize it.
-                await SetTrackerState(setActive: true);
+                SetTrackerState(setActive: true);
 
                 // Initialize VideoCapture with URL, timeout for robustness
                 // Set capture mode to YUYV
@@ -115,7 +115,7 @@ public class VftCapture : Capture
         return Task.CompletedTask;
     }
 
-    private async Task SetTrackerState(bool setActive)
+    private void SetTrackerState(bool setActive)
     {
         // Prev: var fd = ViveFacialTracker.open(Url, ViveFacialTracker.FileOpenFlags.O_RDWR);
         var vftFileStream = File.Open(Url, FileMode.Open, FileAccess.ReadWrite);
@@ -126,9 +126,9 @@ public class VftCapture : Capture
             {
                 // Activate the tracker and give it some time to warm up/cool down
                 if (setActive)
-                    await ViveFacialTracker.activate_tracker((int)fd);
+                    ViveFacialTracker.activate_tracker((int)fd);
                 else
-                    await ViveFacialTracker.deactivate_tracker((int)fd);
+                    ViveFacialTracker.deactivate_tracker((int)fd);
                 // await Task.Delay(1000);
             }
             finally
@@ -143,17 +143,17 @@ public class VftCapture : Capture
     /// Stops video capture and cleans up resources.
     /// </summary>
     /// <returns>True if capture stopped successfully, otherwise false.</returns>
-    public override async Task<bool> StopCapture()
+    public override Task<bool> StopCapture()
     {
         if (_videoCapture is null)
-            return false;
+            return Task.FromResult(false);
 
         _loop = false;
         IsReady = false;
         _videoCapture.Release();
         _videoCapture.Dispose();
         _videoCapture = null;
-        await SetTrackerState(false);
-        return true;
+        SetTrackerState(false);
+        return Task.FromResult(true);
     }
 }

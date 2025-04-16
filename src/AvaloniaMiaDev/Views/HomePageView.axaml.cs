@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Models;
+using AvaloniaMiaDev.Services;
 using AvaloniaMiaDev.Services.Inference;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
@@ -92,6 +93,7 @@ public partial class HomePageView : UserControl
             LeftViewBox,
             LeftMouthWindow,
             LeftCanvasWindow,
+            "EyeHome_LeftCameraIndex",
             "EyeHome_LeftCameraROIX",
             "EyeHome_LeftCameraROIY",
             "EyeHome_LeftCameraROIWidth",
@@ -111,6 +113,7 @@ public partial class HomePageView : UserControl
             RightViewBox,
             RightMouthWindow,
             RightCanvasWindow,
+            "EyeHome_RightCameraIndex",
             "EyeHome_RightCameraROIX",
             "EyeHome_RightCameraROIY",
             "EyeHome_RightCameraROIWidth",
@@ -130,6 +133,7 @@ public partial class HomePageView : UserControl
             FaceViewBox,
             FaceMouthWindow,
             FaceCanvasWindow,
+            "EyeHome_FaceCameraIndex",
             "Face_CameraROIX",
             "Face_CameraROIY",
             "Face_CameraROIWidth",
@@ -201,9 +205,9 @@ public partial class HomePageView : UserControl
         _leftCameraController.SetCroppingMode();
     }
 
-    public void LeftSelectEntireFrameClicked(object sender, RoutedEventArgs args)
+    public async void LeftSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        _leftCameraController.SelectEntireFrame();
+        await _leftCameraController.SelectEntireFrame();
     }
 
     // Event handlers for right camera
@@ -228,9 +232,9 @@ public partial class HomePageView : UserControl
         _rightCameraController.SetCroppingMode();
     }
 
-    public void RightSelectEntireFrameClicked(object sender, RoutedEventArgs args)
+    public async void RightSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        _rightCameraController.SelectEntireFrame();
+        await _rightCameraController.SelectEntireFrame();
     }
 
     // Event handlers for face camera
@@ -254,9 +258,9 @@ public partial class HomePageView : UserControl
         _faceCameraController.SetCroppingMode();
     }
 
-    public void FaceSelectEntireFrameClicked(object sender, RoutedEventArgs args)
+    public async void FaceSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        _faceCameraController.SelectEntireFrame();
+        await _faceCameraController.SelectEntireFrame();
     }
 
     private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
@@ -265,11 +269,12 @@ public partial class HomePageView : UserControl
 
         const int leftPort = 8080;
         const int rightPort = 8081;
+        var modelPath = Path.GetTempPath();
 
-        var model = new VRCalibration
+        var model = new VrCalibration
         {
             ModelSavePath = Path.GetTempPath(),
-            CalibrationInstructions = [11],
+            CalibrationInstructions = "2",
             FOV = 1f,
             LeftEyeMjpegSource = $"http://localhost:{leftPort}/mjpeg",
             RightEyeMjpegSource = $"http://localhost:{rightPort}/mjpeg",
@@ -279,6 +284,23 @@ public partial class HomePageView : UserControl
         _rightCameraController.StartMjpegStreaming(rightPort);
 
         await _vrService.StartCamerasAsync(model);
+        await _vrService.StartCalibrationAsync(model);
+
+        var loop = true;
+        while (loop)
+        {
+            var status = await _vrService.GetStatusAsync();
+            if (status.IsTrained)
+            {
+                loop = false;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        var modelName = Path.Combine(modelPath, VrCalibration.ModelName);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Left, modelName);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Right, modelName);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)

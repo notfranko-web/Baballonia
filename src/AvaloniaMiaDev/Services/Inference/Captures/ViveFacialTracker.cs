@@ -252,7 +252,7 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
             return length;
         }
 
-        public async static Task<bool> activate_tracker(int fd)
+        public static bool activate_tracker(int fd)
         {
             //uint l = get_len(fd);
             byte[] data = new byte[384];
@@ -282,7 +282,7 @@ namespace AvaloniaMiaDev.Services.Inference.Captures
             return true;
         }
 
-        public async static Task<bool> deactivate_tracker(int fd)
+        public static bool deactivate_tracker(int fd)
         {
             //uint l = get_len(fd);
             byte[] data = new byte[384];
