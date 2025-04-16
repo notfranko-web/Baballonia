@@ -9,8 +9,10 @@ namespace AvaloniaMiaDev.Helpers
     {
         public static BoolToColorConverter Instance { get; } = new();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null) throw new ArgumentNullException(nameof(value));
             if (value is bool isActive)
             {
                 return isActive ?
@@ -21,7 +23,7 @@ namespace AvaloniaMiaDev.Helpers
             return SolidColorBrush.Parse("#80808080");
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
