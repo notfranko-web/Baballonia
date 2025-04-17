@@ -7,8 +7,10 @@ using AvaloniaMiaDev.Contracts;
 using AvaloniaMiaDev.Helpers;
 using AvaloniaMiaDev.Models;
 using AvaloniaMiaDev.OSC;
+using AvaloniaMiaDev.Services.Inference;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
+using AvaloniaMiaDev.Views;
 using Microsoft.Extensions.Hosting;
 
 namespace AvaloniaMiaDev.Services;
@@ -16,24 +18,24 @@ namespace AvaloniaMiaDev.Services;
 public class ParameterSenderService(
     IInferenceService inferenceService,
     OscSendService sendService,
+    HomePageViewModel homePageViewModel,
+    EyeCalibrationViewModel eyeCalibrationViewModel,
     FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
     private readonly Queue<OscMessage> _sendQueue = new();
 
-    private readonly CalibrationItem[] _leftEyeCalibrationItems =
-    [
-        new CalibrationItem { ShapeName = "/LeftEyeX", Min = -1, Max = 1 },
-        new CalibrationItem { ShapeName = "/LeftEyeY", Min = -1, Max = 1 }
-    ];
-
-    private readonly CalibrationItem[] _rightEyeCalibrationItems =
-    [
-        new CalibrationItem { ShapeName = "/RightEyeX", Min = -1, Max = 1 },
-        new CalibrationItem { ShapeName = "/RightEyeY", Min = -1, Max = 1 }
-    ];
-
     public void Enqueue(OscMessage message) => _sendQueue.Enqueue(message);
     public void Clear() => _sendQueue.Clear();
+
+    // Methods to register camera controllers from HomePageView
+
+    // Camera controller references
+    private CameraController _leftCameraController;
+    private CameraController _rightCameraController;
+    private CameraController _faceCameraController;
+    public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
+    public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
+    public void RegisterFaceCameraController(CameraController controller) => _faceCameraController = controller;
 
     protected async override Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -41,24 +43,23 @@ public class ParameterSenderService(
         {
             try
             {
-                ProcessExpressionData(Camera.Left, _leftEyeCalibrationItems);
-                ProcessExpressionData(Camera.Right, _rightEyeCalibrationItems);
-                ProcessExpressionData(Camera.Face, faceCalibrationViewModel.GetCalibrationValues());
+                if (_leftCameraController != null)  ProcessExpressionData(_leftCameraController.ARExpressions, eyeCalibrationViewModel.LeftEyeCalibrationItems);
+                if (_rightCameraController != null) ProcessExpressionData( _rightCameraController.ARExpressions, eyeCalibrationViewModel.RightEyeCalibrationItems);
+                if (_faceCameraController != null) ProcessExpressionData(_faceCameraController.ARExpressions, faceCalibrationViewModel.GetCalibrationValues());
 
                 await SendAndClearQueue(cancellationToken);
                 await Task.Delay(10, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // ignore!
             }
         }
     }
 
-    private void ProcessExpressionData(Camera camera, Dictionary<string, (double Lower, double Upper)> calibrationItems)
+    private void ProcessExpressionData(float[] expressions, Dictionary<string, (double Lower, double Upper)> calibrationItems)
     {
-        if (!inferenceService.GetExpressionData(camera, out var expressions))
-            return;
+        if (expressions.Length == 0) return;
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {
@@ -69,10 +70,9 @@ public class ParameterSenderService(
         }
     }
 
-    private void ProcessExpressionData(Camera camera, CalibrationItem[] calibrationItems)
+    private void ProcessExpressionData(float[] expressions, CalibrationItem[] calibrationItems)
     {
-        if (!inferenceService.GetExpressionData(camera, out var expressions))
-            return;
+        if (expressions.Length == 0) return;
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {

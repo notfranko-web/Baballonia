@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaMiaDev.Contracts;
@@ -14,12 +12,15 @@ using AvaloniaMiaDev.Services.Inference;
 using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.ML.OnnxRuntime;
 using Path = System.IO.Path;
 
 namespace AvaloniaMiaDev.Views;
 
 public partial class HomePageView : UserControl
 {
+    private readonly ParameterSenderService _parameterSenderService;
+
     public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
         AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
 
@@ -47,14 +48,15 @@ public partial class HomePageView : UserControl
         set => SetValue(IsFaceTrackingModeProperty, value);
     }
 
+    // Hacky
+    public CameraController LeftCameraController { get; private set; }
+    public CameraController RightCameraController { get; private set; }
+    public CameraController FaceCameraController { get; private set; }
+
     private readonly IInferenceService _inferenceService;
     private readonly IVRService _vrService;
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
-
-    private CameraController _leftCameraController;
-    private CameraController _rightCameraController;
-    private CameraController _faceCameraController;
 
     private bool _isVisible;
 
@@ -83,7 +85,7 @@ public partial class HomePageView : UserControl
         }
 
         // Initialize camera controllers
-        _leftCameraController = new CameraController(
+        LeftCameraController = new CameraController(
             this,
             _localSettingsService,
             _inferenceService,
@@ -103,7 +105,7 @@ public partial class HomePageView : UserControl
             "EyeHome_FlipLeftEyeYAxis",
             IsLeftTrackingModeProperty);
 
-        _rightCameraController = new CameraController(
+        RightCameraController = new CameraController(
             this,
             _localSettingsService,
             _inferenceService,
@@ -123,7 +125,7 @@ public partial class HomePageView : UserControl
             "EyeHome_FlipRightEyeYAxis",
             IsRightTrackingModeProperty);
 
-        _faceCameraController = new CameraController(
+        FaceCameraController = new CameraController(
             this,
             _localSettingsService,
             _inferenceService,
@@ -143,6 +145,11 @@ public partial class HomePageView : UserControl
             "Face_FlipYAxis",
             IsFaceTrackingModeProperty);
 
+        _parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
+        _parameterSenderService.RegisterLeftCameraController(LeftCameraController!);
+        _parameterSenderService.RegisterRightCameraController(RightCameraController!);
+        _parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
+
         StartImageUpdates();
 
         PropertyChanged += (_, _) => { _localSettingsService.Save(this); };
@@ -158,8 +165,8 @@ public partial class HomePageView : UserControl
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.StopMjpegStreaming();
-        _rightCameraController.StopMjpegStreaming();
+        LeftCameraController.StopMjpegStreaming();
+        RightCameraController.StopMjpegStreaming();
         _isVisible = false;
     }
 
@@ -171,14 +178,14 @@ public partial class HomePageView : UserControl
         };
         drawTimer.Tick += async (s, e) =>
         {
-            await _leftCameraController.UpdateImage(_isVisible);
-            await _rightCameraController.UpdateImage(_isVisible);
-            await _faceCameraController.UpdateImage(_isVisible);
+            await LeftCameraController.UpdateImage(_isVisible);
+            await RightCameraController.UpdateImage(_isVisible);
+            await FaceCameraController.UpdateImage(_isVisible);
 
             // Update ViewModel bitmaps
-            _viewModel.LeftEyeBitmap = _leftCameraController.Bitmap;
-            _viewModel.RightEyeBitmap = _rightCameraController.Bitmap;
-            _viewModel.FaceBitmap = _faceCameraController.Bitmap;
+            _viewModel.LeftEyeBitmap = LeftCameraController.Bitmap;
+            _viewModel.RightEyeBitmap = RightCameraController.Bitmap;
+            _viewModel.FaceBitmap = FaceCameraController.Bitmap;
         };
         drawTimer.Start();
     }
@@ -186,106 +193,110 @@ public partial class HomePageView : UserControl
     // Event handlers for left camera
     public void LeftCameraStart(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.StartCamera(_viewModel.LeftCameraAddress);
+        LeftCameraController.StartCamera(_viewModel.LeftCameraAddress);
     }
 
     private void LeftCameraStopped(object? sender, RoutedEventArgs e)
     {
-        _leftCameraController.StopCamera(Camera.Left);
-        _leftCameraController.StopMjpegStreaming();
+        LeftCameraController.StopCamera();
+        LeftCameraController.StopMjpegStreaming();
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
     {
-        _leftCameraController.SetTrackingMode();
+        LeftCameraController.SetTrackingMode();
     }
 
     public void LeftOnCroppingModeClicked(object sender, RoutedEventArgs args)
     {
-        _leftCameraController.SetCroppingMode();
+        LeftCameraController.SetCroppingMode();
     }
 
     public async void LeftSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        await _leftCameraController.SelectEntireFrame();
+        await LeftCameraController.SelectEntireFrame();
     }
 
     // Event handlers for right camera
     public void RightCameraStart(object? sender, RoutedEventArgs e)
     {
-        _rightCameraController.StartCamera(_viewModel.RightCameraAddress);
+        RightCameraController.StartCamera(_viewModel.RightCameraAddress);
     }
 
     public void RightCameraStopped(object? sender, RoutedEventArgs e)
     {
-        _rightCameraController.StopCamera(Camera.Right);
-        _rightCameraController.StopMjpegStreaming();
+        RightCameraController.StopCamera();
+        RightCameraController.StopMjpegStreaming();
     }
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
     {
-        _rightCameraController.SetTrackingMode();
+        RightCameraController.SetTrackingMode();
     }
 
     public void RightOnCroppingModeClicked(object sender, RoutedEventArgs args)
     {
-        _rightCameraController.SetCroppingMode();
+        RightCameraController.SetCroppingMode();
     }
 
     public async void RightSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        await _rightCameraController.SelectEntireFrame();
+        await RightCameraController.SelectEntireFrame();
     }
 
     // Event handlers for face camera
     public void FaceCameraStart(object? sender, RoutedEventArgs e)
     {
-        _faceCameraController.StartCamera(_viewModel.FaceCameraAddress);
+        FaceCameraController.StartCamera(_viewModel.FaceCameraAddress);
     }
 
     public void FaceCameraStopped(object? sender, RoutedEventArgs e)
     {
-        _faceCameraController.StopCamera(Camera.Face);
+        FaceCameraController.StopCamera();
     }
 
     public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)
     {
-        _faceCameraController.SetTrackingMode();
+        FaceCameraController.SetTrackingMode();
     }
 
     public void FaceOnCroppingModeClicked(object sender, RoutedEventArgs args)
     {
-        _faceCameraController.SetCroppingMode();
+        FaceCameraController.SetCroppingMode();
     }
 
     public async void FaceSelectEntireFrameClicked(object sender, RoutedEventArgs args)
     {
-        await _faceCameraController.SelectEntireFrame();
+        await FaceCameraController.SelectEntireFrame();
     }
 
     private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        if (!OperatingSystem.IsWindows()) return;
+        // Gatekeep the SteamVR Overlay
+        if (!OperatingSystem.IsWindows() || !OperatingSystem.IsLinux()) return;
 
         const int leftPort = 8080;
         const int rightPort = 8081;
-        var modelPath = Path.GetTempPath();
+        var modelPath = Path.GetTempPath(); // This should ideally point to a more persistent dir at some point
 
         var model = new VrCalibration
         {
-            ModelSavePath = Path.GetTempPath(),
+            ModelSavePath = modelPath,
             CalibrationInstructions = "2",
             FOV = 1f,
             LeftEyeMjpegSource = $"http://localhost:{leftPort}/mjpeg",
             RightEyeMjpegSource = $"http://localhost:{rightPort}/mjpeg",
         };
 
-        _leftCameraController.StartMjpegStreaming(leftPort);
-        _rightCameraController.StartMjpegStreaming(rightPort);
+        // Now for the IPC. Spool up our MJPEG streams
+        LeftCameraController.StartMjpegStreaming(leftPort);
+        RightCameraController.StartMjpegStreaming(rightPort);
 
+        // First tell the subprocess to accept our streams, then start calibration
         await _vrService.StartCamerasAsync(model);
         await _vrService.StartCalibrationAsync(model);
 
+        // Wait for the process to exit
         var loop = true;
         while (loop)
         {
@@ -298,9 +309,27 @@ public partial class HomePageView : UserControl
             await Task.Delay(1000);
         }
 
+        // Cleanup
+        LeftCameraController.StopMjpegStreaming();
+        RightCameraController.StopMjpegStreaming();
+
+        // Save the location of the model so when we boot up the app it auto-loads
         var modelName = Path.Combine(modelPath, VrCalibration.ModelName);
-        _inferenceService.ConfigurePlatformConnectors(Camera.Left, modelName);
-        _inferenceService.ConfigurePlatformConnectors(Camera.Right, modelName);
+        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", modelName);
+
+        // Instruct the inference service to load the new model
+        var minCutoff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+        var speedCoeff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+        SessionOptions sessionOptions = _inferenceService.SetupSessionOptions();
+        await _inferenceService.ConfigurePlatformSpecificGpu(sessionOptions);
+
+        // Finally, close any open eye cameras. The inference service will spin these up
+        LeftCameraController.StopCamera();
+        RightCameraController.StopCamera();
+        _inferenceService.SetupInference(modelName, Camera.Left, minCutoff, speedCoeff, sessionOptions);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Left, _viewModel.LeftCameraAddress);
+        _inferenceService.SetupInference(modelName, Camera.Right, minCutoff, speedCoeff, sessionOptions);
+        _inferenceService.ConfigurePlatformConnectors(Camera.Right, _viewModel.RightCameraAddress);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)

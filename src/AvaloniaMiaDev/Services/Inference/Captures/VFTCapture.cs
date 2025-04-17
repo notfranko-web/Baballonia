@@ -77,7 +77,6 @@ public class VftCapture : Capture
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 IsReady = false;
                 return IsReady;
             }

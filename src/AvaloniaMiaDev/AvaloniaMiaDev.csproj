@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
-        <None Remove="model.onnx" />
         <None Update="LocalSettings.json">
           <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </None>
@@ -93,17 +92,12 @@
     <Content Include="fti_osc.so" Link="fti_osc.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="leftEyeModel" />
-    <None Remove="rightEyeModel.onnx" />
-    <Content Include="rightEyeModel.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Remove="leftEyeModel.onnx" />
-    <Content Include="leftEyeModel.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="faceModel.onnx" />
     <Content Include="faceModel.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="eyeModel.onnx" />
+    <Content Include="eyeModel.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 </ItemGroup>

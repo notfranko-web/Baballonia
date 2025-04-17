@@ -26,6 +26,10 @@ namespace AvaloniaMiaDev.Services.Inference;
 
 public class CameraController : IDisposable
 {
+    public CameraSettings CameraSettings { get; private set; }
+
+    public float[] ARExpressions = [];
+
     private readonly HomePageView _view;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IInferenceService _inferenceService;
@@ -128,11 +132,18 @@ public class CameraController : IDisposable
         // Initialize MJPEG streaming
         _currentJpegFrame = [];
 
-        // Open the camera if it was set prior
+        // Open the camera if it was set prior AND it isn't running already
         Task.Run(async () =>
         {
-            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
-            StartCamera(cameraAddress);
+            var pc = _inferenceService.PlatformConnectors[(int)_camera];
+            if (pc.Item2 is null)
+            {
+                var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
+                if (!string.IsNullOrEmpty(cameraAddress))
+                {
+                    StartCamera(cameraAddress);
+                }
+            }
         });
     }
 
@@ -158,7 +169,7 @@ public class CameraController : IDisposable
             _overlayRectangle = new Rect(x, y, width, height);
         }
 
-        var cameraSettings = new CameraSettings
+        CameraSettings = new CameraSettings
         {
             Camera = _camera,
             RoiX = (int)_overlayRectangle.X,
@@ -175,11 +186,11 @@ public class CameraController : IDisposable
         {
             case CamViewMode.Tracking:
                 useColor = false;
-                valid = _inferenceService.GetImage(cameraSettings, out image, out dims);
+                valid = _inferenceService.GetImage(CameraSettings, out image, out dims);
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
-                valid = _inferenceService.GetRawImage(cameraSettings, ColorType.Bgr24, out image, out dims);
+                valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image, out dims);
                 break;
             default:
                 return;
@@ -187,6 +198,8 @@ public class CameraController : IDisposable
 
         if (valid && isVisible)
         {
+            _inferenceService.GetExpressionData(CameraSettings, out ARExpressions);
+
             _viewBox.Margin = new Thickness(0, 0, 0, 16);
 
             if (dims.width == 0 || dims.height == 0 || image is null ||
@@ -196,7 +209,7 @@ public class CameraController : IDisposable
                 return;
             }
 
-            if (cameraSettings.RoiWidth == 0 || cameraSettings.RoiHeight == 0)
+            if (CameraSettings.RoiWidth == 0 || CameraSettings.RoiHeight == 0)
             {
                 await SelectEntireFrame();
             }
@@ -264,9 +277,9 @@ public class CameraController : IDisposable
         _inferenceService.ConfigurePlatformConnectors(_camera, cameraAddress);
     }
 
-    public void StopCamera(Camera camera)
+    public void StopCamera()
     {
-        _inferenceService.Shutdown(camera);
+        _inferenceService.Shutdown(_camera);
     }
 
     public void SetTrackingMode()

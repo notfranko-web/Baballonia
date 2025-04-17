@@ -94,10 +94,10 @@ public abstract class PlatformConnector
     /// Converts Capture.Frame into something Babble can understand
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    public unsafe Task<bool> ExtractFrameData(Span<float> floatArray, Size size, CameraSettings settings)
+    public unsafe bool ExtractFrameData(Span<float> floatArray, Size size, CameraSettings settings)
     {
         if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null || Capture.FrameCount == _lastFrameCount)
-            return Task.FromResult(false);
+            return false;
         if (floatArray.Length < size.Width * size.Height)
             throw new ArgumentException("Bad floatArray size");
 
@@ -111,10 +111,10 @@ public abstract class PlatformConnector
         }
     }
 
-    public unsafe Task<bool> TransformRawImage(Mat outputMat, CameraSettings settings)
+    public unsafe bool TransformRawImage(Mat outputMat, CameraSettings settings)
     {
         if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null)
-            return Task.FromResult(false);
+            return false;
 
         var sourceMat = Capture.RawMat;
 
@@ -197,12 +197,12 @@ public abstract class PlatformConnector
             catch
             {
                 resultMat.Dispose();
-                return Task.FromResult(false);
+                return false;
             }
         }
 
         resultMat.Dispose();
-        return Task.FromResult(true);
+        return true;
     }
 
 

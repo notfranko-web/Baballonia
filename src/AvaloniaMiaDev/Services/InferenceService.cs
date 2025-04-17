@@ -8,6 +8,9 @@ using AvaloniaMiaDev.Services.Inference.Enums;
 using AvaloniaMiaDev.Services.Inference.Filters;
 using AvaloniaMiaDev.Services.Inference.Models;
 using AvaloniaMiaDev.Services.Inference.Platforms;
+using AvaloniaMiaDev.ViewModels.SplitViewPane;
+using AvaloniaMiaDev.Views;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -32,31 +35,20 @@ public class InferenceService : IInferenceService
         Task.Run(async () =>
         {
             logger.LogInformation("Starting Inference Service...");
-            var onnxModels = new[] {"leftEyeModel.onnx", "rightEyeModel.onnx", "faceModel.onnx"};
-            await SetupInference(settingsService, onnxModels);
+
+            SessionOptions sessionOptions = SetupSessionOptions();
+            await ConfigurePlatformSpecificGpu(sessionOptions);
+
+            var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+            var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+            var eyeModel = await settingsService.ReadSettingAsync<string>("EyeHome_EyeModel");
+
+            SetupInference(eyeModel, Camera.Left, minCutoff, speedCoeff, sessionOptions);
+            SetupInference(eyeModel, Camera.Right, minCutoff, speedCoeff, sessionOptions);
+            SetupInference("faceModel.onnx", Camera.Face, minCutoff, speedCoeff, sessionOptions);
+
             logger.LogInformation("Inference started!");
         });
-    }
-
-    /// <summary>
-    /// Loads/reloads the ONNX model for the left, right and face cameras
-    /// </summary>
-    /// <param name="settingsService"></param>
-    /// <param name="models"></param>
-    private async Task SetupInference(ILocalSettingsService settingsService, string[] models)
-    {
-        if (models.Length != 3) return;
-
-        SessionOptions sessionOptions = SetupSessionOptions();
-        await ConfigurePlatformSpecificGpu(sessionOptions);
-
-        var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
-        var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
-
-        for (var index = 0; index < models.Length; index++)
-        {
-            SetupInference(models[index], (Camera)index, minCutoff, speedCoeff, sessionOptions);
-        }
     }
 
     /// <summary>
@@ -67,8 +59,7 @@ public class InferenceService : IInferenceService
     /// <param name="minCutoff"></param>
     /// <param name="speedCoeff"></param>
     /// <param name="sessionOptions"></param>
-    private void SetupInference(string model, Camera index, float minCutoff, float speedCoeff,
-        SessionOptions sessionOptions)
+    public void SetupInference(string model, Camera index, float minCutoff, float speedCoeff, SessionOptions sessionOptions)
     {
         var modelName = model;
         var filter = new OneEuroFilter(
@@ -91,11 +82,11 @@ public class InferenceService : IInferenceService
     /// <param name="camera"></param>
     /// <param name="arKitExpressions"></param>
     /// <returns></returns>
-    public bool GetExpressionData(Camera camera, out float[] arKitExpressions)
+    public bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
 
-        var index = (int)camera;
+        var index = (int)cameraSettings.Camera;
         var platformSettings = PlatformConnectors[index].Item1;
         var platformConnector = PlatformConnectors[index].Item2;
         if (platformConnector is null)
@@ -110,6 +101,9 @@ public class InferenceService : IInferenceService
 
         // Test if the camera is not ready or connecting to new source
         if (!platformConnector.Capture!.IsReady) return false;
+
+        if (!platformConnector.ExtractFrameData(platformSettings.Tensor.Buffer.Span, platformSettings.InputSize,
+                cameraSettings)) return false;
 
         // Camera ready, prepare Mat as DenseTensor
         var inputs = new List<NamedOnnxValue>
@@ -224,7 +218,7 @@ public class InferenceService : IInferenceService
 
         byte[] data = new byte[platformSettings.InputSize.Width * platformSettings.InputSize.Height];
         using var imageMat = Mat<byte>.FromPixelData(platformSettings.InputSize.Height, platformSettings.InputSize.Width, data);
-        if (platformConnector.TransformRawImage(imageMat, cameraSettings).Result != true) return false;
+        if (platformConnector.TransformRawImage(imageMat, cameraSettings) != true) return false;
 
         image = data;
         dimensions = (imageMat.Width, imageMat.Height);
@@ -244,7 +238,7 @@ public class InferenceService : IInferenceService
             PlatformConnectors[(int)camera].Item2 = new AndroidConnector(cameraIndex, _logger, _localSettingsService);
             PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
         }
-        else
+        else // if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
             // Use the standard EmguCV VideoCapture backend
@@ -257,7 +251,7 @@ public class InferenceService : IInferenceService
     /// Make our SessionOptions *fancy*
     /// </summary>
     /// <returns></returns>
-    private SessionOptions SetupSessionOptions()
+    public SessionOptions SetupSessionOptions()
     {
         // Random environment variable(s) to speed up webcam opening on the MSMF backend.
         // https://github.com/opencv/opencv/issues/17687
@@ -278,7 +272,7 @@ public class InferenceService : IInferenceService
     /// Per-platform hardware accel. detection/activation
     /// </summary>
     /// <param name="sessionOptions"></param>
-    private async Task ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
+    public async Task ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
     {
         sessionOptions.AppendExecutionProvider_CPU();
 

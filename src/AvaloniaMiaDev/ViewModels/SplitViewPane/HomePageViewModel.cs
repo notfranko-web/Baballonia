@@ -19,6 +19,10 @@ public partial class HomePageViewModel : ViewModelBase
     public WriteableBitmap RightEyeBitmap { get; set; }
 
     [ObservableProperty]
+    [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
+    private string _eyeModel;
+
+    [ObservableProperty]
     [property: SavedSetting("EyeHome_LeftCameraIndex", "0")]
     private string _leftCameraAddress;
 

@@ -104,6 +104,7 @@ public sealed class OpenCvCapture : Capture
             try
             {
                 IsReady = capture.Read(_mat);
+
                 if (IsReady)
                 {
                     _dimensions.width = _mat.Width;
@@ -111,7 +112,10 @@ public sealed class OpenCvCapture : Capture
                     Interlocked.Increment(ref _frameCount);
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         return Task.CompletedTask;
