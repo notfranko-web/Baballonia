@@ -63,7 +63,7 @@ public partial class HomePageViewModel : ViewModelBase
     public WriteableBitmap FaceBitmap { get; set; }
 
     [ObservableProperty]
-    [property: SavedSetting("Face_CameraIndex", "0")]
+    [property: SavedSetting("EyeHome_FaceCameraIndex", "0")]
     private string _faceCameraAddress;
 
     [ObservableProperty]

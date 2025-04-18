@@ -31,7 +31,6 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
         <PackageReference Include="Microsoft.ML" Version="4.0.2" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
         <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.21.0" />
         <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="4.0.2" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -97,9 +96,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Remove="eyeModel.onnx" />
-    <Content Include="eyeModel.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
 </ItemGroup>
 <ItemGroup>
   <ProjectReference Include="..\HyperText.Avalonia\HyperText.Avalonia\HyperText.Avalonia.csproj" />

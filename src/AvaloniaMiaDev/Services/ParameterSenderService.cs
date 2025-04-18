@@ -16,9 +16,7 @@ using Microsoft.Extensions.Hosting;
 namespace AvaloniaMiaDev.Services;
 
 public class ParameterSenderService(
-    IInferenceService inferenceService,
     OscSendService sendService,
-    HomePageViewModel homePageViewModel,
     EyeCalibrationViewModel eyeCalibrationViewModel,
     FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
@@ -50,7 +48,7 @@ public class ParameterSenderService(
                 await SendAndClearQueue(cancellationToken);
                 await Task.Delay(10, cancellationToken);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // ignore!
             }

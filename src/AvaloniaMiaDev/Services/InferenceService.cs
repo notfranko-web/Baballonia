@@ -55,11 +55,11 @@ public class InferenceService : IInferenceService
     /// Loads/reloads the ONNX model for a specified camera
     /// </summary>
     /// <param name="model"></param>
-    /// <param name="index"></param>
+    /// <param name="camera"></param>
     /// <param name="minCutoff"></param>
     /// <param name="speedCoeff"></param>
     /// <param name="sessionOptions"></param>
-    public void SetupInference(string model, Camera index, float minCutoff, float speedCoeff, SessionOptions sessionOptions)
+    public void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff, SessionOptions sessionOptions)
     {
         var modelName = model;
         var filter = new OneEuroFilter(
@@ -71,9 +71,20 @@ public class InferenceService : IInferenceService
         var inputName = session.InputMetadata.Keys.First();
         var dimensions = session.InputMetadata.Values.First().Dimensions;
         var inputSize = new Size(dimensions[2], dimensions[3]);
-        var tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
+
+        DenseTensor<float> tensor;
+        if (camera is Camera.Left or Camera.Right)
+        {
+            // Handle the interleaved model
+            tensor = new DenseTensor<float> ([1, 2, dimensions[2], dimensions[3]]);
+        }
+        else // Camera.Face
+        {
+            tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
+        }
+
         var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
-        PlatformConnectors[(int)index] = (platformSettings, null)!;
+        PlatformConnectors[(int)camera] = (platformSettings, null)!;
     }
 
     /// <summary>

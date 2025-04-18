@@ -19,7 +19,7 @@ public interface IInferenceService
 
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex);
 
-    public void SetupInference(string model, Camera index, float minCutoff, float speedCoeff, SessionOptions sessionOptions);
+    public void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff, SessionOptions sessionOptions);
     public SessionOptions SetupSessionOptions();
     public Task ConfigurePlatformSpecificGpu(SessionOptions sessionOptions);
 
