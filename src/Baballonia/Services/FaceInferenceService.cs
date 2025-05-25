@@ -54,8 +54,8 @@ public class FaceInferenceService : InferenceService, IFaceInferenceService
         float[] noisy_point = new float[45];
         var filter = new OneEuroFilter(
             x0: noisy_point,
-            minCutoff: 0.06f,
-            beta: 0.9f
+            minCutoff: minCutoff,
+            beta: speedCoeff
         );
 
         var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, modelName), sessionOptions);

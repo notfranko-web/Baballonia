@@ -67,8 +67,8 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
         float[] noisy_point = new float[2];
         var filter = new OneEuroFilter(
             x0: noisy_point,
-            minCutoff: 0.06f,
-            beta: 0.9f
+            minCutoff: minCutoff,
+            beta: speedCoeff
         );
 
         var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, model), sessionOptions);
