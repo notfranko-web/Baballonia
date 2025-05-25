@@ -51,9 +51,11 @@ public class FaceInferenceService : InferenceService, IFaceInferenceService
     public override void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff, SessionOptions sessionOptions)
     {
         var modelName = model;
+        float[] noisy_point = new float[45];
         var filter = new OneEuroFilter(
-            minCutoff: minCutoff,
-            beta: speedCoeff
+            x0: noisy_point,
+            minCutoff: 0.06f,
+            beta: 0.9f
         );
 
         var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, modelName), sessionOptions);
@@ -113,10 +115,8 @@ public class FaceInferenceService : InferenceService, IFaceInferenceService
         platformSettings.Ms = delta * 1000;
 
         // Filter ARKit Expressions.
-        /*for (int i = 0; i < arKitExpressions.Length; i++)
-        {
-            arKitExpressions[i] = platformSettings.Filter.Filter(arKitExpressions[i], delta);
-        }*/
+        var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
+        arKitExpressions = smoothedExpressions;
 
         platformSettings.LastTime = time;
         return true;

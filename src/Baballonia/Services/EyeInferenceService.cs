@@ -64,9 +64,11 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
     public override void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff,
         SessionOptions sessionOptions)
     {
+        float[] noisy_point = new float[2];
         var filter = new OneEuroFilter(
-            minCutoff: minCutoff,
-            beta: speedCoeff
+            x0: noisy_point,
+            minCutoff: 0.06f,
+            beta: 0.9f
         );
 
         var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, model), sessionOptions);
@@ -147,6 +149,8 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
         {
             return false;
         }
+        var index = (int)cameraSettings.Camera;
+        var platformSettings = PlatformConnectors[index].Item1;
 
         // First capture the current frame
         if (!CaptureFrame(cameraSettings))
@@ -189,6 +193,8 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
         {
             arKitExpressions[i] = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions[i], delta);
         }*/
+        var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
+        arKitExpressions = smoothedExpressions;
 
         PlatformConnectors[(int)Camera.Left].Item1.LastTime = time;
         PlatformConnectors[(int)Camera.Right].Item1.LastTime = time;
