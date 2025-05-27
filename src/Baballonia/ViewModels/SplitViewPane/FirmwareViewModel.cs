@@ -60,6 +60,9 @@ public partial class FirmwareViewModel : ViewModelBase
     private ObservableCollection<string> _availableSerialPorts = new();
 
     [ObservableProperty]
+    private ObservableCollection<string> _availableWifiNetworks = new();
+
+    [ObservableProperty]
     private string? _selectedSerialPort;
 
     public bool IsReadyToFlashFirmware =>
@@ -72,6 +75,7 @@ public partial class FirmwareViewModel : ViewModelBase
 
     #region Commands
 
+    public IRelayCommand RefreshWifiListCommand { get; }
     public IRelayCommand RefreshSerialPortsCommand { get; }
     public IRelayCommand FlashFirmwareCommand { get; }
     public IRelayCommand DismissWirelessWarningCommand { get; }
@@ -88,6 +92,7 @@ public partial class FirmwareViewModel : ViewModelBase
         _settingsService.Load(this);
 
         // Initialize commands
+        RefreshWifiListCommand = new RelayCommand(RefreshWifiNetworks);
         RefreshSerialPortsCommand = new RelayCommand(RefreshSerialPorts);
         FlashFirmwareCommand = new RelayCommand(FlashDeviceFirmware, () => IsReadyToFlashFirmware && !IsFlashing);
         DismissWirelessWarningCommand = new RelayCommand(OnDismissWirelessWarning);
@@ -99,6 +104,7 @@ public partial class FirmwareViewModel : ViewModelBase
 
         // Initial state setup
         RefreshSerialPorts();
+        RefreshWifiNetworks();
         LoadAvailableFirmwareTypesAsync();
 
         // Setup property changed handlers
@@ -120,6 +126,10 @@ public partial class FirmwareViewModel : ViewModelBase
                     if (!string.IsNullOrEmpty(SelectedFirmwareType))
                     {
                         IsWirelessFirmware = !SelectedFirmwareType.Contains("Babble_USB");
+                        if (IsWirelessFirmware)
+                        {
+                            RefreshWifiNetworks();
+                        }
                         OnPropertyChanged(nameof(IsReadyToFlashFirmware));
                     }
                     break;
@@ -177,6 +187,16 @@ public partial class FirmwareViewModel : ViewModelBase
     #endregion
 
     #region Operations
+
+    public void RefreshWifiNetworks()
+    {
+        AvailableWifiNetworks.Clear();
+
+        foreach (var port in _firmwareService.GetWirelessCredentials(SelectedSerialPort!))
+        {
+            AvailableWifiNetworks.Add(port);
+        }
+    }
 
     public void RefreshSerialPorts()
     {
@@ -276,7 +296,7 @@ public partial class FirmwareViewModel : ViewModelBase
                     if (completedTask == wirelessReconnectionEvent.Task && !cts.Token.IsCancellationRequested)
                     {
                         Dispatcher.UIThread.Post(() => IsFlashing = true);
-                        _firmwareService.SendWirelessCredentials(SelectedSerialPort!, WifiSsid, WifiPassword);
+                        _firmwareService.SetWirelessCredentials(SelectedSerialPort!, WifiSsid, WifiPassword);
                         Dispatcher.UIThread.Post(() => IsFlashing = false);
                         Dispatcher.UIThread.Post(() => IsFinished = true);
                     }

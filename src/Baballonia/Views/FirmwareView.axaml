@@ -41,7 +41,7 @@
                             ItemsSource="{Binding AvailableSerialPorts}"
                             PlaceholderText="Click to see trackers..."
                             SelectedItem="{Binding SelectedSerialPort, Mode=TwoWay}" />
-                        <Button Command="{Binding RefreshSerialPorts}" Content="Refresh" />
+                        <Button Command="{Binding RefreshSerialPorts}" Content="Refresh Trackers" />
                     </StackPanel>
                 </StackPanel>
             </controls:ContentExample>
@@ -60,30 +60,39 @@
             </controls:ContentExample>
 
             <controls:ContentExample IsVisible="{Binding IsWirelessFirmware}">
-                <StackPanel Spacing="12">
-                    <TextBlock FontWeight="Bold" Text="Step 3) Input your Wi-Fi credentials" />
-                    <TextBlock TextWrapping="Wrap">
-                        <Run>• Your tracker will use these credentials to connect to your wifi</Run> <LineBreak />
-                        <Run>• Please enter the credentials of your wifi network</Run> </TextBlock>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="Bold"
-                        Text="WiFi Network Name (SSID)" />
-                    <TextBox
-                        HorizontalAlignment="Left"
-                        Text="{Binding WifiSsid, Mode=TwoWay}"
-                        Watermark="Enter WiFi SSID..." />
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="Bold"
-                        Text="WiFi Password" />
-                    <TextBox
-                        HorizontalAlignment="Left"
-                        PasswordChar="*"
-                        Text="{Binding WifiPassword, Mode=TwoWay}"
-                        Watermark="Enter WiFi password..." />
-                </StackPanel>
+              <StackPanel Spacing="12">
+                <TextBlock FontWeight="Bold" Text="Step 3) Input your Wi-Fi credentials" />
+                <TextBlock TextWrapping="Wrap">
+                  <Run>• Your tracker will use these credentials to connect to your wifi</Run>
+                  <LineBreak />
+                  <Run>• Please enter the credentials of your wifi network</Run>
+                </TextBlock>
+
+                <TextBlock FontSize="12" FontWeight="Bold" Text="WiFi Network Name (SSID)" />
+                <Grid ColumnDefinitions="Auto,Auto" HorizontalAlignment="Left" ColumnSpacing="8">
+                  <AutoCompleteBox
+                    x:Name="WifiNameAutoComplete"
+                    Grid.Column="0"
+                    Width="200"
+                    Watermark="Enter WiFi SSID..."
+                    Text="{Binding WifiSsid, Mode=TwoWay}"
+                    ItemsSource="{Binding AvailableWifiNetworks}" />
+                  <Button
+                    IsVisible="False"
+                    Grid.Column="1"
+                    Content="Refresh Wifi Names"
+                    Command="{Binding RefreshWifiNetworks}" />
+                </Grid>
+
+                <TextBlock FontSize="12" FontWeight="Bold" Text="WiFi Password" />
+                <TextBox
+                  HorizontalAlignment="Left"
+                  PasswordChar="*"
+                  Text="{Binding WifiPassword, Mode=TwoWay}"
+                  Watermark="Enter WiFi password..." />
+              </StackPanel>
             </controls:ContentExample>
+
 
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button

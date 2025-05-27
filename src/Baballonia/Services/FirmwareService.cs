@@ -25,7 +25,7 @@ public class FirmwareService
     }
 
     /// <summary>
-    /// Uploads firmware to an ESP32-S3 device using an subprocess esptool-rs
+    /// Uploads firmware to an ESP32-S3 device using a subprocess esptool-rs
     /// </summary>
     /// <param name="port">COM port where the device is connected</param>
     /// <param name="pathToFirmware">Path to the firmware file to upload</param>
@@ -62,7 +62,7 @@ public class FirmwareService
         }
     }
 
-    public void SendWirelessCredentials(string port, string ssid, string password, string hostname = MdnsData.DefaultHostName)
+    public void SetWirelessCredentials(string port, string ssid, string password, string hostname = MdnsData.DefaultHostName)
     {
         // Create payload
         Payload payload = new Payload
@@ -143,6 +143,12 @@ public class FirmwareService
         {
             OnFirmwareUpdateError($"Firmware update failed: {ex.Message}");
         }
+    }
+
+    // TODO: Make this pull Wifi names from our ESP32s
+    public string[] GetWirelessCredentials(string port)
+    {
+        return [];
     }
 
     private bool RunEspSubprocess(string arguments)
