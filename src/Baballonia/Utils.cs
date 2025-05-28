@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -10,6 +11,8 @@ namespace Baballonia;
 
 public static class Utils
 {
+    private const string k_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
     // Timer resolution helpers
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Interoperability", "CA1401:PInvokesShouldNotBeVisible"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2118:ReviewSuppressUnmanagedCodeSecurityUsage"), SuppressUnmanagedCodeSecurity]
     [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod", SetLastError = true)]
@@ -86,5 +89,10 @@ public static class Utils
                 Process.Start("xdg-open", URL);
             }
         }
+    }
+
+    public static string RandomString(int length = 6)
+    {
+        return new string(Enumerable.Repeat(k_chars, length).Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
     }
 }

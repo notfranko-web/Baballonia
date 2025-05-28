@@ -22,6 +22,10 @@ public partial class AppSettingsViewModel : ViewModelBase
     private string _recenterAddress;
 
     [ObservableProperty]
+    [property: SavedSetting("AppSettings_UseOSCQuery", false)]
+    private bool _useOscQuery;
+
+    [ObservableProperty]
     [property: SavedSetting("AppSettings_OSCPrefix", "")]
     private string _oscPrefix;
 

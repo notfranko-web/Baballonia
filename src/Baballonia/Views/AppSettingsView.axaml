@@ -73,7 +73,7 @@
                     <Grid
                         ColumnDefinitions="Auto,Auto"
                         Margin="0,4"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <Grid.Styles>
                             <Style Selector="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -86,68 +86,78 @@
                             </Style>
                         </Grid.Styles>
 
+                      <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Text="Use OSC Query" />
+                      <CheckBox
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        IsChecked="{Binding UseOscQuery, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                        x:Name="UseOscQuery" />
+
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             Text="Receive Port" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
                             Watermark="Input the receive port..."
                             x:Name="OscTargetInPort" />
 
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Text="IP Address" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
                             Watermark="Input the target IP..."
                             x:Name="OscTargetIpAddress" />
 
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Text="Send Port" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
                             Watermark="Input the send port..."
                             x:Name="OscTargetOutPort" />
 
                         <TextBlock
                           Grid.Column="0"
-                          Grid.Row="3"
+                          Grid.Row="4"
                           Text="OSC Prefix" />
                         <TextBox
                           Grid.Column="1"
-                          Grid.Row="3"
+                          Grid.Row="4"
                           Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}"
                           Watermark="Input the OSC prefix..."
                           x:Name="OscPrefix" />
 
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Text="Recalibrate Address" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
                             Watermark="Input the recalibrate address..."
                             x:Name="RecalibrateAddress" />
 
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Text="Recenter Address" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
                             Watermark="Input the recenter address..."
                             x:Name="RecenterAddress" />

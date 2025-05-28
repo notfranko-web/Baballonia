@@ -86,6 +86,7 @@ public class App : Application
                 services.AddSingleton<IOscTarget, OscTarget>();
                 services.AddSingleton<OscRecvService>();
                 services.AddSingleton<OscSendService>();
+                services.AddTransient<OscQueryServiceWrapper>();
                 services.AddSingleton<ParameterSenderService>();
                 services.AddTransient<GithubService>();
                 services.AddTransient<FirmwareService>();

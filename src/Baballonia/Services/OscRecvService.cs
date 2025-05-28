@@ -57,7 +57,7 @@ public class OscRecvService : BackgroundService
         };
     }
 
-    public async override Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
         await _settingsService.Load(_oscTarget);
         await base.StartAsync(cancellationToken);
