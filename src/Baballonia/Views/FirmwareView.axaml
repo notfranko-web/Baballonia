@@ -103,12 +103,10 @@
                 <Button
                   Command="{Binding SendWifiCredsCommand}"
                   Content="Update Wifi Name/Password Only"
-                  IsEnabled="{Binding !IsFlashing}"
-                  IsVisible="{Binding IsReadyToFlashFirmware}" />
+                  IsVisible="{Binding IsReadyToFlashFirmwareButWireless}" />
             </StackPanel>
 
             <TextBlock HorizontalAlignment="Center" IsVisible="{Binding IsReadyToFlashFirmware}" VerticalAlignment="Center">This will take around ~10 seconds. Don't leave this page!</TextBlock>
-
 
             <ProgressBar
                 Height="30"
