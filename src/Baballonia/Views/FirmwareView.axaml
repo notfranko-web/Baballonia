@@ -74,7 +74,7 @@
                     x:Name="WifiNameAutoComplete"
                     Grid.Column="0"
                     Width="200"
-                    Watermark="Enter WiFi SSID..."
+                    Watermark="Enter WiFi Name..."
                     Text="{Binding WifiSsid, Mode=TwoWay}"
                     ItemsSource="{Binding AvailableWifiNetworks}" />
                   <Button
@@ -97,11 +97,18 @@
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button
                     Command="{Binding FlashFirmwareCommand}"
-                    Content="Flash!"
+                    Content="Flash Device Firmware"
                     IsEnabled="{Binding !IsFlashing}"
                     IsVisible="{Binding IsReadyToFlashFirmware}" />
-                <TextBlock IsVisible="{Binding IsReadyToFlashFirmware}" VerticalAlignment="Center">This will take around ~10 seconds. Don't leave this page!</TextBlock>
+                <Button
+                  Command="{Binding SendWifiCredsCommand}"
+                  Content="Update Wifi Name/Password Only"
+                  IsEnabled="{Binding !IsFlashing}"
+                  IsVisible="{Binding IsReadyToFlashFirmware}" />
             </StackPanel>
+
+            <TextBlock HorizontalAlignment="Center" IsVisible="{Binding IsReadyToFlashFirmware}" VerticalAlignment="Center">This will take around ~10 seconds. Don't leave this page!</TextBlock>
+
 
             <ProgressBar
                 Height="30"

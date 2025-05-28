@@ -75,6 +75,7 @@ public partial class FirmwareViewModel : ViewModelBase
 
     #region Commands
 
+    public IRelayCommand SendWifiCredsCommand { get; }
     public IRelayCommand RefreshWifiListCommand { get; }
     public IRelayCommand RefreshSerialPortsCommand { get; }
     public IRelayCommand FlashFirmwareCommand { get; }
@@ -93,6 +94,7 @@ public partial class FirmwareViewModel : ViewModelBase
 
         // Initialize commands
         RefreshWifiListCommand = new RelayCommand(RefreshWifiNetworks);
+        SendWifiCredsCommand = new RelayCommand(SendDeviceWifiCredentials);
         RefreshSerialPortsCommand = new RelayCommand(RefreshSerialPorts);
         FlashFirmwareCommand = new RelayCommand(FlashDeviceFirmware, () => IsReadyToFlashFirmware && !IsFlashing);
         DismissWirelessWarningCommand = new RelayCommand(OnDismissWirelessWarning);
@@ -233,6 +235,14 @@ public partial class FirmwareViewModel : ViewModelBase
         }
     }
 
+    private async void SendDeviceWifiCredentials()
+    {
+        Dispatcher.UIThread.Post(() => IsFlashing = true);
+        _firmwareService.SetWirelessCredentials(SelectedSerialPort!, WifiSsid, WifiPassword);
+        Dispatcher.UIThread.Post(() => IsFlashing = false);
+        Dispatcher.UIThread.Post(() => IsFinished = true);
+    }
+
     private async void FlashDeviceFirmware()
     {
         if (string.IsNullOrEmpty(SelectedFirmwareType) || string.IsNullOrEmpty(SelectedSerialPort))
@@ -295,10 +305,7 @@ public partial class FirmwareViewModel : ViewModelBase
                     // Only send credentials if not timed out and not canceled
                     if (completedTask == wirelessReconnectionEvent.Task && !cts.Token.IsCancellationRequested)
                     {
-                        Dispatcher.UIThread.Post(() => IsFlashing = true);
-                        _firmwareService.SetWirelessCredentials(SelectedSerialPort!, WifiSsid, WifiPassword);
-                        Dispatcher.UIThread.Post(() => IsFlashing = false);
-                        Dispatcher.UIThread.Post(() => IsFinished = true);
+                        SendDeviceWifiCredentials();
                     }
                 }
             }, cts.Token);
