@@ -18,6 +18,8 @@ public partial class HomePageViewModel : ViewModelBase
     public WriteableBitmap RightEyeBitmap { get; set; }
     public WriteableBitmap FaceBitmap { get; set; }
 
+    [ObservableProperty] public bool _shouldShowEyeCalibration;
+
     [ObservableProperty]
     [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
     private string _eyeModel;
@@ -116,6 +118,7 @@ public partial class HomePageViewModel : ViewModelBase
         LocalSettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         LocalSettingsService.Load(this);
 
+        ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         MessagesInPerSecCount = "0";
         MessagesOutPerSecCount = "0";
         OscSendService.OnMessagesDispatched += MessageDispatched;

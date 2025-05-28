@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Baballonia.Contracts;
 using Baballonia.Helpers;
 using Baballonia.Models;
 using Baballonia.Services.Inference;
@@ -14,15 +15,13 @@ namespace Baballonia.Services;
 
 public class ParameterSenderService(
     OscSendService sendService,
-    EyeCalibrationViewModel eyeCalibrationViewModel,
+    ILocalSettingsService localSettingsService,
     FaceCalibrationViewModel faceCalibrationViewModel) : BackgroundService
 {
     private readonly Queue<OscMessage> _sendQueue = new();
 
     public void Enqueue(OscMessage message) => _sendQueue.Enqueue(message);
     public void Clear() => _sendQueue.Clear();
-
-    // Methods to register camera controllers from HomePageView
 
     // Camera controller references
     private CameraController _leftCameraController;
@@ -32,15 +31,17 @@ public class ParameterSenderService(
     public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
     public void RegisterFaceCameraController(CameraController controller) => _faceCameraController = controller;
 
-    protected async override Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            var prefix = await localSettingsService.ReadSettingAsync<string>("AppSettings_OSCPrefix");
+
             try
             {
-                if (_leftCameraController != null)  ProcessExpressionData(_leftCameraController.ArExpressions, eyeCalibrationViewModel.LeftEyeCalibrationItems);
-                if (_rightCameraController != null) ProcessExpressionData( _rightCameraController.ArExpressions, eyeCalibrationViewModel.RightEyeCalibrationItems);
-                if (_faceCameraController != null) ProcessExpressionData(_faceCameraController.ArExpressions, faceCalibrationViewModel.GetCalibrationValues());
+                if (_leftCameraController != null)  ProcessExpressionData(_leftCameraController.ArExpressions, faceCalibrationViewModel.LeftEyeCalibrationItems, prefix);
+                if (_rightCameraController != null) ProcessExpressionData( _rightCameraController.ArExpressions, faceCalibrationViewModel.RightEyeCalibrationItems, prefix);
+                if (_faceCameraController != null) ProcessExpressionData(_faceCameraController.ArExpressions, faceCalibrationViewModel.GetCalibrationValues(), prefix);
 
                 await SendAndClearQueue(cancellationToken);
                 await Task.Delay(10, cancellationToken);
@@ -52,26 +53,26 @@ public class ParameterSenderService(
         }
     }
 
-    private void ProcessExpressionData(float[] expressions, Dictionary<string, (float Lower, float Upper)> calibrationItems)
+    private void ProcessExpressionData(float[] expressions, Dictionary<string, (float Lower, float Upper)> calibrationItems, string prefix = "")
     {
         if (expressions is null) return;
         if (expressions.Length == 0) return;
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {
-            var msg = new OscMessage(remappedExpression.Key!, weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper));
+            var msg = new OscMessage(prefix + remappedExpression.Key!, weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper));
             _sendQueue.Enqueue(msg);
         }
     }
 
-    private void ProcessExpressionData(float[] expressions, CalibrationItem[] calibrationItems)
+    private void ProcessExpressionData(float[] expressions, CalibrationItem[] calibrationItems, string prefix = "")
     {
         if (expressions is null) return;
         if (expressions.Length == 0) return;
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {
-            var msg = new OscMessage(remappedExpression.ShapeName!, weight.Remap(0, 1, remappedExpression.Min, remappedExpression.Max));
+            var msg = new OscMessage(prefix + remappedExpression.ShapeName!, weight.Remap(0, 1, remappedExpression.Min, remappedExpression.Max));
             _sendQueue.Enqueue(msg);
         }
     }

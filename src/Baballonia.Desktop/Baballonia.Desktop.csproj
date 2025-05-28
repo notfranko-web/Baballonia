@@ -16,12 +16,12 @@
         <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
 
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.8" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
         <PackageReference Include="Velopack" Version="0.0.1251" />
 
 	<!-- Windows-specific -->
-    	<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
-	<PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.21.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
+    	<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+	<PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
 
     	<!-- macOS-specific -->
     	<PackageReference Include="OpenCvSharp4.runtime.osx.10.15-universal" Version="4.7.0.20230224" Condition="$([MSBuild]::IsOSPlatform('OSX'))"/>

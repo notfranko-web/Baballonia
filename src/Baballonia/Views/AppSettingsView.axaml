@@ -73,7 +73,7 @@
                     <Grid
                         ColumnDefinitions="Auto,Auto"
                         Margin="0,4"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                         <Grid.Styles>
                             <Style Selector="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -120,23 +120,34 @@
                             x:Name="OscTargetOutPort" />
 
                         <TextBlock
+                          Grid.Column="0"
+                          Grid.Row="3"
+                          Text="OSC Prefix" />
+                        <TextBox
+                          Grid.Column="1"
+                          Grid.Row="3"
+                          Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}"
+                          Watermark="Input the OSC prefix..."
+                          x:Name="OscPrefix" />
+
+                        <TextBlock
                             Grid.Column="0"
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Text="Recalibrate Address" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
                             Watermark="Input the recalibrate address..."
                             x:Name="RecalibrateAddress" />
 
                         <TextBlock
                             Grid.Column="0"
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Text="Recenter Address" />
                         <TextBox
                             Grid.Column="1"
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
                             Watermark="Input the recenter address..."
                             x:Name="RecenterAddress" />
@@ -219,6 +230,8 @@
                 Title="Check For Updates" />
 
             <Border
+                IsEnabled="{Binding OnboardingEnabled}"
+                IsVisible="{Binding OnboardingEnabled}"
                 Background="{DynamicResource SystemChromeMediumLowColor}"
                 CornerRadius="6"
                 Padding="15,5,15,5">

@@ -18,19 +18,33 @@ public partial class MainViewModel : ViewModelBase
 {
     public MainViewModel(IMessenger messenger)
     {
-        Items = new ObservableCollection<ListItemTemplate>(_templates);
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+        {
+            Items = new ObservableCollection<ListItemTemplate>(_androidTemplates);
+        }
+        else
+        {
+            Items = new ObservableCollection<ListItemTemplate>(_desktopTemplates);
+        }
 
         SelectedListItem = Items.First(vm => vm.ModelType == typeof(HomePageViewModel));
     }
 
-    private readonly List<ListItemTemplate> _templates =
+    private readonly List<ListItemTemplate> _desktopTemplates =
     [
-        new ListItemTemplate(typeof(HomePageViewModel), "HomeRegular", "Home"),
-        // new ListItemTemplate(typeof(EyeCalibrationViewModel), "EyeTrackingSettingsRegular", "Eye Calibration"),
-        new ListItemTemplate(typeof(FaceCalibrationViewModel), "EditRegular", "Calibration"),
-        new ListItemTemplate(typeof(FirmwareViewModel), "DeveloperBoardRegular", "Firmware"),
-        new ListItemTemplate(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
-        new ListItemTemplate(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
+        new(typeof(HomePageViewModel), "HomeRegular", "Home"),
+        new(typeof(FaceCalibrationViewModel), "EditRegular", "Calibration"),
+        new(typeof(FirmwareViewModel), "DeveloperBoardRegular", "Firmware"),
+        new(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
+        new(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
+    ];
+
+    private readonly List<ListItemTemplate> _androidTemplates =
+    [
+        new(typeof(HomePageViewModel), "HomeRegular", "Home"),
+        new(typeof(FaceCalibrationViewModel), "EditRegular", "Calibration"),
+        new(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
+        new(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
     ];
 
     public MainViewModel() : this(new WeakReferenceMessenger()) { }

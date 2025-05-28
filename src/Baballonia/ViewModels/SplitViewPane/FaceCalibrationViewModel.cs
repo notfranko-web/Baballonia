@@ -170,6 +170,18 @@ public partial class FaceCalibrationViewModel : ViewModelBase
         };
     }
 
+    public readonly CalibrationItem[] LeftEyeCalibrationItems =
+    [
+        new CalibrationItem { ShapeName = "/LeftEyeY", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/LeftEyeX", Min = 0f, Max = 1f },
+    ];
+
+    public readonly CalibrationItem[] RightEyeCalibrationItems =
+    [
+        new CalibrationItem { ShapeName = "/RightEyeY", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/RightEyeX", Min = 0f, Max = 1f },
+    ];
+
     public Dictionary<string, (float Lower, float Upper)> GetCalibrationValues()
     {
         return new Dictionary<string, (float, float)>

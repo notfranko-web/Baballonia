@@ -18,11 +18,13 @@ public class ViewLocator : IDataTemplate
     {
         RegisterViewFactory<MainViewModel, MainWindow>();
         RegisterViewFactory<HomePageViewModel, HomePageView>();
-        RegisterViewFactory<EyeCalibrationViewModel, EyeCalibrationView>();
         RegisterViewFactory<FaceCalibrationViewModel, FaceCalibrationView>();
-        RegisterViewFactory<FirmwareViewModel, FirmwareView>();
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
+
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) return;
+
+        RegisterViewFactory<FirmwareViewModel, FirmwareView>();
         RegisterViewFactory<OnboardingViewModel, OnboardingView>();
     }
 

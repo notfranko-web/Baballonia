@@ -317,9 +317,6 @@ public partial class HomePageView : UserControl
 
     private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        // Gatekeep the SteamVR Overlay
-        if (!(OperatingSystem.IsWindows() || OperatingSystem.IsLinux())) return;
-
         const int leftPort = 8080;
         const int rightPort = 8081;
         var modelPath = Directory.GetCurrentDirectory();

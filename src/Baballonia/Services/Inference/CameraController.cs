@@ -71,7 +71,7 @@ public class CameraController : IDisposable
     private HttpListener _httpListener;
     private bool _isStreaming;
     private CancellationTokenSource _streamingCancellationTokenSource;
-    private readonly object _streamLock = new object();
+    private readonly object _streamLock = new();
     private byte[] _currentJpegFrame;
     private int _mjpegPort = 8080;
     private readonly string _mjpegBoundary = "mjpegstream";

@@ -1,3 +1,4 @@
+using System;
 using Baballonia.Contracts;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,6 +22,10 @@ public partial class AppSettingsViewModel : ViewModelBase
     private string _recenterAddress;
 
     [ObservableProperty]
+    [property: SavedSetting("AppSettings_OSCPrefix", "")]
+    private string _oscPrefix;
+
+    [ObservableProperty]
     [property: SavedSetting("AppSettings_OneEuroMinFreqCutoff", 1f)]
     private float _oneEuroMinFreqCutoff;
 
@@ -36,6 +41,8 @@ public partial class AppSettingsViewModel : ViewModelBase
     [property: SavedSetting("AppSettings_CheckForUpdates", false)]
     private bool _checkForUpdates;
 
+    [ObservableProperty] private bool _onboardingEnabled;
+
     public AppSettingsViewModel()
     {
         // General/Calibration Settings
@@ -46,6 +53,8 @@ public partial class AppSettingsViewModel : ViewModelBase
 
         // Risky Settings
         ParameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
+
+        OnboardingEnabled = !(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS());
 
         PropertyChanged += (_, _) =>
         {
