@@ -34,9 +34,9 @@
                 </Button>
             </Grid>
 
-            <Grid ColumnDefinitions="*,12,*,12,*">
+            <UniformGrid x:Name="UniformGridPanel" RowSpacing="12" ColumnSpacing="12" Columns="1" Rows="3">
                 <!--  Left Panel  -->
-                <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
@@ -211,7 +211,7 @@
                 </Grid>
 
                 <!--  Right Panel  -->
-                <Grid Grid.Column="2" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
@@ -386,7 +386,7 @@
                 </Grid>
 
                 <!--  Face Panel  -->
-                <Grid Grid.Column="4" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
@@ -559,7 +559,8 @@
                         </Border>
                     </Expander>
                 </Grid>
-            </Grid>
+            </UniformGrid>
+
         </StackPanel>
     </ScrollViewer>
 

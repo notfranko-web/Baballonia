@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Baballonia.Calibration;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
@@ -16,7 +18,6 @@ using Baballonia.Services.Inference.Enums;
 using Baballonia.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.ML.OnnxRuntime;
-using Path = System.IO.Path;
 
 namespace Baballonia.Views;
 
@@ -64,6 +65,29 @@ public partial class HomePageView : UserControl
     public HomePageView()
     {
         InitializeComponent();
+
+        if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+        {
+            SizeChanged += (_, _) =>
+            {
+                var window = this.GetVisualRoot() as Window;
+                if (window != null)
+                {
+                    var uniformGrid = this.FindControl<UniformGrid>("UniformGridPanel");
+                    if (window.ClientSize.Width < 900)
+                    {
+                        uniformGrid.Columns = 1; // Vertical layout
+                        uniformGrid.Rows = 3;
+                    }
+                    else
+                    {
+                        uniformGrid.Columns = 3; // Horizontal layout
+                        uniformGrid.Rows = 1;
+                    }
+                }
+            };
+        }
+
         Loaded += CamView_OnLoaded;
         Unloaded += CamView_Unloaded;
 
