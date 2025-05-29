@@ -170,16 +170,18 @@ public partial class FaceCalibrationViewModel : ViewModelBase
         };
     }
 
-    public readonly CalibrationItem[] LeftEyeCalibrationItems =
+    public readonly CalibrationItem[] EyeCalibrationItems =
     [
-        new CalibrationItem { ShapeName = "/LeftEyeY", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/LeftEyeX", Min = 0f, Max = 1f },
-    ];
-
-    public readonly CalibrationItem[] RightEyeCalibrationItems =
-    [
-        new CalibrationItem { ShapeName = "/RightEyeY", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/RightEyeX", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyePitch", Min = -1f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyeYaw", Min = -1f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyeConvergence", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/LeftEyeLid", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/RightEyeLid", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/BrowRaise", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/BrowAngry", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyeWiden", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyeSquint", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/EyeDilate", Min = 0f, Max = 1f },
     ];
 
     public Dictionary<string, (float Lower, float Upper)> GetCalibrationValues()

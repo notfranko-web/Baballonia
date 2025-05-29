@@ -381,13 +381,8 @@ public partial class HomePageView : UserControl
         RightCameraController.StopMjpegStreaming();
         _vrService.StopOverlay();
 
-        // Sanity check: If the trainer hasn't started already, do it ourselves.
-        // This blocks until training is complete
-        await _vrService.StartTrainer(arguments: ["capture.bin"]);
-        _vrService.StopTrainer();
-
         // Save the location of the model so when we boot up the app it autoloads
-        var modelName = "tuned_model.onnx";
+        const string modelName = "tuned_temporal_eye_tracking.onnx";
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", modelName);
 
         // Cleanup any leftover capture.bin files

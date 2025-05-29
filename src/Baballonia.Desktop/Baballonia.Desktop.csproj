@@ -14,22 +14,27 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+        <PackageReference Include="Velopack" Version="0.0.1251" />
 
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
-        <PackageReference Include="Velopack" Version="0.0.1251" />
+        <PackageReference Include="Avalonia.Skia" Version="11.3.0" />
+        <PackageReference Include="SkiaSharp" Version="3.119.0" />
 
-	<!-- Windows-specific -->
-    	<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-	<PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+	    <!-- Windows-specific -->
+        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+	    <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
 
-    	<!-- macOS-specific -->
-    	<PackageReference Include="OpenCvSharp4.runtime.osx.10.15-universal" Version="4.7.0.20230224" Condition="$([MSBuild]::IsOSPlatform('OSX'))"/>
-	<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+        <!-- macOS-specific -->
+        <PackageReference Include="OpenCvSharp4.runtime.osx.10.15-universal" Version="4.7.0.20230224" Condition="$([MSBuild]::IsOSPlatform('OSX'))"/>
+	    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+        <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('OSX'))"/>
 
-    	<!-- Linux-specific -->
-    	<Content Include="libOpenCvSharpExtern.so" Link="libOpenCvSharpExtern.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
-	<PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.20.1" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
+        <!-- Linux-specific -->
+        <Content Include="libOpenCvSharpExtern.so" Link="libOpenCvSharpExtern.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
+	    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Baballonia\Baballonia.csproj" />

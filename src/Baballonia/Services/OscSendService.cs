@@ -77,7 +77,6 @@ public class OscSendService
     {
         if (_sendSocket is not { Connected: true })
         {
-            _logger.LogWarning("Cannot send OSC message - socket not connected");
             return;
         }
 
@@ -97,7 +96,6 @@ public class OscSendService
     {
         if (_sendSocket is not { Connected: true })
         {
-            _logger.LogWarning("Cannot send OSC messages - socket not connected");
             return;
         }
 

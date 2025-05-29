@@ -64,7 +64,7 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
     public override void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff,
         SessionOptions sessionOptions)
     {
-        float[] noisy_point = new float[2];
+        float[] noisy_point = new float[10];
         var filter = new OneEuroFilter(
             x0: noisy_point,
             minCutoff: minCutoff,
@@ -189,12 +189,8 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
         PlatformConnectors[(int)Camera.Right].Item1.Ms = delta * 1000f;
 
         // Filter ARKit Expressions. This is broken rn!
-        /*for (int i = 0; i < arKitExpressions.Length; i++)
-        {
-            arKitExpressions[i] = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions[i], delta);
-        }*/
-        var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
-        arKitExpressions = smoothedExpressions;
+        // var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
+        // arKitExpressions = smoothedExpressions;
 
         PlatformConnectors[(int)Camera.Left].Item1.LastTime = time;
         PlatformConnectors[(int)Camera.Right].Item1.LastTime = time;
