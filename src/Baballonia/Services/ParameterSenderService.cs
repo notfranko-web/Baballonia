@@ -60,7 +60,11 @@ public class ParameterSenderService(
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {
-            var msg = new OscMessage(prefix + remappedExpression.Key!, weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper));
+            var msg = new OscMessage(prefix + remappedExpression.Key!,
+                Math.Clamp(
+                    weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper),
+                    remappedExpression.Value.Lower,
+                    remappedExpression.Value.Upper));
             _sendQueue.Enqueue(msg);
         }
     }
@@ -72,7 +76,11 @@ public class ParameterSenderService(
 
         foreach (var (remappedExpression, weight) in calibrationItems.Zip(expressions))
         {
-            var msg = new OscMessage(prefix + remappedExpression.ShapeName!, weight.Remap(0, 1, remappedExpression.Min, remappedExpression.Max));
+            var msg = new OscMessage(prefix + remappedExpression.ShapeName!,
+                Math.Clamp(
+                    weight.Remap(0, 1, remappedExpression.Min, remappedExpression.Max),
+                    remappedExpression.Min,
+                    remappedExpression.Max));
             _sendQueue.Enqueue(msg);
         }
     }

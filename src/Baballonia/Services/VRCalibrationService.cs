@@ -243,7 +243,7 @@ public class VrCalibrationService : IVrService, IDisposable
 
     public async Task<bool> StartCalibrationAsync(VrCalibration calibration)
     {
-        var url = $"{_baseUrl}/start_calibration?onnx_filename={Uri.EscapeDataString(calibration.ModelSavePath + VrCalibration.ModelName)}&routine_id={calibration.CalibrationInstructions}";
+        var url = $"{_baseUrl}/start_calibration?onnx_filename={VrCalibration.ModelName}&routine_id={calibration.CalibrationInstructions}";
         var response = await _httpClient.GetStringAsync(url);
         var result = JsonConvert.DeserializeObject<ApiResponse>(response);
         return result!.Result == "ok";
