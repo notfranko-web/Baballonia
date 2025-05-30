@@ -345,7 +345,7 @@ public partial class HomePageView : UserControl
         const int rightPort = 8081;
         var modelPath = Directory.GetCurrentDirectory();
 
-        var model = new VrCalibration
+        var vrCalibration = new VrCalibration
         {
             ModelSavePath = modelPath,
             CalibrationInstructions = CalibrationRoutine.HorizontalSweep,
@@ -360,8 +360,8 @@ public partial class HomePageView : UserControl
 
         // First tell the subprocess to accept our streams, then start calibration
         await _vrService.StartOverlay();
-        await _vrService.StartCamerasAsync(model);
-        await _vrService.StartCalibrationAsync(model);
+        await _vrService.StartCamerasAsync(vrCalibration);
+        await _vrService.StartCalibrationAsync(vrCalibration);
 
         // Wait for the process to exit
         var loop = true;

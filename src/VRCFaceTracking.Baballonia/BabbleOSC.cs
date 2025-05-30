@@ -7,7 +7,7 @@ namespace VRCFaceTracking.Babble;
 
 public class BabbleOsc
 {
-    public static readonly float[] Expressions = new float[4];
+    public static readonly float[] EyeExpressions = new float[11];
 
     private Socket? _receiver;
 
@@ -25,7 +25,7 @@ public class BabbleOsc
 
     private const int TimeoutMs = 10000;
 
-    public BabbleOsc(ILogger iLogger, string? host = null, int? port = null)
+    public BabbleOsc(ILogger iLogger, string host, int? port)
     {
         if (_receiver != null)
         {
@@ -76,16 +76,37 @@ public class BabbleOsc
                         switch (oscMessage.Address)
                         {
                             case "/LeftEyeX":
-                                Expressions[0] = value;
+                                EyeExpressions[(int)ExpressionMapping.LeftEyeX] = value;
                                 break;
                             case "/LeftEyeY":
-                                Expressions[1] = value;
+                                EyeExpressions[(int)ExpressionMapping.LeftEyeY] = value;
                                 break;
                             case "/RightEyeX":
-                                Expressions[2] = value;
+                                EyeExpressions[(int)ExpressionMapping.RightEyeX] = value;
                                 break;
                             case "/RightEyeY":
-                                Expressions[3] = value;
+                                EyeExpressions[(int)ExpressionMapping.RightEyeY] = value;
+                                break;
+                            case "/LeftEyeLid":
+                                EyeExpressions[(int)ExpressionMapping.LeftEyeLid] = value;
+                                break;
+                            case "/RightEyeLid":
+                                EyeExpressions[(int)ExpressionMapping.RightEyeLid] = value;
+                                break;
+                            case "/BrowRaise":
+                                EyeExpressions[(int)ExpressionMapping.BrowRaise] = value;
+                                break;
+                            case "/BrowAngry":
+                                EyeExpressions[(int)ExpressionMapping.BrowRaise] = value;
+                                break;
+                            case "/EyeWiden":
+                                EyeExpressions[(int)ExpressionMapping.EyeWiden] = value;
+                                break;
+                            case "/EyeSquint":
+                                EyeExpressions[(int)ExpressionMapping.EyeSquint] = value;
+                                break;
+                            case "/EyeDilate":
+                                EyeExpressions[(int)ExpressionMapping.EyeDilate] = value;
                                 break;
                             case "/mouthFunnel":
                             case "/mouthPucker":

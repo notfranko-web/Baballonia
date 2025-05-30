@@ -172,9 +172,10 @@ public partial class FaceCalibrationViewModel : ViewModelBase
 
     public readonly CalibrationItem[] EyeCalibrationItems =
     [
-        new CalibrationItem { ShapeName = "/EyePitch", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/EyeYaw", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/EyeConvergence", Min = 0f, Max = 1f },
+        new CalibrationItem { ShapeName = "/LeftEyeX", Min = -1f, Max = 1f },
+        new CalibrationItem { ShapeName = "/LeftEyeY", Min = -1f, Max = 1f },
+        new CalibrationItem { ShapeName = "/RightEyeX", Min = -1f, Max = 1f },
+        new CalibrationItem { ShapeName = "/RightEyeY", Min = -1f, Max = 1f },
         new CalibrationItem { ShapeName = "/LeftEyeLid", Min = 0f, Max = 1f },
         new CalibrationItem { ShapeName = "/RightEyeLid", Min = 0f, Max = 1f },
         new CalibrationItem { ShapeName = "/BrowRaise", Min = 0f, Max = 1f },

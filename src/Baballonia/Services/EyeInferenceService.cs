@@ -183,6 +183,46 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
         using var results = PlatformConnectors[(int)Camera.Left].Item1.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
 
+        /* We expect 10 floats:
+        - EyePitch 0
+        - EyeYaw 1
+        - EyeConvergence 2
+        - LeftEyeLid 3
+        - RightEyeLid 4
+        - BrowRaise 5
+        - BrowAngry 6
+        - EyeWiden 7
+        - EyeSquint 8
+        - EyeDilate 9
+
+        We need to convert this to:
+        - LeftEyeX 0
+        - LeftEyeY 1
+        - RightEyeX 2
+        - RightEyeY 3
+        - LeftEyeLid 4
+        - RightEyeLid 5
+        - BrowRaise 6
+        - BrowAngry 7
+        - EyeWiden 8
+        - EyeSquint 9
+        - EyeDilate 10
+         */
+
+        float[] convertedExpressions = new float[11];
+        convertedExpressions[0] = arKitExpressions[0] + arKitExpressions[2]; // LeftEyeX, Pitch + Convergence
+        convertedExpressions[1] = arKitExpressions[1];                       // LeftEyeY, Yaw
+        convertedExpressions[2] = arKitExpressions[0] + arKitExpressions[2]; // RightEyeX, Pitch + Convergence
+        convertedExpressions[3] = arKitExpressions[1];                       // RightEyeY
+        convertedExpressions[4] = arKitExpressions[3];                       // LeftEyeLid
+        convertedExpressions[5] = arKitExpressions[4];                       // RightEyeLid
+        convertedExpressions[6] = arKitExpressions[5];                       // BrowRaise
+        convertedExpressions[7] = arKitExpressions[6];                       // BrowAngry
+        convertedExpressions[8] = arKitExpressions[7];                       // EyeWiden
+        convertedExpressions[9] = arKitExpressions[8];                       // EyeSquint
+        convertedExpressions[10] = arKitExpressions[9];                      // EyeDilation
+        arKitExpressions = convertedExpressions;
+
         float time = (float)sw.Elapsed.TotalSeconds;
         var delta = time - PlatformConnectors[(int)Camera.Left].Item1.LastTime;
         PlatformConnectors[(int)Camera.Left].Item1.Ms = delta * 1000f;

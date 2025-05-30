@@ -13,7 +13,7 @@ namespace Baballonia.Models;
 
 public class VrCalibration
 {
-    public const string ModelName = "eyeModel.onnx";
+    public const string ModelName = "tuned_temporal_eye_tracking.onnx";
     public string ModelSavePath { get; set; }
     public string CalibrationInstructions { get; set; }
     public float FOV { get; set; }
