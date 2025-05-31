@@ -284,9 +284,9 @@ public partial class FirmwareViewModel : ViewModelBase
                 // Stop all cameras before firmware update
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    _homePageView.StopLeftCamera(null, null!);
-                    _homePageView.StopRightCamera(null, null!);
-                    _homePageView.StopFaceCamera(null, null!);
+                    _homePageView.LeftCameraStop(null, null!);
+                    _homePageView.RightCameraStop(null, null!);
+                    _homePageView.FaceCameraStop(null, null!);
                 });
 
                 _firmwareService.UploadFirmware(SelectedSerialPort!, pathToBinary.firmwarePath);

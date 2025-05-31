@@ -200,12 +200,22 @@ public partial class HomePageView : UserControl
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
+
+        LeftCameraStart(null, null!);
+        RightCameraStart(null, null!);
+        FaceCameraStart(null, null!);
     }
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
     {
-        LeftCameraController.StopMjpegStreaming();
-        RightCameraController.StopMjpegStreaming();
+        LeftCameraStop(null, null!);
+        RightCameraStop(null, null!);
+        FaceCameraStop(null, null!);
+
+        LeftCameraController.Dispose();
+        RightCameraController.Dispose();
+        FaceCameraController.Dispose();
+
         _isVisible = false;
     }
 
@@ -244,10 +254,10 @@ public partial class HomePageView : UserControl
         LeftCameraController.StartCamera(cameraAddress);
     }
 
-    public void StopLeftCamera(object? sender, RoutedEventArgs e)
+    public void LeftCameraStop(object? sender, RoutedEventArgs e)
     {
-        LeftCameraController.StopCamera();
         LeftCameraController.StopMjpegStreaming();
+        LeftCameraController.StopCamera();
     }
 
     public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -282,10 +292,10 @@ public partial class HomePageView : UserControl
     }
 
 
-    public void StopRightCamera(object? sender, RoutedEventArgs e)
+    public void RightCameraStop(object? sender, RoutedEventArgs e)
     {
-        RightCameraController.StopCamera();
         RightCameraController.StopMjpegStreaming();
+        RightCameraController.StopCamera();
     }
 
     public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
@@ -319,8 +329,9 @@ public partial class HomePageView : UserControl
         FaceCameraController.StartCamera(cameraAddress);
     }
 
-    public void StopFaceCamera(object? sender, RoutedEventArgs e)
+    public void FaceCameraStop(object? sender, RoutedEventArgs e)
     {
+        FaceCameraController.StopMjpegStreaming();
         FaceCameraController.StopCamera();
     }
 
