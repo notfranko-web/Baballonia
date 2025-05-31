@@ -62,9 +62,9 @@ public class ParameterSenderService(
         {
             var msg = new OscMessage(prefix + remappedExpression.Key!,
                 Math.Clamp(
-                    weight.Remap(0, 1, remappedExpression.Value.Lower, remappedExpression.Value.Upper),
-                    remappedExpression.Value.Lower,
-                    remappedExpression.Value.Upper));
+                    weight.Remap(remappedExpression.Value.Lower, remappedExpression.Value.Upper),
+                    0,
+                    1));
             _sendQueue.Enqueue(msg);
         }
     }
@@ -78,9 +78,9 @@ public class ParameterSenderService(
         {
             var msg = new OscMessage(prefix + remappedExpression.ShapeName!,
                 Math.Clamp(
-                    weight.Remap(0, 1, remappedExpression.Min, remappedExpression.Max),
-                    remappedExpression.Min,
-                    remappedExpression.Max));
+                    weight.Remap(remappedExpression.Min, remappedExpression.Max),
+                    0,
+                    1));
             _sendQueue.Enqueue(msg);
         }
     }
