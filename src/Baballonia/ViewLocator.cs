@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Baballonia.Services.Inference;
 using Baballonia.ViewModels;
 using Baballonia.ViewModels.SplitViewPane;
 using Baballonia.Views;
@@ -35,9 +36,18 @@ public class ViewLocator : IDataTemplate
             return new TextBlock { Text = "No VM provided" };
         }
 
+        var type = data.GetType();
+        if (type != typeof(HomePageViewModel))
+            CameraController.HackyImageDisplayBool = false;
+
         _locator.TryGetValue(data.GetType(), out var factory);
 
-        return factory?.Invoke() ?? new TextBlock { Text = $"VM Not Registered: {data.GetType()}" };
+        var control = factory?.Invoke() ?? new TextBlock { Text = $"VM Not Registered: {data.GetType()}" };
+
+        if (type == typeof(HomePageViewModel))
+            CameraController.HackyImageDisplayBool = true;
+
+        return control;
     }
 
     public bool Match(object? data)

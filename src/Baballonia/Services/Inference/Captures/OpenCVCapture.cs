@@ -166,9 +166,12 @@ public sealed class OpenCvCapture : Capture
         }
 
         IsReady = false;
-        _videoCapture.Release();
-        _videoCapture.Dispose();
-        _videoCapture = null;
+        if (_videoCapture != null)
+        {
+            _videoCapture.Release();
+            _videoCapture.Dispose();
+            _videoCapture = null;
+        }
         return Task.FromResult(true);
     }
 }

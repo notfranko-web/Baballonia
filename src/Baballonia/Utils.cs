@@ -11,6 +11,8 @@ namespace Baballonia;
 
 public static class Utils
 {
+    public const int MobileWidth = 900;
+
     private const string k_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     // Timer resolution helpers

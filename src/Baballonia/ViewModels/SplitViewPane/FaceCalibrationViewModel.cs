@@ -239,74 +239,73 @@ public partial class FaceCalibrationViewModel : ViewModelBase
 
     public void ResetCalibrationValues(Selection selection)
     {
-        switch (selection)
+        if (selection == Selection.Min)
         {
-            case Selection.Min:
-                CheekPuffLeftLower = 0f;
-                CheekPuffRightLower = 0f;
-                CheekSuckLeftLower = 0f;
-                CheekSuckRightLower = 0f;
-                JawOpenLower = 0f;
-                JawForwardLower = 0f;
-                JawLeftLower = 0f;
-                JawRightLower = 0f;
-                NoseSneerLeftLower = 0f;
-                NoseSneerRightLower = 0f;
-                MouthFunnelLower = 0f;
-                MouthPuckerLower = 0f;
-                MouthLeftLower = 0f;
-                MouthRightLower = 0f;
-                MouthRollUpperLower = 0f;
-                MouthRollLowerLower = 0f;
-                MouthShrugUpperLower = 0f;
-                MouthShrugLowerLower = 0f;
-                MouthCloseLower = 0f;
-                TongueOutLower = 0f;
-                TongueUpLower = 0f;
-                TongueDownLower = 0f;
-                TongueLeftLower = 0f;
-                TongueRightLower = 0f;
-                TongueRollLower = 0f;
-                TongueBendDownLower = 0f;
-                TongueCurlUpLower = 0f;
-                TongueSquishLower = 0f;
-                TongueFlatLower = 0f;
-                TongueTwistLeftLower = 0f;
-                TongueTwistRightLower = 0f;
-                break;
-            case Selection.Max:
-                CheekPuffLeftUpper = 1f;
-                CheekPuffRightUpper = 1f;
-                CheekSuckLeftUpper = 1f;
-                CheekSuckRightUpper = 1f;
-                JawOpenUpper = 1f;
-                JawForwardUpper = 1f;
-                JawLeftUpper = 1f;
-                JawRightUpper = 1f;
-                NoseSneerLeftUpper = 1f;
-                NoseSneerRightUpper = 1f;
-                MouthFunnelUpper = 1f;
-                MouthPuckerUpper = 1f;
-                MouthLeftUpper = 1f;
-                MouthRightUpper = 1f;
-                MouthRollUpperUpper = 1f;
-                MouthRollLowerUpper = 1f;
-                MouthShrugUpperUpper = 1f;
-                MouthShrugLowerUpper = 1f;
-                MouthCloseUpper = 1f;
-                TongueOutUpper = 1f;
-                TongueUpUpper = 1f;
-                TongueDownUpper = 1f;
-                TongueLeftUpper = 1f;
-                TongueRightUpper = 1f;
-                TongueRollUpper = 1f;
-                TongueBendDownUpper = 1f;
-                TongueCurlUpUpper = 1f;
-                TongueSquishUpper = 1f;
-                TongueFlatUpper = 1f;
-                TongueTwistLeftUpper = 1f;
-                TongueTwistRightUpper = 1f;
-                break;
+            CheekPuffLeftLower = 0f;
+            CheekPuffRightLower = 0f;
+            CheekSuckLeftLower = 0f;
+            CheekSuckRightLower = 0f;
+            JawOpenLower = 0f;
+            JawForwardLower = 0f;
+            JawLeftLower = 0f;
+            JawRightLower = 0f;
+            NoseSneerLeftLower = 0f;
+            NoseSneerRightLower = 0f;
+            MouthFunnelLower = 0f;
+            MouthPuckerLower = 0f;
+            MouthLeftLower = 0f;
+            MouthRightLower = 0f;
+            MouthRollUpperLower = 0f;
+            MouthRollLowerLower = 0f;
+            MouthShrugUpperLower = 0f;
+            MouthShrugLowerLower = 0f;
+            MouthCloseLower = 0f;
+            TongueOutLower = 0f;
+            TongueUpLower = 0f;
+            TongueDownLower = 0f;
+            TongueLeftLower = 0f;
+            TongueRightLower = 0f;
+            TongueRollLower = 0f;
+            TongueBendDownLower = 0f;
+            TongueCurlUpLower = 0f;
+            TongueSquishLower = 0f;
+            TongueFlatLower = 0f;
+            TongueTwistLeftLower = 0f;
+            TongueTwistRightLower = 0f;
+        }
+        else if (selection == Selection.Max)
+        {
+            CheekPuffLeftUpper = 1f;
+            CheekPuffRightUpper = 1f;
+            CheekSuckLeftUpper = 1f;
+            CheekSuckRightUpper = 1f;
+            JawOpenUpper = 1f;
+            JawForwardUpper = 1f;
+            JawLeftUpper = 1f;
+            JawRightUpper = 1f;
+            NoseSneerLeftUpper = 1f;
+            NoseSneerRightUpper = 1f;
+            MouthFunnelUpper = 1f;
+            MouthPuckerUpper = 1f;
+            MouthLeftUpper = 1f;
+            MouthRightUpper = 1f;
+            MouthRollUpperUpper = 1f;
+            MouthRollLowerUpper = 1f;
+            MouthShrugUpperUpper = 1f;
+            MouthShrugLowerUpper = 1f;
+            MouthCloseUpper = 1f;
+            TongueOutUpper = 1f;
+            TongueUpUpper = 1f;
+            TongueDownUpper = 1f;
+            TongueLeftUpper = 1f;
+            TongueRightUpper = 1f;
+            TongueRollUpper = 1f;
+            TongueBendDownUpper = 1f;
+            TongueCurlUpUpper = 1f;
+            TongueSquishUpper = 1f;
+            TongueFlatUpper = 1f;
+            TongueTwistLeftUpper = 1f;
+            TongueTwistRightUpper = 1f;
         }
     }
 

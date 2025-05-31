@@ -1,9 +1,7 @@
-using System.Collections.ObjectModel;
-using Avalonia;
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Baballonia.Models;
+using Avalonia.VisualTree;
 using Baballonia.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
@@ -17,6 +15,29 @@ public partial class FaceCalibrationView : UserControl
     {
         InitializeComponent();
         _viewModel = Ioc.Default.GetService<FaceCalibrationViewModel>()!;
+
+        if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+        {
+            SizeChanged += (_, _) =>
+            {
+                var window = this.GetVisualRoot() as Window;
+                if (window != null)
+                {
+                    var desktopLayout = this.FindControl<StackPanel>("ResetDesktopStackPanel");
+                    var mobileLayout = this.FindControl<StackPanel>("ResetMobileStackPanel");
+                    if (window.ClientSize.Width < Utils.MobileWidth)
+                    {
+                        desktopLayout.IsVisible = false;
+                        mobileLayout.IsVisible = true;
+                    }
+                    else
+                    {
+                        desktopLayout.IsVisible = true;
+                        mobileLayout.IsVisible = false;
+                    }
+                }
+            };
+        }
     }
 
     private void ResetMin(object? sender, RoutedEventArgs e)

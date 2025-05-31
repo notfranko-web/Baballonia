@@ -20,7 +20,6 @@ public partial class FirmwareViewModel : ViewModelBase
 {
     #region Services and Dependencies
 
-    private readonly HomePageView _homePageView;
     private readonly GithubService _githubService;
     private readonly FirmwareService _firmwareService;
     private readonly ILocalSettingsService _settingsService;
@@ -93,7 +92,6 @@ public partial class FirmwareViewModel : ViewModelBase
     public FirmwareViewModel()
     {
         // Initialize services
-        _homePageView = Ioc.Default.GetService<HomePageView>()!;
         _githubService = Ioc.Default.GetRequiredService<GithubService>();
         _firmwareService = Ioc.Default.GetRequiredService<FirmwareService>();
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
@@ -280,14 +278,6 @@ public partial class FirmwareViewModel : ViewModelBase
                     tempDir,
                     asset.browser_download_url,
                     asset.name);
-
-                // Stop all cameras before firmware update
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _homePageView.LeftCameraStop(null, null!);
-                    _homePageView.RightCameraStop(null, null!);
-                    _homePageView.FaceCameraStop(null, null!);
-                });
 
                 _firmwareService.UploadFirmware(SelectedSerialPort!, pathToBinary.firmwarePath);
 

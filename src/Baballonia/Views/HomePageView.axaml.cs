@@ -50,9 +50,9 @@ public partial class HomePageView : UserControl
         set => SetValue(IsFaceTrackingModeProperty, value);
     }
 
-    private CameraController LeftCameraController { get; }
-    private CameraController RightCameraController { get; }
-    private CameraController FaceCameraController { get; }
+    private CameraController LeftCameraController { get; set; }
+    private CameraController RightCameraController { get; set; }
+    private CameraController FaceCameraController { get; set; }
 
     private readonly IEyeInferenceService _eyeInferenceService;
     private readonly IFaceInferenceService _faceInferenceService;
@@ -60,7 +60,10 @@ public partial class HomePageView : UserControl
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
-    private bool _isVisible;
+    private readonly DispatcherTimer _drawTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(10)
+    };
 
     public HomePageView()
     {
@@ -74,7 +77,7 @@ public partial class HomePageView : UserControl
                 if (window != null)
                 {
                     var uniformGrid = this.FindControl<UniformGrid>("UniformGridPanel");
-                    if (window.ClientSize.Width < 900)
+                    if (window.ClientSize.Width < Utils.MobileWidth)
                     {
                         uniformGrid.Columns = 1; // Vertical layout
                         uniformGrid.Rows = 3;
@@ -189,49 +192,42 @@ public partial class HomePageView : UserControl
         parameterSenderService.RegisterRightCameraController(RightCameraController!);
         parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
 
-        StartImageUpdates();
-
         PropertyChanged += (_, _) => { _localSettingsService.Save(this); };
     }
 
     private void CamView_OnLoaded(object? sender, RoutedEventArgs e)
     {
-        _isVisible = true;
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
+
+        StartImageUpdates();
     }
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
     {
-        LeftCameraStop(null, null!);
-        RightCameraStop(null, null!);
-        FaceCameraStop(null, null!);
-
+        _drawTimer.Stop();
         LeftCameraController.Dispose();
         RightCameraController.Dispose();
         FaceCameraController.Dispose();
-
-        _isVisible = false;
+        LeftCameraController = null!;
+        RightCameraController = null!;
+        FaceCameraController = null!;
     }
 
     private void StartImageUpdates()
     {
-        DispatcherTimer drawTimer = new()
+        _drawTimer.Tick += async (s, e) =>
         {
-            Interval = TimeSpan.FromMilliseconds(10)
-        };
-        drawTimer.Tick += async (s, e) =>
-        {
-            await LeftCameraController.UpdateImage(_isVisible);
-            await RightCameraController.UpdateImage(_isVisible);
-            await FaceCameraController.UpdateImage(_isVisible);
+            await LeftCameraController.UpdateImage();
+            await RightCameraController.UpdateImage();
+            await FaceCameraController.UpdateImage();
 
             _viewModel.LeftEyeBitmap = LeftCameraController.Bitmap;
             _viewModel.RightEyeBitmap = RightCameraController.Bitmap;
             _viewModel.FaceBitmap = FaceCameraController.Bitmap;
         };
-        drawTimer.Start();
+        _drawTimer.Start();
     }
 
     // Event handlers for left camera
@@ -286,7 +282,6 @@ public partial class HomePageView : UserControl
 
         RightCameraController.StartCamera(cameraAddress);
     }
-
 
     public void RightCameraStop(object? sender, RoutedEventArgs e)
     {

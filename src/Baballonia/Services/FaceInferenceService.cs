@@ -74,15 +74,8 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         var index = (int)cameraSettings.Camera;
         var platformSettings = PlatformConnectors[index].Item1;
         var platformConnector = PlatformConnectors[index].Item2;
-        if (platformConnector is null)
-        {
-            return false;
-        }
-
-        if (platformConnector.Capture is null)
-        {
-            return false;
-        }
+        if (platformConnector is null) return false;
+        if (platformConnector.Capture is null) return false;
 
         // Test if the camera is not ready or connecting to new source
         if (!platformConnector.Capture!.IsReady) return false;

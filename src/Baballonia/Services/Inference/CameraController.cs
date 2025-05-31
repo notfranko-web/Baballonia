@@ -24,6 +24,8 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
+    public static bool HackyImageDisplayBool;
+
     public CameraSettings CameraSettings { get; private set; }
 
     public float[] ArExpressions = [];
@@ -143,8 +145,10 @@ public class CameraController : IDisposable
         });
     }
 
-    public async Task UpdateImage(bool isVisible)
+    public async Task UpdateImage()
     {
+        if (!HackyImageDisplayBool) return;
+
         var isCroppingModeUiVisible = _camViewMode == CamViewMode.Cropping;
         _rectangleWindow.IsVisible = isCroppingModeUiVisible;
         _selectEntireFrameButton.IsVisible = isCroppingModeUiVisible;
@@ -194,7 +198,7 @@ public class CameraController : IDisposable
                 return;
         }
 
-        if (valid && isVisible)
+        if (valid)
         {
             _viewBox.Margin = new Thickness(0, 0, 0, 16);
 
@@ -646,6 +650,7 @@ public class CameraController : IDisposable
     public void Dispose()
     {
         StopMjpegStreaming();
+        StopCamera();
 
         _mouthWindow.PointerPressed -= OnPointerPressed;
         _mouthWindow.PointerMoved -= OnPointerMoved;
