@@ -109,7 +109,7 @@ public partial class OnboardingViewModel : ObservableObject
         }
     }
 
-    public void OpenETVRModuleUrl()
+    public void OpenEtvrModuleUrl()
     {
         Utils.OpenUrl(EtvrFirmwareFlashingTool);
     }

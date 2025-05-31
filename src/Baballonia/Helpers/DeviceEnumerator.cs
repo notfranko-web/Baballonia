@@ -105,7 +105,7 @@ public static class DeviceEnumerator
                 bool indexed = false;
                 for (int i = 0; i < 10; i++) // Check first 10 indices
                 {
-                    using var capture = new VideoCapture(i);
+                    using var capture = VideoCapture.FromCamera(i, VideoCaptureAPIs.DSHOW);
                     if (capture.IsOpened())
                     {
                         // This is a simplistic approach - ideally we'd have a more reliable way to match

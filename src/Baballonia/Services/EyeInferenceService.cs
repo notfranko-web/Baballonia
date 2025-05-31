@@ -17,7 +17,8 @@ using Baballonia.Services.Inference.Platforms;
 
 namespace Baballonia.Services;
 
-public class EyeInferenceService : InferenceService, IEyeInferenceService
+public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
+    : InferenceService(logger, settingsService), IEyeInferenceService
 {
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
         = new (PlatformSettings settings, PlatformConnector connector)[3];
@@ -32,8 +33,10 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
     // Minimum number of frames required before processing
     private const int FramesForInference = 4;
 
-    public EyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
-        : base(logger, settingsService)
+    /// <summary>
+    /// Loads/reloads the ONNX model for a specified camera
+    /// </summary>
+    public override void SetupInference(Camera camera, string cameraAddress)
     {
         Task.Run(async () =>
         {
@@ -46,45 +49,31 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
             var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
             var eyeModel = await settingsService.ReadSettingAsync<string>("EyeHome_EyeModel");
 
-            SetupInference(eyeModel, Camera.Left, minCutoff, speedCoeff, sessionOptions);
-            SetupInference(eyeModel, Camera.Right, minCutoff, speedCoeff, sessionOptions);
+            float[] noisy_point = new float[10];
+            var filter = new OneEuroFilter(
+                x0: noisy_point,
+                minCutoff: minCutoff,
+                beta: speedCoeff
+            );
+
+            var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, eyeModel), sessionOptions);
+            var inputName = session.InputMetadata.Keys.First();
+            var dimensions = session.InputMetadata.Values.First().Dimensions;
+            var inputSize = new Size(dimensions[2], dimensions[3]);
+            const int magicAiNumberSize = 4;
+
+            DenseTensor<float> tensor = new DenseTensor<float>([1, magicAiNumberSize, dimensions[2], dimensions[3]]);
+
+            // This is set up twice but I do not care
+            _combinedDimensions = [1, magicAiNumberSize * 2, dimensions[2], dimensions[3]];
+            _combinedTensor = new DenseTensor<float>(_combinedDimensions);
+
+            var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, eyeModel);
+            PlatformConnectors[(int)camera] = (platformSettings, null)!;
+            ConfigurePlatformConnectors(camera, cameraAddress);
 
             logger.LogInformation("Eye Inference started!");
         });
-    }
-
-    /// <summary>
-    /// Loads/reloads the ONNX model for a specified camera
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="camera"></param>
-    /// <param name="minCutoff"></param>
-    /// <param name="speedCoeff"></param>
-    /// <param name="sessionOptions"></param>
-    public override void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff,
-        SessionOptions sessionOptions)
-    {
-        float[] noisy_point = new float[10];
-        var filter = new OneEuroFilter(
-            x0: noisy_point,
-            minCutoff: minCutoff,
-            beta: speedCoeff
-        );
-
-        var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, model), sessionOptions);
-        var inputName = session.InputMetadata.Keys.First();
-        var dimensions = session.InputMetadata.Values.First().Dimensions;
-        var inputSize = new Size(dimensions[2], dimensions[3]);
-        var magicAiNumberSize = 4;
-
-        DenseTensor<float> tensor = new DenseTensor<float>([1, magicAiNumberSize, dimensions[2], dimensions[3]]);
-
-        // This is set up twice but I do not care
-        _combinedDimensions = [1, magicAiNumberSize * 2, dimensions[2], dimensions[3]];
-        _combinedTensor = new DenseTensor<float>(_combinedDimensions);
-
-        var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, model);
-        PlatformConnectors[(int)camera] = (platformSettings, null)!;
     }
 
     /// <summary>

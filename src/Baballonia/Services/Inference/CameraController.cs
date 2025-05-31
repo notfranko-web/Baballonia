@@ -131,22 +131,16 @@ public class CameraController : IDisposable
         _currentJpegFrame = [];
 
         // Open the camera if it was set prior AND it isn't running already
-        if (!OperatingSystem.IsLinux())
+        // This shit doesn't work on Linux!??
+        Task.Run(async () =>
         {
-            // This shit doesn't work on Linux!??
-            Task.Run(async () =>
+            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
+            if (!string.IsNullOrEmpty(cameraAddress))
             {
-                var pc = _inferenceService.PlatformConnectors[(int)_camera];
-                if (pc.Item2 is null)
-                {
-                    var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
-                    if (!string.IsNullOrEmpty(cameraAddress))
-                    {
-                        StartCamera(cameraAddress);
-                    }
-                }
-            });
-        }
+                StopCamera();
+                StartCamera(cameraAddress);
+            }
+        });
     }
 
     public async Task UpdateImage(bool isVisible)
@@ -284,7 +278,7 @@ public class CameraController : IDisposable
 
     public void StartCamera(string cameraAddress)
     {
-        _inferenceService.ConfigurePlatformConnectors(_camera, cameraAddress);
+        _inferenceService.SetupInference(_camera, cameraAddress);
     }
 
     public void StopCamera()

@@ -149,7 +149,7 @@ public class App : Application
         Assembly assembly = Assembly.GetExecutingAssembly();
         Version version = assembly.GetName().Version!;
         var logger = Ioc.Default.GetService<ILogger<MainWindow>>();
-        logger.LogInformation($"Baballonia version {version} starting...");
+        logger!.LogInformation($"Baballonia version {version} starting...");
 
         Task.Run(async () => await _host.StartAsync());
 

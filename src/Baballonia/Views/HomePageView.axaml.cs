@@ -200,10 +200,6 @@ public partial class HomePageView : UserControl
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
-
-        LeftCameraStart(null, null!);
-        RightCameraStart(null, null!);
-        FaceCameraStart(null, null!);
     }
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
@@ -399,19 +395,14 @@ public partial class HomePageView : UserControl
         // Cleanup any leftover capture.bin files
         DeleteCaptureFiles(modelPath);
 
-        // Instruct the inference service to load the new model
-        var minCutoff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
-        var speedCoeff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
         SessionOptions sessionOptions = _eyeInferenceService.SetupSessionOptions();
         await _eyeInferenceService.ConfigurePlatformSpecificGpu(sessionOptions);
 
         // Finally, close any open eye cameras. The inference service will spin these up
         LeftCameraController.StopCamera();
         RightCameraController.StopCamera();
-        _eyeInferenceService.SetupInference(modelName, Camera.Left, minCutoff, speedCoeff, sessionOptions);
-        _eyeInferenceService.ConfigurePlatformConnectors(Camera.Left, _viewModel.LeftCameraAddress);
-        _eyeInferenceService.SetupInference(modelName, Camera.Right, minCutoff, speedCoeff, sessionOptions);
-        _eyeInferenceService.ConfigurePlatformConnectors(Camera.Right, _viewModel.RightCameraAddress);
+        _eyeInferenceService.SetupInference(Camera.Left, _viewModel.LeftCameraAddress);
+        _eyeInferenceService.SetupInference(Camera.Right,_viewModel.RightCameraAddress);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)

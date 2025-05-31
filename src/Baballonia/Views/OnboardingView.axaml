@@ -104,7 +104,7 @@
                                 VerticalAlignment="Center" />
                             <controls:Hyperlink
                                 Alias="EyeTrackVR Firmware Flashing Tool"
-                                Command="{Binding OpenETVRModuleUrl}"
+                                Command="{Binding OpenEtvrModuleUrl}"
                                 FontSize="16"
                                 Grid.Column="2"
                                 Grid.Row="0"

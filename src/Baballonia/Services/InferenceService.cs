@@ -22,18 +22,11 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <summary>
     /// Loads/reloads the ONNX model for a specified camera
     /// </summary>
-    /// <param name="model"></param>
-    /// <param name="camera"></param>
-    /// <param name="minCutoff"></param>
-    /// <param name="speedCoeff"></param>
-    /// <param name="sessionOptions"></param>
-    public abstract void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff,
-        SessionOptions sessionOptions);
+    public abstract void SetupInference(Camera camera, string cameraAddress);
 
     /// <summary>
     /// Poll expression data, frames
     /// </summary>
-    /// <param name="camera"></param>
     /// <param name="cameraSettings"></param>
     /// <param name="arKitExpressions"></param>
     /// <returns></returns>
@@ -193,27 +186,33 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
-    public void Shutdown(Camera camera)
+    public void Shutdown()
     {
-        var pc = PlatformConnectors[(int)camera].Item2;
-        if (pc != null)
+        foreach (var platformConnector in PlatformConnectors)
         {
-            pc.Terminate();
+            var pc = platformConnector;
+            if (pc.Item2 != null)
+            {
+                var session = platformConnector.Item1.Session;
+                session.Dispose();
+
+                pc.Item2.Terminate();
+            }
         }
     }
 
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
-    public void Shutdown()
+    public void Shutdown(Camera camera)
     {
-        foreach (var platformConnector in PlatformConnectors)
+        var pc = PlatformConnectors[(int)camera];
+        if (pc.Item2 != null)
         {
-            var pc = platformConnector.Item2;
-            if (pc != null)
-            {
-                pc.Terminate();
-            }
+            var session = pc.Item1.Session;
+            session.Dispose();
+
+            pc.Item2.Terminate();
         }
     }
 }

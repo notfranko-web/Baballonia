@@ -9,6 +9,15 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
         <AssemblyName>Paradigm Reality Enhancement Labs</AssemblyName>
+        <Version>1.0.0.3</Version>
+        <Title>The Babble App</Title>
+        <Description>The new Babble App, free and open source eye and face tracking for social VR </Description>
+        <Copyright>2025</Copyright>
+        <PackageProjectUrl>https://github.com/Project-Babble/Baballonia</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Project-Babble/Baballonia/blob/main/LICENSE</PackageLicenseUrl>
+        <PackageIcon>Icon.png</PackageIcon>
+        <RepositoryUrl>https://github.com/Project-Babble/Baballonia</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
     </PropertyGroup>
 
     <ItemGroup>

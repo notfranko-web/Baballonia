@@ -16,13 +16,16 @@ using Baballonia.Services.Inference.Platforms;
 
 namespace Baballonia.Services;
 
-public class FaceInferenceService : InferenceService, IFaceInferenceService
+public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
+    : InferenceService(logger, settingsService), IFaceInferenceService
 {
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
         = new (PlatformSettings settings, PlatformConnector connector)[1];
 
-    public FaceInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
-        : base(logger, settingsService)
+    /// <summary>
+    /// Loads/reloads the ONNX model for a specified camera
+    /// </summary>
+    public override void SetupInference(Camera camera, string cameraAddress)
     {
         Task.Run(async () =>
         {
@@ -34,39 +37,27 @@ public class FaceInferenceService : InferenceService, IFaceInferenceService
             var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
             var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
 
-            SetupInference("faceModel.onnx", Camera.Face, minCutoff, speedCoeff, sessionOptions);
+            const string modelName = "faceModel.onnx";
+            float[] noisy_point = new float[45];
+            var filter = new OneEuroFilter(
+                x0: noisy_point,
+                minCutoff: minCutoff,
+                beta: speedCoeff
+            );
+
+            var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, modelName), sessionOptions);
+            var inputName = session.InputMetadata.Keys.First();
+            var dimensions = session.InputMetadata.Values.First().Dimensions;
+            var inputSize = new Size(dimensions[2], dimensions[3]);
+
+            DenseTensor<float> tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
+
+            var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
+            PlatformConnectors[(int)camera] = (platformSettings, null)!;
+            ConfigurePlatformConnectors(camera, cameraAddress);
 
             logger.LogInformation("Face Inference started!");
         });
-    }
-
-    /// <summary>
-    /// Loads/reloads the ONNX model for a specified camera
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="camera"></param>
-    /// <param name="minCutoff"></param>
-    /// <param name="speedCoeff"></param>
-    /// <param name="sessionOptions"></param>
-    public override void SetupInference(string model, Camera camera, float minCutoff, float speedCoeff, SessionOptions sessionOptions)
-    {
-        var modelName = model;
-        float[] noisy_point = new float[45];
-        var filter = new OneEuroFilter(
-            x0: noisy_point,
-            minCutoff: minCutoff,
-            beta: speedCoeff
-        );
-
-        var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, modelName), sessionOptions);
-        var inputName = session.InputMetadata.Keys.First();
-        var dimensions = session.InputMetadata.Values.First().Dimensions;
-        var inputSize = new Size(dimensions[2], dimensions[3]);
-
-        DenseTensor<float> tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
-
-        var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
-        PlatformConnectors[(int)camera] = (platformSettings, null)!;
     }
 
     /// <summary>
