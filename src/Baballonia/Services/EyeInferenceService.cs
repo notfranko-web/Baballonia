@@ -49,7 +49,7 @@ public class EyeInferenceService : InferenceService, IEyeInferenceService
             SetupInference(eyeModel, Camera.Left, minCutoff, speedCoeff, sessionOptions);
             SetupInference(eyeModel, Camera.Right, minCutoff, speedCoeff, sessionOptions);
 
-            logger.LogInformation("Inference started!");
+            logger.LogInformation("Eye Inference started!");
         });
     }
 

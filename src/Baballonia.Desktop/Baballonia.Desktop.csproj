@@ -6,6 +6,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Assets\IconOpaque_32x32.ico</ApplicationIcon>
+        <Company>Paradigm Reality Enhancement Labs</Company>
     </PropertyGroup>
 
     <PropertyGroup>

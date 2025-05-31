@@ -40,7 +40,7 @@ public class ParameterSenderService(
             try
             {
                 if (_leftCameraController != null)  ProcessExpressionData(_leftCameraController.ArExpressions, faceCalibrationViewModel.EyeCalibrationItems, prefix);
-                if (_rightCameraController != null)  ProcessExpressionData(_rightCameraController.ArExpressions, faceCalibrationViewModel.EyeCalibrationItems, prefix);
+                // if (_rightCameraController != null)  ProcessExpressionData(_rightCameraController.ArExpressions, faceCalibrationViewModel.EyeCalibrationItems, prefix); // Don't send twice
                 if (_faceCameraController != null) ProcessExpressionData(_faceCameraController.ArExpressions, faceCalibrationViewModel.GetCalibrationValues(), prefix);
 
                 await SendAndClearQueue(cancellationToken);

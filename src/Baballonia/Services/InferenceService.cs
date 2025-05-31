@@ -15,9 +15,9 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
 {
     public abstract (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
 
-    protected readonly ILogger<InferenceService> logger = logger;
-    protected readonly ILocalSettingsService localSettingsService = settingsService;
     protected readonly Stopwatch sw = Stopwatch.StartNew();
+    private readonly ILogger<InferenceService> logger = logger;
+    private readonly ILocalSettingsService settingsService = settingsService;
 
     /// <summary>
     /// Loads/reloads the ONNX model for a specified camera
@@ -71,14 +71,14 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     {
         if (OperatingSystem.IsAndroid())
         {
-            PlatformConnectors[(int)camera].Item2 = new AndroidConnector(cameraIndex, logger, localSettingsService);
+            PlatformConnectors[(int)camera].Item2 = new AndroidConnector(cameraIndex, logger, settingsService);
             PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
         }
         else // if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
             // Use the standard OpenCVSharp VideoCapture backend
-            PlatformConnectors[(int)camera].Item2 = new DesktopConnector(cameraIndex, logger, localSettingsService);
+            PlatformConnectors[(int)camera].Item2 = new DesktopConnector(cameraIndex, logger, settingsService);
             PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
         }
     }
@@ -110,7 +110,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <param name="sessionOptions"></param>
     public async Task ConfigurePlatformSpecificGpu(SessionOptions sessionOptions)
     {
-        var useGpu = await localSettingsService.ReadSettingAsync<bool>("AppSettings_UseGPU");
+        var useGpu = await settingsService.ReadSettingAsync<bool>("AppSettings_UseGPU");
         if (!useGpu)
         {
             sessionOptions.AppendExecutionProvider_CPU();

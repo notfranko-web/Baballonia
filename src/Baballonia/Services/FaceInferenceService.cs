@@ -36,7 +36,7 @@ public class FaceInferenceService : InferenceService, IFaceInferenceService
 
             SetupInference("faceModel.onnx", Camera.Face, minCutoff, speedCoeff, sessionOptions);
 
-            logger.LogInformation("Inference started!");
+            logger.LogInformation("Face Inference started!");
         });
     }
 

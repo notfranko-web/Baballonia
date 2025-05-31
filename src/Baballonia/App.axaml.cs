@@ -146,6 +146,11 @@ public class App : Application
         _host = hostBuilder.Build();
         Ioc.Default.ConfigureServices(_host.Services);
 
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        Version version = assembly.GetName().Version!;
+        var logger = Ioc.Default.GetService<ILogger<MainWindow>>();
+        logger.LogInformation($"Baballonia version {version} starting...");
+
         Task.Run(async () => await _host.StartAsync());
 
         var activation = Ioc.Default.GetRequiredService<IActivationService>();
@@ -166,11 +171,6 @@ public class App : Application
                 singleViewPlatform.MainView = new MainView { DataContext = vm };
                 break;
         }
-
-        // var notif = new NotificationModel();
-        // notif.Title = "Hello, World!";
-        // notif.Body = "This is a test notification.";
-        // SendNotification?.Invoke(notif);
 
         base.OnFrameworkInitializationCompleted();
     }
