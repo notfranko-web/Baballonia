@@ -9,24 +9,24 @@ class Program
     // Payload structure classes
     public class WifiData
     {
-        public string ssid { get; set; }
-        public string password { get; set; }
+        public required string Ssid { get; set; }
+        public required string Password { get; set; }
     }
 
     public class MdnsData
     {
-        public string hostname { get; set; }
+        public required string Hostname { get; set; }
     }
 
     public class Command
     {
-        public string command { get; set; }
-        public object data { get; set; }
+        public required string CommandName { get; set; }
+        public required object Data { get; set; }
     }
 
     public class Payload
     {
-        public Command[] commands { get; set; }
+        public required Command[] Commands { get; set; }
     }
 
     static void Main(string[] args)
@@ -40,24 +40,24 @@ class Program
 
         // Get Wi-Fi credentials
         Console.Write("Enter Wi-Fi SSID: ");
-        string ssid = Console.ReadLine();
+        string ssid = Console.ReadLine()!;
 
         Console.Write("Enter Wi-Fi Password: ");
-        string password = Console.ReadLine();
+        string password = Console.ReadLine()!;
 
         // Get mDNS hostname (optional)
         Console.Write("Enter mDNS Hostname (press Enter to skip): ");
-        string hostname = Console.ReadLine();
+        string hostname = Console.ReadLine()!;
 
         // Create payload
         Payload payload = new Payload
         {
-            commands =
+            Commands =
             [
                 new Command
                 {
-                    command = "set_wifi",
-                    data = new WifiData { ssid = ssid, password = password }
+                    CommandName = "set_wifi",
+                    Data = new WifiData { Ssid = ssid, Password = password }
                 }
             ]
         };
@@ -65,10 +65,10 @@ class Program
         // Add mDNS command if hostname is provided
         if (!string.IsNullOrWhiteSpace(hostname))
         {
-            payload.commands = payload.commands.Append(new Command
+            payload.Commands = payload.Commands.Append(new Command
             {
-                command = "set_mdns",
-                data = new MdnsData { hostname = hostname }
+                CommandName = "set_mdns",
+                Data = new MdnsData { Hostname = hostname }
             }).ToArray();
         }
 
@@ -83,7 +83,7 @@ class Program
 
         // Confirm before sending
         Console.Write("\nSend payload to ESP32-S3? (y/n): ");
-        if (Console.ReadLine().ToLower() != "y")
+        if (Console.ReadLine()!.ToLower() != "y")
         {
             Console.WriteLine("Operation canceled.");
             return;
