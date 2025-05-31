@@ -35,7 +35,9 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
             await ConfigurePlatformSpecificGpu(sessionOptions);
 
             var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+            if (minCutoff == 0f) minCutoff = 1f;
             var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+            if (speedCoeff == 0f) speedCoeff = 1f;
 
             const string modelName = "faceModel.onnx";
             float[] noisy_point = new float[45];

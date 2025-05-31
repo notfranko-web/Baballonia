@@ -126,6 +126,26 @@ public partial class HomePageView : UserControl
             // Insufficient perms, ignore
         }
 
+        if (!CameraController.HackyImageDisplayBool)
+        {
+            _drawTimer.Stop();
+            if (LeftCameraController != null)
+            {
+                LeftCameraController.Dispose();
+                LeftCameraController = null!;
+            }
+            if (RightCameraController != null)
+            {
+                RightCameraController.Dispose();
+                RightCameraController = null!;
+            }
+            if (FaceCameraController != null)
+            {
+                FaceCameraController.Dispose();
+                FaceCameraController = null!;
+            }
+        };
+
         // Initialize camera controllers
         LeftCameraController = new CameraController(
             this,
@@ -206,6 +226,8 @@ public partial class HomePageView : UserControl
 
     private void CamView_Unloaded(object? sender, RoutedEventArgs e)
     {
+        if (CameraController.HackyImageDisplayBool) return;
+
         _drawTimer.Stop();
         LeftCameraController.Dispose();
         RightCameraController.Dispose();
@@ -217,6 +239,7 @@ public partial class HomePageView : UserControl
 
     private void StartImageUpdates()
     {
+        _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
             await LeftCameraController.UpdateImage();

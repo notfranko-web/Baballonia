@@ -37,14 +37,14 @@ public class ViewLocator : IDataTemplate
         }
 
         var type = data.GetType();
-        if (type != typeof(HomePageViewModel))
+        if (type != typeof(HomePageViewModel) || type != typeof(FaceCalibrationViewModel))
             CameraController.HackyImageDisplayBool = false;
 
         _locator.TryGetValue(data.GetType(), out var factory);
 
         var control = factory?.Invoke() ?? new TextBlock { Text = $"VM Not Registered: {data.GetType()}" };
 
-        if (type == typeof(HomePageViewModel))
+        if (type == typeof(HomePageViewModel) || type == typeof(FaceCalibrationViewModel))
             CameraController.HackyImageDisplayBool = true;
 
         return control;
