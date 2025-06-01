@@ -24,8 +24,6 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
-    public static bool HackyImageDisplayBool;
-
     public CameraSettings CameraSettings { get; private set; }
 
     public float[] ArExpressions = [];
@@ -131,24 +129,10 @@ public class CameraController : IDisposable
 
         // Initialize MJPEG streaming
         _currentJpegFrame = [];
-
-        // Open the camera if it was set prior AND it isn't running already
-        // This shit doesn't work on Linux!??
-        Task.Run(async () =>
-        {
-            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
-            if (!string.IsNullOrEmpty(cameraAddress))
-            {
-                StopCamera();
-                StartCamera(cameraAddress);
-            }
-        });
     }
 
     public async Task UpdateImage()
     {
-        if (!HackyImageDisplayBool) return;
-
         var isCroppingModeUiVisible = _camViewMode == CamViewMode.Cropping;
         _rectangleWindow.IsVisible = isCroppingModeUiVisible;
         _selectEntireFrameButton.IsVisible = isCroppingModeUiVisible;
@@ -282,7 +266,19 @@ public class CameraController : IDisposable
 
     public void StartCamera(string cameraAddress)
     {
-        _inferenceService.SetupInference(_camera, cameraAddress);
+
+        // Open the camera if it was set prior AND it isn't running already
+        // This shit doesn't work on Linux!??
+        Task.Run(async () =>
+        {
+            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
+            if (!string.IsNullOrEmpty(cameraAddress))
+            {
+                StopCamera();
+                _inferenceService.SetupInference(_camera, cameraAddress);
+            }
+        });
+
     }
 
     public void StopCamera()

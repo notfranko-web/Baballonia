@@ -10,11 +10,13 @@ namespace Baballonia.Views;
 public partial class FaceCalibrationView : UserControl
 {
     private FaceCalibrationViewModel _viewModel;
+    private HomePageView _homeView;
 
     public FaceCalibrationView()
     {
         InitializeComponent();
         _viewModel = Ioc.Default.GetService<FaceCalibrationViewModel>()!;
+        _homeView = Ioc.Default.GetService<HomePageView>()!;
 
         if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
         {
@@ -27,13 +29,13 @@ public partial class FaceCalibrationView : UserControl
                     var mobileLayout = this.FindControl<StackPanel>("ResetMobileStackPanel");
                     if (window.ClientSize.Width < Utils.MobileWidth)
                     {
-                        desktopLayout.IsVisible = false;
-                        mobileLayout.IsVisible = true;
+                        desktopLayout!.IsVisible = false;
+                        mobileLayout!.IsVisible = true;
                     }
                     else
                     {
-                        desktopLayout.IsVisible = true;
-                        mobileLayout.IsVisible = false;
+                        desktopLayout!.IsVisible = true;
+                        mobileLayout!.IsVisible = false;
                     }
                 }
             };

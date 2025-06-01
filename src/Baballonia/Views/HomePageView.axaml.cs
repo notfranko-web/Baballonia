@@ -23,6 +23,8 @@ namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
+    public static bool ForceInference;
+
     public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
         AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
 
@@ -79,12 +81,12 @@ public partial class HomePageView : UserControl
                     var uniformGrid = this.FindControl<UniformGrid>("UniformGridPanel");
                     if (window.ClientSize.Width < Utils.MobileWidth)
                     {
-                        uniformGrid.Columns = 1; // Vertical layout
+                        uniformGrid!.Columns = 1; // Vertical layout
                         uniformGrid.Rows = 3;
                     }
                     else
                     {
-                        uniformGrid.Columns = 3; // Horizontal layout
+                        uniformGrid!.Columns = 3; // Horizontal layout
                         uniformGrid.Rows = 1;
                     }
                 }
@@ -92,7 +94,6 @@ public partial class HomePageView : UserControl
         }
 
         Loaded += CamView_OnLoaded;
-        Unloaded += CamView_Unloaded;
 
         _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
@@ -126,27 +127,6 @@ public partial class HomePageView : UserControl
             // Insufficient perms, ignore
         }
 
-        if (!CameraController.HackyImageDisplayBool)
-        {
-            _drawTimer.Stop();
-            if (LeftCameraController != null)
-            {
-                LeftCameraController.Dispose();
-                LeftCameraController = null!;
-            }
-            if (RightCameraController != null)
-            {
-                RightCameraController.Dispose();
-                RightCameraController = null!;
-            }
-            if (FaceCameraController != null)
-            {
-                FaceCameraController.Dispose();
-                FaceCameraController = null!;
-            }
-        };
-
-        // Initialize camera controllers
         LeftCameraController = new CameraController(
             this,
             _localSettingsService,
@@ -207,6 +187,23 @@ public partial class HomePageView : UserControl
             "Face_FlipYAxis",
             IsFaceTrackingModeProperty);
 
+        LeftCameraStart(null, null!);
+        RightCameraStart(null, null!);
+        FaceCameraStart(null, null!);
+
+        _drawTimer.Stop();
+        _drawTimer.Tick += async (s, e) =>
+        {
+            await LeftCameraController.UpdateImage();
+            await RightCameraController.UpdateImage();
+            await FaceCameraController.UpdateImage();
+
+            _viewModel.LeftEyeBitmap = LeftCameraController.Bitmap;
+            _viewModel.RightEyeBitmap = RightCameraController.Bitmap;
+            _viewModel.FaceBitmap = FaceCameraController.Bitmap;
+        };
+        _drawTimer.Start();
+
         var parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
         parameterSenderService.RegisterLeftCameraController(LeftCameraController!);
         parameterSenderService.RegisterRightCameraController(RightCameraController!);
@@ -220,37 +217,6 @@ public partial class HomePageView : UserControl
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
-
-        StartImageUpdates();
-    }
-
-    private void CamView_Unloaded(object? sender, RoutedEventArgs e)
-    {
-        if (CameraController.HackyImageDisplayBool) return;
-
-        _drawTimer.Stop();
-        LeftCameraController.Dispose();
-        RightCameraController.Dispose();
-        FaceCameraController.Dispose();
-        LeftCameraController = null!;
-        RightCameraController = null!;
-        FaceCameraController = null!;
-    }
-
-    private void StartImageUpdates()
-    {
-        _drawTimer.Stop();
-        _drawTimer.Tick += async (s, e) =>
-        {
-            await LeftCameraController.UpdateImage();
-            await RightCameraController.UpdateImage();
-            await FaceCameraController.UpdateImage();
-
-            _viewModel.LeftEyeBitmap = LeftCameraController.Bitmap;
-            _viewModel.RightEyeBitmap = RightCameraController.Bitmap;
-            _viewModel.FaceBitmap = FaceCameraController.Bitmap;
-        };
-        _drawTimer.Start();
     }
 
     // Event handlers for left camera
