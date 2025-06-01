@@ -29,6 +29,8 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
 
     // Queue for each camera to hold incoming frames
     private readonly ConcurrentQueue<FrameData> _frameQueues = new();
+    private readonly ILogger<InferenceService> _logger = logger;
+    private readonly ILocalSettingsService _settingsService = settingsService;
 
     // Minimum number of frames required before processing
     private const int FramesForInference = 4;
@@ -40,16 +42,16 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     {
         Task.Run(async () =>
         {
-            logger.LogInformation("Starting Eye Inference Service...");
+            _logger.LogInformation("Starting Eye Inference Service...");
 
             SessionOptions sessionOptions = SetupSessionOptions();
             await ConfigurePlatformSpecificGpu(sessionOptions);
 
-            var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+            var minCutoff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
             if (minCutoff == 0f) minCutoff = 1f;
-            var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+            var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
             if (speedCoeff == 0f) speedCoeff = 1f;
-            var eyeModel = await settingsService.ReadSettingAsync<string>("EyeHome_EyeModel") ?? "eyeModel.onnx";
+            var eyeModel = await _settingsService.ReadSettingAsync<string>("EyeHome_EyeModel") ?? "eyeModel.onnx";
 
             float[] noisy_point = new float[10];
             var filter = new OneEuroFilter(
@@ -74,7 +76,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
             PlatformConnectors[(int)camera] = (platformSettings, null)!;
             ConfigurePlatformConnectors(camera, cameraAddress);
 
-            logger.LogInformation("Eye Inference started!");
+            _logger.LogInformation("Eye Inference started!");
         });
     }
 

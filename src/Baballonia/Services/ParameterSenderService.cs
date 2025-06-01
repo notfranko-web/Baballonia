@@ -180,8 +180,8 @@ public class ParameterSenderService(
 
                 try
                 {
-                    if (_leftCameraController != null) await ProcessEyeExpressionData(_leftCameraController.ArExpressions, prefix);
-                    if (_faceCameraController != null) await ProcessFaceExpressionData(_faceCameraController.ArExpressions, prefix);
+                    if (_leftCameraController != null) ProcessEyeExpressionData(_leftCameraController.ArExpressions, prefix);
+                    if (_faceCameraController != null) ProcessFaceExpressionData(_faceCameraController.ArExpressions, prefix);
 
                     await SendAndClearQueue(cancellationToken);
                     await Task.Delay(10, cancellationToken);
@@ -226,7 +226,7 @@ public class ParameterSenderService(
 
         // Parse property name to extract parameter and bound type
         // Assuming property names follow pattern like "LeftEyeXLower" or "LeftEyeXUpper"
-        string parameterKey = null;
+        string parameterKey = string.Empty;
         bool isUpper = false;
 
         if (expression.EndsWith("Lower"))
@@ -284,7 +284,7 @@ public class ParameterSenderService(
     private object GetPropertyValue(object obj, string propertyName)
     {
         var propertyInfo = obj.GetType().GetProperty(propertyName);
-        return propertyInfo?.GetValue(obj);
+        return propertyInfo?.GetValue(obj)!;
     }
 
     private (float Lower, float Upper) GetExpressionSettings(string parameterName)
@@ -295,7 +295,7 @@ public class ParameterSenderService(
         }
     }
 
-    private async Task ProcessEyeExpressionData(float[] expressions, string prefix = "")
+    private void ProcessEyeExpressionData(float[] expressions, string prefix = "")
     {
         if (expressions is null) return;
         if (expressions.Length == 0) return;
@@ -315,7 +315,7 @@ public class ParameterSenderService(
         }
     }
 
-    private async Task ProcessFaceExpressionData(float[] expressions, string prefix = "")
+    private void ProcessFaceExpressionData(float[] expressions, string prefix = "")
     {
         if (expressions is null) return;
         if (expressions.Length == 0) return;
