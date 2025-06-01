@@ -19,7 +19,7 @@ public class ViewLocator : IDataTemplate
     {
         RegisterViewFactory<MainViewModel, MainWindow>();
         RegisterViewFactory<HomePageViewModel, HomePageView>();
-        RegisterViewFactory<FaceCalibrationViewModel, FaceCalibrationView>();
+        RegisterViewFactory<CalibrationViewModel, CalibrationView>();
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
 

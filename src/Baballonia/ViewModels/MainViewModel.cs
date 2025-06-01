@@ -33,7 +33,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly List<ListItemTemplate> _desktopTemplates =
     [
         new(typeof(HomePageViewModel), "HomeRegular", "Home"),
-        new(typeof(FaceCalibrationViewModel), "EditRegular", "Calibration"),
+        new(typeof(CalibrationViewModel), "EditRegular", "Calibration"),
         new(typeof(FirmwareViewModel), "DeveloperBoardRegular", "Firmware"),
         new(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
         new(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
@@ -42,7 +42,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly List<ListItemTemplate> _androidTemplates =
     [
         new(typeof(HomePageViewModel), "HomeRegular", "Home"),
-        new(typeof(FaceCalibrationViewModel), "EditRegular", "Calibration"),
+        new(typeof(CalibrationViewModel), "EditRegular", "Calibration"),
         new(typeof(OutputPageViewModel), "TextFirstLineRegular", "Output"),
         new(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
     ];

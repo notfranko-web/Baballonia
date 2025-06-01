@@ -101,8 +101,8 @@ public class App : Application
                 services.AddTransient<AppSettingsView>();
                 services.AddTransient<HomePageViewModel>();
                 services.AddTransient<HomePageView>();
-                services.AddTransient<FaceCalibrationViewModel>();
-                services.AddTransient<FaceCalibrationView>();
+                services.AddTransient<CalibrationViewModel>();
+                services.AddTransient<CalibrationView>();
                 services.AddTransient<FirmwareViewModel>();
                 services.AddTransient<FirmwareView>();
                 services.AddTransient<OnboardingViewModel>();

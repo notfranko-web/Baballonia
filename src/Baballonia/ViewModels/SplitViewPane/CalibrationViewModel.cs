@@ -1,15 +1,15 @@
-using System.Collections.Generic;
-using System.ComponentModel;
-using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Baballonia.Models;
 using Baballonia.Contracts;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using System;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
-public partial class FaceCalibrationViewModel : ViewModelBase
+public partial class CalibrationViewModel : ViewModelBase
 {
+    public static event Action<string> ExpressionUpdated;
+
     [ObservableProperty] [property: SavedSetting("LeftEyeXLower", -1f)] private float _leftEyeXLower;
     [ObservableProperty] [property: SavedSetting("LeftEyeYLower", 1f)] private float _leftEyeYLower;
 
@@ -159,81 +159,15 @@ public partial class FaceCalibrationViewModel : ViewModelBase
 
     private ILocalSettingsService _settingsService { get; }
 
-    public FaceCalibrationViewModel()
+    public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         _settingsService.Load(this);
 
-        PropertyChanged += (_, _) =>
+        PropertyChanged += (o, p) =>
         {
+            ExpressionUpdated?.Invoke(p.PropertyName!);
             _settingsService.Save(this);
-        };
-    }
-
-    public readonly CalibrationItem[] EyeCalibrationItems =
-    [
-        new CalibrationItem { ShapeName = "/LeftEyeX", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/LeftEyeY", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/RightEyeX", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/RightEyeY", Min = -1f, Max = 1f },
-        new CalibrationItem { ShapeName = "/LeftEyeLid", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/RightEyeLid", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/BrowRaise", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/BrowAngry", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/EyeWiden", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/EyeSquint", Min = 0f, Max = 1f },
-        new CalibrationItem { ShapeName = "/EyeDilate", Min = 0f, Max = 1f },
-    ];
-
-    public Dictionary<string, (float Lower, float Upper)> GetCalibrationValues()
-    {
-        return new Dictionary<string, (float, float)>
-        {
-            { "/cheekPuffLeft", (CheekPuffLeftLower, CheekPuffLeftUpper) },
-            { "/cheekPuffRight", (CheekPuffRightLower, CheekPuffRightUpper) },
-            { "/cheekSuckLeft", (CheekSuckLeftLower, CheekSuckLeftUpper) },
-            { "/cheekSuckRight", (CheekSuckRightLower, CheekSuckRightUpper) },
-            { "/jawOpen", (JawOpenLower, JawOpenUpper) },
-            { "/jawForward", (JawForwardLower, JawForwardUpper) },
-            { "/jawLeft", (JawLeftLower, JawLeftUpper) },
-            { "/jawRight", (JawRightLower, JawRightUpper) },
-            { "/noseSneerLeft", (NoseSneerLeftLower, NoseSneerLeftUpper) },
-            { "/noseSneerRight", (NoseSneerRightLower, NoseSneerRightUpper) },
-            { "/mouthFunnel", (MouthFunnelLower, MouthFunnelUpper) },
-            { "/mouthPucker", (MouthPuckerLower, MouthPuckerUpper) },
-            { "/mouthLeft", (MouthLeftLower, MouthLeftUpper) },
-            { "/mouthRight", (MouthRightLower, MouthRightUpper) },
-            { "/mouthRollUpper", (MouthRollUpperLower, MouthRollUpperUpper) },
-            { "/mouthRollLower", (MouthRollLowerLower, MouthRollLowerUpper) },
-            { "/mouthShrugUpper", (MouthShrugUpperLower, MouthShrugUpperUpper) },
-            { "/mouthShrugLower", (MouthShrugLowerLower, MouthShrugLowerUpper) },
-            { "/mouthClose", (MouthCloseLower, MouthCloseUpper) },
-            { "/mouthSmileLeft", (MouthSmileLeftLower, MouthSmileLeftUpper) },
-            { "/mouthSmileRight", (MouthSmileRightLower, MouthSmileRightUpper) },
-            { "/mouthFrownLeft", (MouthFrownLeftLower, MouthFrownLeftUpper) },
-            { "/mouthFrownRight", (MouthFrownRightLower, MouthFrownRightUpper) },
-            { "/mouthDimpleLeft", (MouthDimpleLeftLower, MouthDimpleLeftUpper) },
-            { "/mouthDimpleRight", (MouthDimpleRightLower, MouthDimpleRightUpper) },
-            { "/mouthUpperUpLeft", (MouthUpperUpLeftLower, MouthUpperUpLeftUpper) },
-            { "/mouthUpperUpRight", (MouthUpperUpRightLower, MouthUpperUpRightUpper) },
-            { "/mouthLowerDownLeft", (MouthLowerDownLeftLower, MouthLowerDownLeftUpper) },
-            { "/mouthLowerDownRight", (MouthLowerDownRightLower, MouthLowerDownRightUpper) },
-            { "/mouthPressLeft", (MouthPressLeftLower, MouthPressLeftUpper) },
-            { "/mouthPressRight", (MouthPressRightLower, MouthPressRightUpper) },
-            { "/mouthStretchLeft", (MouthStretchLeftLower, MouthStretchLeftUpper) },
-            { "/mouthStretchRight", (MouthStretchRightLower, MouthStretchRightUpper) },
-            { "/tongueOut", (TongueOutLower, TongueOutUpper) },
-            { "/tongueUp", (TongueUpLower, TongueUpUpper) },
-            { "/tongueDown", (TongueDownLower, TongueDownUpper) },
-            { "/tongueLeft", (TongueLeftLower, TongueLeftUpper) },
-            { "/tongueRight", (TongueRightLower, TongueRightUpper) },
-            { "/tongueRoll", (TongueRollLower, TongueRollUpper) },
-            { "/tongueBendDown", (TongueBendDownLower, TongueBendDownUpper) },
-            { "/tongueCurlUp", (TongueCurlUpLower, TongueCurlUpUpper) },
-            { "/tongueSquish", (TongueSquishLower, TongueSquishUpper) },
-            { "/tongueFlat", (TongueFlatLower, TongueFlatUpper) },
-            { "/tongueTwistLeft", (TongueTwistLeftLower, TongueTwistLeftUpper) },
-            { "/tongueTwistRight", (TongueTwistRightLower, TongueTwistRightUpper) }
         };
     }
 

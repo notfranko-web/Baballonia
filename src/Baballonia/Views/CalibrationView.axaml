@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="Baballonia.Views.FaceCalibrationView"
+    x:Class="Baballonia.Views.CalibrationView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +8,7 @@
     xmlns:twoRangeSlider="https://github.com/DmitryNizhebovsky/Avalonia.RangeSlider"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="splitViewPane:FaceCalibrationViewModel"
+    x:DataType="splitViewPane:CalibrationViewModel"
     mc:Ignorable="d">
 
     <ScrollViewer>
