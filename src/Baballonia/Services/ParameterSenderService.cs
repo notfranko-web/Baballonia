@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,12 +17,8 @@ namespace Baballonia.Services;
 
 public class ParameterSenderService(
     OscSendService sendService,
-    ILocalSettingsService localSettingsService,
-    CalibrationViewModel calibrationViewModel) : BackgroundService
+    ILocalSettingsService localSettingsService) : BackgroundService
 {
-    public void Enqueue(OscMessage message) => _sendQueue.Enqueue(message);
-    public void Clear() => _sendQueue.Clear();
-
     public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
     public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
     public void RegisterFaceCameraController(CameraController controller) => _faceCameraController = controller;
@@ -34,140 +31,77 @@ public class ParameterSenderService(
     private CameraController _faceCameraController;
 
     // Cache for expression settings to avoid repeated async calls
-    private readonly Dictionary<string, (float Lower, float Upper)> _expressionSettings = new();
-    private readonly object _settingsLock = new();
+    private readonly ConcurrentDictionary<string, (float Lower, float Upper)> _expressionSettings = new();
 
     // Expression parameter names
-    private readonly string[] EyeExpressionNames =
-    [
-        "/LeftEyeX",
-        "/LeftEyeY",
-        "/RightEyeX",
-        "/RightEyeY",
-        "/LeftEyeLid",
-        "/RightEyeLid",
-        "/BrowRaise",
-        "/BrowAngry",
-        "/EyeWiden",
-        "/EyeSquint",
-        "/EyeDilate"
-    ];
-
-    // Define all expression parameter names
-    private readonly string[] FaceExpressionNames =
+    private readonly Dictionary<string, string> _eyeExpressionMap = new()
     {
-        "/cheekPuffLeft",
-        "/cheekPuffRight",
-        "/cheekSuckLeft",
-        "/cheekSuckRight",
-        "/jawOpen",
-        "/jawForward",
-        "/jawLeft",
-        "/jawRight",
-        "/noseSneerLeft",
-        "/noseSneerRight",
-        "/mouthFunnel",
-        "/mouthPucker",
-        "/mouthLeft",
-        "/mouthRight",
-        "/mouthRollUpper",
-        "/mouthRollLower",
-        "/mouthShrugUpper",
-        "/mouthShrugLower",
-        "/mouthClose",
-        "/mouthSmileLeft",
-        "/mouthSmileRight",
-        "/mouthFrownLeft",
-        "/mouthFrownRight",
-        "/mouthDimpleLeft",
-        "/mouthDimpleRight",
-        "/mouthUpperUpLeft",
-        "/mouthUpperUpRight",
-        "/mouthLowerDownLeft",
-        "/mouthLowerDownRight",
-        "/mouthPressLeft",
-        "/mouthPressRight",
-        "/mouthStretchLeft",
-        "/mouthStretchRight",
-        "/tongueOut",
-        "/tongueUp",
-        "/tongueDown",
-        "/tongueLeft",
-        "/tongueRight",
-        "/tongueRoll",
-        "/tongueBendDown",
-        "/tongueCurlUp",
-        "/tongueSquish",
-        "/tongueFlat",
-        "/tongueTwistLeft",
-        "/tongueTwistRight"
+        { "/LeftEyeX", "/LeftEyeX" },
+        { "/LeftEyeY", "/LeftEyeY" },
+        { "/RightEyeX", "/RightEyeX" },
+        { "/RightEyeY", "/RightEyeY" },
+        { "/LeftEyeLid", "/LeftEyeLid" },
+        { "/RightEyeLid", "/RightEyeLid" },
+        { "/BrowRaise", "/BrowRaise" },
+        { "/BrowAngry", "/BrowAngry" },
+        { "/EyeWiden", "/EyeWiden" },
+        { "/EyeSquint", "/EyeSquint" },
+        { "/EyeDilate", "/EyeDilate" },
     };
 
-    // Mapping from parameter names to setting keys
-    private readonly Dictionary<string, string> _parameterToSettingMap = new()
+    private readonly Dictionary<string, string> _faceExpressionMap = new()
     {
-        { "/LeftEyeX", "LeftEyeX" },
-        { "/LeftEyeY", "LeftEyeY" },
-        { "/RightEyeX", "RightEyeX" },
-        { "/RightEyeY", "RightEyeY" },
-        { "/LeftEyeLid", "LeftEyeLid" },
-        { "/RightEyeLid", "RightEyeLid" },
-        { "/BrowRaise", "BrowRaise" },
-        { "/BrowAngry", "BrowAngry" },
-        { "/EyeWiden", "EyeWiden" },
-        { "/EyeSquint", "EyeSquint" },
-        { "/EyeDilate", "EyeDilate" },
-        { "/cheekPuffLeft", "CheekPuffLeft" },
-        { "/cheekPuffRight", "CheekPuffRight" },
-        { "/cheekSuckLeft", "CheekSuckLeft" },
-        { "/cheekSuckRight", "CheekSuckRight" },
-        { "/jawOpen", "JawOpen" },
-        { "/jawForward", "JawForward" },
-        { "/jawLeft", "JawLeft" },
-        { "/jawRight", "JawRight" },
-        { "/noseSneerLeft", "NoseSneerLeft" },
-        { "/noseSneerRight", "NoseSneerRight" },
-        { "/mouthFunnel", "MouthFunnel" },
-        { "/mouthPucker", "MouthPucker" },
-        { "/mouthLeft", "MouthLeft" },
-        { "/mouthRight", "MouthRight" },
-        { "/mouthRollUpper", "MouthRollUpper" },
-        { "/mouthRollLower", "MouthRollLower" },
-        { "/mouthShrugUpper", "MouthShrugUpper" },
-        { "/mouthShrugLower", "MouthShrugLower" },
-        { "/mouthClose", "MouthClose" },
-        { "/mouthSmileLeft", "MouthSmileLeft" },
-        { "/mouthSmileRight", "MouthSmileRight" },
-        { "/mouthFrownLeft", "MouthFrownLeft" },
-        { "/mouthFrownRight", "MouthFrownRight" },
-        { "/mouthDimpleLeft", "MouthDimpleLeft" },
-        { "/mouthDimpleRight", "MouthDimpleRight" },
-        { "/mouthUpperUpLeft", "MouthUpperUpLeft" },
-        { "/mouthUpperUpRight", "MouthUpperUpRight" },
-        { "/mouthLowerDownLeft", "MouthLowerDownLeft" },
-        { "/mouthLowerDownRight", "MouthLowerDownRight" },
-        { "/mouthPressLeft", "MouthPressLeft" },
-        { "/mouthPressRight", "MouthPressRight" },
-        { "/mouthStretchLeft", "MouthStretchLeft" },
-        { "/mouthStretchRight", "MouthStretchRight" },
-        { "/tongueOut", "TongueOut" },
-        { "/tongueUp", "TongueUp" },
-        { "/tongueDown", "TongueDown" },
-        { "/tongueLeft", "TongueLeft" },
-        { "/tongueRight", "TongueRight" },
-        { "/tongueRoll", "TongueRoll" },
-        { "/tongueBendDown", "TongueBendDown" },
-        { "/tongueCurlUp", "TongueCurlUp" },
-        { "/tongueSquish", "TongueSquish" },
-        { "/tongueFlat", "TongueFlat" },
-        { "/tongueTwistLeft", "TongueTwistLeft" },
-        { "/tongueTwistRight", "TongueTwistRight" }
+        { "CheekPuffLeft", "/cheekPuffLeft" },
+        { "CheekPuffRight", "/cheekPuffRight" },
+        { "CheekSuckLeft", "/cheekSuckLeft" },
+        { "CheekSuckRight", "/cheekSuckRight" },
+        { "JawOpen", "/jawOpen" },
+        { "JawForward", "/jawForward" },
+        { "JawLeft", "/jawLeft" },
+        { "JawRight", "/jawRight" },
+        { "NoseSneerLeft", "/noseSneerLeft" },
+        { "NoseSneerRight", "/noseSneerRight" },
+        { "MouthFunnel", "/mouthFunnel" },
+        { "MouthPucker", "/mouthPucker" },
+        { "MouthLeft", "/mouthLeft" },
+        { "MouthRight", "/mouthRight" },
+        { "MouthRollUpper", "/mouthRollUpper" },
+        { "MouthRollLower", "/mouthRollLower" },
+        { "MouthShrugUpper", "/mouthShrugUpper" },
+        { "MouthShrugLower", "/mouthShrugLower" },
+        { "MouthClose", "/mouthClose" },
+        { "MouthSmileLeft", "/mouthSmileLeft" },
+        { "MouthSmileRight", "/mouthSmileRight" },
+        { "MouthFrownLeft", "/mouthFrownLeft" },
+        { "MouthFrownRight", "/mouthFrownRight" },
+        { "MouthDimpleLeft", "/mouthDimpleLeft" },
+        { "MouthDimpleRight", "/mouthDimpleRight" },
+        { "MouthUpperUpLeft", "/mouthUpperUpLeft" },
+        { "MouthUpperUpRight", "/mouthUpperUpRight" },
+        { "MouthLowerDownLeft", "/mouthLowerDownLeft" },
+        { "MouthLowerDownRight", "/mouthLowerDownRight" },
+        { "MouthPressLeft", "/mouthPressLeft" },
+        { "MouthPressRight", "/mouthPressRight" },
+        { "MouthStretchLeft", "/mouthStretchLeft" },
+        { "MouthStretchRight", "/mouthStretchRight" },
+        { "TongueOut", "/tongueOut" },
+        { "TongueUp", "/tongueUp" },
+        { "TongueDown", "/tongueDown" },
+        { "TongueLeft", "/tongueLeft" },
+        { "TongueRight", "/tongueRight" },
+        { "TongueRoll", "/tongueRoll" },
+        { "TongueBendDown", "/tongueBendDown" },
+        { "TongueCurlUp", "/tongueCurlUp" },
+        { "TongueSquish", "/tongueSquish" },
+        { "TongueFlat", "/tongueFlat" },
+        { "TongueTwistLeft", "/tongueTwistLeft" },
+        { "TongueTwistRight", "/tongueTwistRight" }
     };
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         // Subscribe to property changes
-        CalibrationViewModel.ExpressionUpdated += OnFaceCalibrationPropertyChanged;
+        CalibrationViewModel.ExpressionUpdated += OnCalibrationPropertyChanged;
 
         // Load initial settings
         await LoadInitialSettings();
@@ -195,118 +129,86 @@ public class ParameterSenderService(
         finally
         {
             // Unsubscribe when done
-            CalibrationViewModel.ExpressionUpdated -= OnFaceCalibrationPropertyChanged;
+            CalibrationViewModel.ExpressionUpdated -= OnCalibrationPropertyChanged;
         }
     }
 
     private async Task LoadInitialSettings()
     {
         // Load all initial settings into cache
-        var allParameterNames = EyeExpressionNames.Concat(FaceExpressionNames);
+        var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
 
         foreach (var parameterName in allParameterNames)
         {
-            if (_parameterToSettingMap.TryGetValue(parameterName, out var settingKey))
-            {
-                var lower = await localSettingsService.ReadSettingAsync<float>($"{settingKey}Lower");
-                var upper = await localSettingsService.ReadSettingAsync<float>($"{settingKey}Upper");
+            var lower = await localSettingsService.ReadSettingAsync<float>($"{parameterName}Lower");
+            var upper = await localSettingsService.ReadSettingAsync<float>($"{parameterName}Upper");
 
-                lock (_settingsLock)
-                {
-                    _expressionSettings[parameterName] = (lower, upper);
-                }
-            }
+            _expressionSettings[parameterName] = (lower, upper);
         }
     }
 
-    private void OnFaceCalibrationPropertyChanged(string expression)
+    private void OnCalibrationPropertyChanged(string expression, float value)
     {
         if (string.IsNullOrEmpty(expression))
             return;
 
         // Parse property name to extract parameter and bound type
         // Assuming property names follow pattern like "LeftEyeXLower" or "LeftEyeXUpper"
-        string parameterKey = string.Empty;
+        string parameterName = string.Empty;
         bool isUpper = false;
 
         if (expression.EndsWith("Lower"))
         {
-            parameterKey = expression.Substring(0, expression.Length - 5); // Remove "Lower"
+            parameterName = expression.Substring(0, expression.Length - 5); // Remove "Lower"
             isUpper = false;
         }
         else if (expression.EndsWith("Upper"))
         {
-            parameterKey = expression.Substring(0, expression.Length - 5); // Remove "Upper"
+            parameterName = expression.Substring(0, expression.Length - 5); // Remove "Upper"
             isUpper = true;
         }
 
-        if (parameterKey == null)
-            return;
-
-        // Find the corresponding parameter name
-        var parameterName = _parameterToSettingMap.FirstOrDefault(kvp => kvp.Value == parameterKey).Key;
-        if (parameterName == null)
-            return;
-
-        // Get the new value from the view model
-        var newValue = GetPropertyValue(calibrationViewModel, expression);
-        if (newValue is float floatValue)
+        if (_expressionSettings.TryGetValue(parameterName, out var currentSettings))
         {
-            lock (_settingsLock)
+            if (isUpper)
             {
-                if (_expressionSettings.TryGetValue(parameterName, out var currentSettings))
-                {
-                    if (isUpper)
-                    {
-                        _expressionSettings[parameterName] = (currentSettings.Lower, floatValue);
-                    }
-                    else
-                    {
-                        _expressionSettings[parameterName] = (floatValue, currentSettings.Upper);
-                    }
-                }
-                else
-                {
-                    // If not found, create new entry with default for the other bound
-                    if (isUpper)
-                    {
-                        _expressionSettings[parameterName] = (0f, floatValue);
-                    }
-                    else
-                    {
-                        _expressionSettings[parameterName] = (floatValue, 1f);
-                    }
-                }
+                _expressionSettings[parameterName] = (currentSettings.Lower, value);
+            }
+            else
+            {
+                _expressionSettings[parameterName] = (value, currentSettings.Upper);
+            }
+        }
+        else
+        {
+            // If not found, create new entry with default for the other bound
+            if (isUpper)
+            {
+                _expressionSettings[parameterName] = (0f, value);
+            }
+            else
+            {
+                _expressionSettings[parameterName] = (value, 1f);
             }
         }
     }
 
-    private object GetPropertyValue(object obj, string propertyName)
-    {
-        var propertyInfo = obj.GetType().GetProperty(propertyName);
-        return propertyInfo?.GetValue(obj)!;
-    }
-
     private (float Lower, float Upper) GetExpressionSettings(string parameterName)
     {
-        lock (_settingsLock)
-        {
-            return _expressionSettings.TryGetValue(parameterName, out var settings) ? settings : (0f, 1f);
-        }
+        return _expressionSettings.TryGetValue(parameterName, out var settings) ? settings : (0f, 1f);
     }
 
     private void ProcessEyeExpressionData(float[] expressions, string prefix = "")
     {
-        if (expressions is null) return;
         if (expressions.Length == 0) return;
 
         // Process each expression and create OSC messages
-        for (int i = 0; i < Math.Min(expressions.Length, EyeExpressionNames.Length); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, _eyeExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = GetExpressionSettings(EyeExpressionNames[i]);
+            var settings = GetExpressionSettings(_eyeExpressionMap.ElementAt(i).Key);
 
-            var msg = new OscMessage(prefix + EyeExpressionNames[i],
+            var msg = new OscMessage(prefix + _eyeExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
                     0,
@@ -317,16 +219,15 @@ public class ParameterSenderService(
 
     private void ProcessFaceExpressionData(float[] expressions, string prefix = "")
     {
-        if (expressions is null) return;
         if (expressions.Length == 0) return;
 
         // Process each expression and create OSC messages
-        for (int i = 0; i < Math.Min(expressions.Length, FaceExpressionNames.Length); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, _faceExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = GetExpressionSettings(FaceExpressionNames[i]);
+            var settings = GetExpressionSettings(_faceExpressionMap.ElementAt(i).Key);
 
-            var msg = new OscMessage(prefix + FaceExpressionNames[i],
+            var msg = new OscMessage(prefix + _faceExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
                     0,
