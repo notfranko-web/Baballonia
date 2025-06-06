@@ -46,7 +46,7 @@ public class BabbleVrc : ExtTrackingModule
 
         UnifiedTracking.Data.Eye.Right.Gaze.x = BabbleOsc.EyeExpressions[(int)ExpressionMapping.RightEyeX];
         UnifiedTracking.Data.Eye.Right.Gaze.y = BabbleOsc.EyeExpressions[(int)ExpressionMapping.RightEyeY];
-        UnifiedTracking.Data.Eye.Left.Openness = BabbleOsc.EyeExpressions[(int)ExpressionMapping.RightEyeLid];
+        UnifiedTracking.Data.Eye.Right.Openness = BabbleOsc.EyeExpressions[(int)ExpressionMapping.RightEyeLid];
         UnifiedTracking.Data.Shapes[(int)UnifiedExpressions.EyeWideRight].Weight = BabbleOsc.EyeExpressions[(int)ExpressionMapping.EyeWiden];
         UnifiedTracking.Data.Shapes[(int)UnifiedExpressions.EyeSquintRight].Weight = BabbleOsc.EyeExpressions[(int)ExpressionMapping.EyeSquint];
         UnifiedTracking.Data.Shapes[(int)UnifiedExpressions.BrowLowererRight].Weight = BabbleOsc.EyeExpressions[(int)ExpressionMapping.BrowAngry];
