@@ -3,12 +3,13 @@ using Baballonia.Models;
 using Baballonia.Contracts;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using System;
+using System.Threading.Tasks;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
 public partial class CalibrationViewModel : ViewModelBase
 {
-    public static event Action<string> ExpressionUpdated;
+    public static event Action<string, float> ExpressionUpdated;
 
     [ObservableProperty] [property: SavedSetting("LeftEyeXLower", -1f)] private float _leftEyeXLower;
     [ObservableProperty] [property: SavedSetting("LeftEyeYLower", 1f)] private float _leftEyeYLower;
@@ -158,16 +159,21 @@ public partial class CalibrationViewModel : ViewModelBase
     [ObservableProperty] [property: SavedSetting("TongueTwistRightUpper", 1f)] private float _tongueTwistRightUpper;
 
     private ILocalSettingsService _settingsService { get; }
-
+    
     public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         _settingsService.Load(this);
 
-        PropertyChanged += (o, p) =>
+        PropertyChanged += async (o, p) =>
         {
-            ExpressionUpdated?.Invoke(p.PropertyName!);
-            _settingsService.Save(this);
+            var propertyInfo = GetType().GetProperty(p.PropertyName!);
+            object value = propertyInfo?.GetValue(this)!;
+            if (value is float floatValue)
+            {
+                await _settingsService.SaveSettingAsync(p.PropertyName!, floatValue);
+                ExpressionUpdated?.Invoke(p.PropertyName!, floatValue);
+            }
         };
     }
 

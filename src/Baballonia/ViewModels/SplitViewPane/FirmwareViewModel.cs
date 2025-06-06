@@ -243,7 +243,7 @@ public partial class FirmwareViewModel : ViewModelBase
         }
     }
 
-    private async void SendDeviceWifiCredentials()
+    private void SendDeviceWifiCredentials()
     {
         Dispatcher.UIThread.Post(() => IsFlashing = true);
         _firmwareService.SetWirelessCredentials(SelectedSerialPort!, WifiSsid, WifiPassword);

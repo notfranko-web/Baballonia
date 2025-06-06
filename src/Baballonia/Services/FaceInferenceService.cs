@@ -19,6 +19,9 @@ namespace Baballonia.Services;
 public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
     : InferenceService(logger, settingsService), IFaceInferenceService
 {
+    private readonly ILogger<InferenceService> _logger = logger;
+    private readonly ILocalSettingsService _settingsService = settingsService;
+
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
         = new (PlatformSettings settings, PlatformConnector connector)[1];
 
@@ -29,14 +32,14 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     {
         Task.Run(async () =>
         {
-            logger.LogInformation("Starting Face Inference Service...");
+            _logger.LogInformation("Starting Face Inference Service...");
 
             SessionOptions sessionOptions = SetupSessionOptions();
             await ConfigurePlatformSpecificGpu(sessionOptions);
 
-            var minCutoff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+            var minCutoff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
             if (minCutoff == 0f) minCutoff = 1f;
-            var speedCoeff = await settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+            var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
             if (speedCoeff == 0f) speedCoeff = 1f;
 
             const string modelName = "faceModel.onnx";
@@ -58,7 +61,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
             PlatformConnectors[(int)camera] = (platformSettings, null)!;
             ConfigurePlatformConnectors(camera, cameraAddress);
 
-            logger.LogInformation("Face Inference started!");
+            _logger.LogInformation("Face Inference started!");
         });
     }
 

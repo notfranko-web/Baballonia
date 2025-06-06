@@ -93,11 +93,11 @@ public class VrCalibrationService : IVrService, IDisposable
         }
 
         // Check if SteamVR is running. The VR programs need it!
-        if (!Process.GetProcesses().Any(p => p.ProcessName.ToLower().Contains("vrserver")))
+        /*if (!Process.GetProcesses().Any(p => p.ProcessName.ToLower().Contains("vrserver")))
         {
             _logger.LogError("SteamVR is not running. Required for VR operations.");
             return false;
-        }
+        }*/
 
         var startInfo = new ProcessStartInfo
         {

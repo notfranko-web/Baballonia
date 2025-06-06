@@ -73,7 +73,7 @@ public sealed class OpenCvCapture : Capture
         }
         else if (OperatingSystem.IsLinux())
         {
-            PreferredBackend = VideoCaptureAPIs.V4L2;
+            PreferredBackend = VideoCaptureAPIs.GSTREAMER;
         }
         else if (OperatingSystem.IsMacOS())
         {
