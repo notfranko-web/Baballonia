@@ -1,6 +1,6 @@
-﻿namespace Baballonia.Calibration;
+﻿namespace Baballonia.Helpers;
 
-public static class CalibrationRoutine
+public class CalibrationRoutine
 {
     public const string BasicCalibration       = "0";
     public const string ExtendedCalibration    = "1";

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Baballonia.Services.Overlay;
+namespace Baballonia.Desktop.Calibration.Aero.Overlay;
 
 public class ProcessOutputEventArgs : EventArgs
 {

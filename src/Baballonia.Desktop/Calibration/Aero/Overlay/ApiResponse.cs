@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Baballonia.Services.Overlay;
+namespace Baballonia.Desktop.Calibration.Aero.Overlay;
 
 public class ApiResponse
 {

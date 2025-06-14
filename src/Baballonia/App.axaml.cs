@@ -55,7 +55,7 @@ public class App : Application
         DataTemplates.Add(locator);
 
         var hostBuilder = Host.CreateDefaultBuilder().
-            ConfigureServices((context, services) =>
+            ConfigureServices((_, services) =>
             {
                 services.AddLogging(logging =>
                 {
@@ -75,7 +75,6 @@ public class App : Application
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
                 services.AddSingleton<IEyeInferenceService, EyeInferenceService>();
                 services.AddSingleton<IFaceInferenceService, FaceInferenceService>();
-                services.AddSingleton<IVrService, VrCalibrationService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
@@ -146,6 +145,10 @@ public class App : Application
         _host = hostBuilder.Build();
         Ioc.Default.ConfigureServices(_host.Services);
 
+
+        HomePageView.Overlay = CreatePlatformInstance<IVROverlay>(nameof(IVROverlay));
+        HomePageView.Calibrator = CreatePlatformInstance<IVRCalibrator>(nameof(IVRCalibrator));
+
         Assembly assembly = Assembly.GetExecutingAssembly();
         Version version = assembly.GetName().Version!;
         var logger = Ioc.Default.GetService<ILogger<MainWindow>>();
@@ -177,7 +180,7 @@ public class App : Application
 
     private void OnShutdown(object? sender, EventArgs e)
     {
-        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime) return;
 
         var vrcft = Ioc.Default.GetRequiredService<IMainService>();
         Task.Run(vrcft.Teardown);
@@ -195,5 +198,53 @@ public class App : Application
         {
             desktop.Shutdown();
         }
+    }
+
+    private static T CreatePlatformInstance<T>(string typeName) where T : class
+    {
+        var implementationType = FindPlatformImplementation(typeName);
+        return (T)Activator.CreateInstance(implementationType)!;
+    }
+
+    private static Type FindPlatformImplementation(string typeName)
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        var implementations = assemblies
+            .SelectMany(assembly => {
+                try
+                {
+                    return assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    return ex.Types.Where(t => t != null);
+                }
+            })
+            .Where(type =>
+                type is { IsAbstract: false, IsInterface: false } &&
+                ImplementsInterface(type, typeName))
+            .ToList();
+
+        // Ensure exactly one implementation exists
+        if (implementations.Count == 0)
+        {
+            throw new InvalidOperationException($"No implementation of {typeName} found in the application.");
+        }
+
+        if (implementations.Count > 1)
+        {
+            var implementationNames = string.Join(", ", implementations.Select(t => t!.FullName));
+            throw new InvalidOperationException(
+                $"Multiple implementations of {typeName} found: {implementationNames}. Expected exactly one implementation.");
+        }
+
+        return implementations.Single()!;
+    }
+
+    private static bool ImplementsInterface(Type type, string interfaceName)
+    {
+        return type.GetInterfaces()
+            .Any(i => i.Name == interfaceName);
     }
 }

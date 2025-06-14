@@ -8,7 +8,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Baballonia.Calibration;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
 using Baballonia.Models;
@@ -23,7 +22,8 @@ namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
-    public static bool ForceInference;
+    public static IVROverlay Overlay;
+    public static IVRCalibrator Calibrator;
 
     public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
         AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
@@ -52,13 +52,13 @@ public partial class HomePageView : UserControl
         set => SetValue(IsFaceTrackingModeProperty, value);
     }
 
+
     private CameraController LeftCameraController { get; set; }
     private CameraController RightCameraController { get; set; }
     private CameraController FaceCameraController { get; set; }
 
     private readonly IEyeInferenceService _eyeInferenceService;
     private readonly IFaceInferenceService _faceInferenceService;
-    private readonly IVrService _vrService;
     private readonly HomePageViewModel _viewModel;
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -99,7 +99,6 @@ public partial class HomePageView : UserControl
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
         _eyeInferenceService = Ioc.Default.GetService<IEyeInferenceService>()!;
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
-        _vrService = Ioc.Default.GetService<IVrService>()!;
         _localSettingsService.Load(this);
 
         try
@@ -330,63 +329,14 @@ public partial class HomePageView : UserControl
         await FaceCameraController.SelectEntireFrame();
     }
 
-    private async void OnVRCalibrationRequested(object? sender, RoutedEventArgs e)
+    private async void OnQuickVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        const int leftPort = 8080;
-        const int rightPort = 8081;
-        var modelPath = Directory.GetCurrentDirectory();
+        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+    }
 
-        var vrCalibration = new VrCalibration
-        {
-            ModelSavePath = modelPath,
-            CalibrationInstructions = CalibrationRoutine.HorizontalSweep,
-            FOV = 1f,
-            LeftEyeMjpegSource = $"http://localhost:{leftPort}/mjpeg",
-            RightEyeMjpegSource = $"http://localhost:{rightPort}/mjpeg",
-        };
-
-        // Now for the IPC. Spool up our MJPEG streams
-        LeftCameraController.StartMjpegStreaming(leftPort);
-        RightCameraController.StartMjpegStreaming(rightPort);
-
-        // First tell the subprocess to accept our streams, then start calibration
-        await _vrService.StartOverlay();
-        await _vrService.StartCamerasAsync(vrCalibration);
-        await _vrService.StartCalibrationAsync(vrCalibration);
-
-        // Wait for the process to exit
-        var loop = true;
-        while (loop)
-        {
-            var status = await _vrService.GetStatusAsync();
-            if (status.IsTrained)
-            {
-                loop = false;
-            }
-
-            await Task.Delay(1000);
-        }
-
-        // Stop the MJPEG streams, we don't need them anymore
-        LeftCameraController.StopMjpegStreaming();
-        RightCameraController.StopMjpegStreaming();
-        _vrService.StopOverlay();
-
-        // Save the location of the model so when we boot up the app it autoloads
-        const string modelName = "tuned_temporal_eye_tracking.onnx";
-        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", modelName);
-
-        // Cleanup any leftover capture.bin files
-        DeleteCaptureFiles(modelPath);
-
-        SessionOptions sessionOptions = _eyeInferenceService.SetupSessionOptions();
-        await _eyeInferenceService.ConfigurePlatformSpecificGpu(sessionOptions);
-
-        // Finally, close any open eye cameras. The inference service will spin these up
-        LeftCameraController.StopCamera();
-        RightCameraController.StopCamera();
-        _eyeInferenceService.SetupInference(Camera.Left, _viewModel.LeftCameraAddress);
-        _eyeInferenceService.SetupInference(Camera.Right,_viewModel.RightCameraAddress);
+    private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
+    {
+        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)
@@ -425,21 +375,5 @@ public partial class HomePageView : UserControl
         }
 
         hint.IsVisible = showHint;
-    }
-
-    public static void DeleteCaptureFiles(string directoryPath)
-    {
-        // Validate directory exists
-        if (!Directory.Exists(directoryPath))
-            return;
-
-        // Get all files matching the capture pattern
-        string[] filesToDelete = Directory.GetFiles(directoryPath, "capture.bin");
-
-        // Delete each file
-        foreach (string file in filesToDelete)
-        {
-            File.Delete(file);
-        }
     }
 }
