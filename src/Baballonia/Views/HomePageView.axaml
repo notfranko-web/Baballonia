@@ -13,39 +13,42 @@
 
     <ScrollViewer>
         <StackPanel Margin="16" Classes="Page">
+
             <Grid Margin="0,0,0,12" ColumnDefinitions="*,Auto">
                 <TextBlock
                     Grid.Column="0"
                     Classes="Header"
                     FontSize="28"
                     Text="Home" />
-                <StackPanel
+                <SplitButton
+                    x:Name="SplitCalibrationButton"
                     Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="12">
-                    <Button
-                        Padding="12,8"
-                        Click="OnQuickVRCalibrationRequested"
-                        CornerRadius="4"
-                        IsEnabled="{Binding ShouldShowEyeCalibration}"
-                        IsVisible="{Binding ShouldShowEyeCalibration}">
+                    Padding="12,8"
+                    Click="OnQuickVRCalibrationRequested"
+                    CornerRadius="4"
+                    IsEnabled="{Binding ShouldShowEyeCalibration}"
+                    IsVisible="{Binding ShouldShowEyeCalibration}">
+                    <SplitButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <PathIcon Data="{StaticResource HeadsetVrRegular}" />
-                            <TextBlock VerticalAlignment="Center" Text="5-Point Quick Calibration" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding SelectedCalibrationText}" />
                         </StackPanel>
-                    </Button>
-                    <Button
-                        Padding="12,8"
-                        Click="OnFullVRCalibrationRequested"
-                        CornerRadius="4"
-                        IsEnabled="{Binding ShouldShowEyeCalibration}"
-                        IsVisible="{Binding ShouldShowEyeCalibration}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <PathIcon Data="{StaticResource HeadsetVrRegular}" />
-                            <TextBlock VerticalAlignment="Center" Text="Full Calibration" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                    </SplitButton.Content>
+                    <SplitButton.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Click="OnQuickVRCalibrationRequested" Header="5-Point Quick Calibration">
+                                <MenuItem.Icon>
+                                    <PathIcon Data="{StaticResource HeadsetVrRegular}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Click="OnFullVRCalibrationRequested" Header="Full Calibration">
+                                <MenuItem.Icon>
+                                    <PathIcon Data="{StaticResource HeadsetVrRegular}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </SplitButton.Flyout>
+                </SplitButton>
             </Grid>
 
             <UniformGrid

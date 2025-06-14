@@ -19,6 +19,7 @@ public partial class HomePageViewModel : ViewModelBase
     public WriteableBitmap FaceBitmap { get; set; }
 
     [ObservableProperty] public bool _shouldShowEyeCalibration;
+    [ObservableProperty] public string _selectedCalibrationText;
 
     [ObservableProperty]
     [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]

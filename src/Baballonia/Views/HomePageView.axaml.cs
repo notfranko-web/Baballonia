@@ -213,6 +213,11 @@ public partial class HomePageView : UserControl
 
     private void CamView_OnLoaded(object? sender, RoutedEventArgs e)
     {
+        if (DataContext is HomePageViewModel viewModel)
+        {
+            viewModel.SelectedCalibrationText = "Full Calibration";
+        }
+        
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
@@ -331,11 +336,21 @@ public partial class HomePageView : UserControl
 
     private async void OnQuickVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
+        if (DataContext is HomePageViewModel viewModel)
+        {
+            viewModel.SelectedCalibrationText = "5-Point Quick Calibration";
+        }
+
         await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
+        if (DataContext is HomePageViewModel viewModel)
+        {
+            viewModel.SelectedCalibrationText = "Full Calibration";
+        }
+
         await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
