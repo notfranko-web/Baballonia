@@ -13,9 +13,9 @@ namespace Baballonia.Desktop.Calibration.Aero;
 
 public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDisposable
 {
-    private static string Overlay { get; }
-    private static string Trainer { get; }
-    private static string OverlayPath { get; }
+    private static string Overlay { get; } = null!;
+    private static string Trainer { get; } = null!;
+    private static string OverlayPath { get; } = null!;
 
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
@@ -133,7 +133,7 @@ public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDispo
                 _activeProcesses.Remove(processName);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -151,7 +151,7 @@ public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDispo
                     runningProcess.Dispose();
                     return true;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return false;
                 }
@@ -174,7 +174,7 @@ public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDispo
                 }
                 process.Dispose();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // ignore
             }

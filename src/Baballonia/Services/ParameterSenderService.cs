@@ -219,6 +219,7 @@ public class ParameterSenderService(
 
     private void ProcessFaceExpressionData(float[] expressions, string prefix = "")
     {
+        if (expressions == null) return;
         if (expressions.Length == 0) return;
 
         // Process each expression and create OSC messages

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using OpenCvSharp;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Services.Inference;
 
 /// <summary>
 /// Defines custom camera stream behavior
