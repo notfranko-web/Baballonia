@@ -13,8 +13,6 @@ namespace Baballonia.Services;
 
 public abstract class InferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService)
 {
-    public static Type PlatformConnectorType;
-
     public abstract (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
 
     protected readonly Stopwatch sw = Stopwatch.StartNew();
@@ -64,7 +62,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// </summary>
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex)
     {
-        var platformConnector = Activator.CreateInstance(PlatformConnectorType, cameraIndex, logger, settingsService)!;
+        var platformConnector = Activator.CreateInstance(App.PlatformConnectorType, cameraIndex, logger, settingsService)!;
         PlatformConnectors[(int)camera].Item2 = (PlatformConnector)platformConnector;
         PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
     }

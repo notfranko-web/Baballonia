@@ -5,29 +5,18 @@ using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Management;
 using System.Runtime.Versioning;
+using Baballonia.Contracts;
 using OpenCvSharp;
 
 namespace Baballonia.Helpers;
 
-public static class DeviceEnumerator
+public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
 {
-    public static Dictionary<string, string> Cameras { get; private set; }
-
-    static DeviceEnumerator()
-    {
-        UpdateCameras();
-    }
-
-    public static void UpdateCameras()
-    {
-        Cameras = ListCameras();
-    }
-
     /// <summary>
     /// Lists available cameras with friendly names as dictionary keys and device identifiers as values.
     /// </summary>
     /// <returns>Dictionary with friendly names as keys and device IDs as values</returns>
-    public static Dictionary<string, string> ListCameras()
+    public Dictionary<string, string> GetCameras()
     {
         Dictionary<string, string> cameraDict = new Dictionary<string, string>();
 
@@ -57,8 +46,7 @@ public static class DeviceEnumerator
         return cameraDict;
     }
 
-    // Use OpenCVSharp to detect available cameras
-    private static void AddOpenCvCameras(Dictionary<string, string> cameraDict)
+    private void AddOpenCvCameras(Dictionary<string, string> cameraDict)
     {
         int index = 0;
 
@@ -89,7 +77,7 @@ public static class DeviceEnumerator
     }
 
     [SupportedOSPlatform("windows")]
-    private static void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
+    private void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
     {
         try
         {
@@ -128,8 +116,32 @@ public static class DeviceEnumerator
         }
     }
 
+    [SupportedOSPlatform("windows")]
+    private string? GetSerialPortFriendlyName(string portName)
+    {
+        if (!OperatingSystem.IsWindows())
+            return null;
+
+        try
+        {
+            using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%({portName})%'");
+            using var collection = searcher.Get();
+
+            foreach (var device in collection)
+            {
+                return device["Caption"]?.ToString();
+            }
+        }
+        catch
+        {
+            // Fall back to port name if WMI fails
+        }
+
+        return null;
+    }
+
     [SupportedOSPlatform("linux")]
-    private static void AddLinuxUvcDevices(Dictionary<string, string> cameraDict)
+    private void AddLinuxUvcDevices(Dictionary<string, string> cameraDict)
     {
         [DllImport("libudev.so")] static extern IntPtr udev_new();
         [DllImport("libudev.so")] static extern IntPtr udev_unref(IntPtr udev);
@@ -234,7 +246,7 @@ public static class DeviceEnumerator
         }
     }
 
-    private static void AddSerialPorts(Dictionary<string, string> cameraDict)
+    private void AddSerialPorts(Dictionary<string, string> cameraDict)
     {
         try
         {
@@ -277,31 +289,7 @@ public static class DeviceEnumerator
         }
     }
 
-    [SupportedOSPlatform("windows")]
-    private static string? GetSerialPortFriendlyName(string portName)
-    {
-        if (!OperatingSystem.IsWindows())
-            return null;
-
-        try
-        {
-            using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%({portName})%'");
-            using var collection = searcher.Get();
-
-            foreach (var device in collection)
-            {
-                return device["Caption"]?.ToString();
-            }
-        }
-        catch
-        {
-            // Fall back to port name if WMI fails
-        }
-
-        return null;
-    }
-
-    private static void EnsureUniqueKey(Dictionary<string, string> dict, string key, string value)
+    private void EnsureUniqueKey(Dictionary<string, string> dict, string key, string value)
     {
         string uniqueKey = key;
         int counter = 1;

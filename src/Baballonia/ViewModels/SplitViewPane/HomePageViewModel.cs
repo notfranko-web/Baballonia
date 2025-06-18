@@ -175,7 +175,7 @@ public partial class HomePageViewModel : ViewModelBase
 
     private void UpdateCameraAddress(string displayedAddress, Action<string> updateAction)
     {
-        if (DeviceEnumerator.Cameras.TryGetValue(displayedAddress, out var deviceAddress))
+        if (App.DeviceEnumerator.GetCameras().TryGetValue(displayedAddress, out var deviceAddress))
         {
             updateAction(deviceAddress);
         }

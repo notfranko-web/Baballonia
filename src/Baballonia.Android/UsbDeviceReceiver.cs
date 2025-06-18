@@ -7,7 +7,7 @@ using System;
 namespace Baballonia.Android.Receivers;
 
 [BroadcastReceiver(Enabled = true, Exported = true, Label = "USB Device Broadcast Receiver")]
-[IntentFilter(new[] { UsbManager.ActionUsbDeviceAttached, UsbManager.ActionUsbDeviceDetached })]
+[IntentFilter([UsbManager.ActionUsbDeviceAttached, UsbManager.ActionUsbDeviceDetached])]
 public class UsbDeviceReceiver : BroadcastReceiver
 {
     public static event Action<UsbDevice, bool> DeviceStateChanged; // device, isAttached

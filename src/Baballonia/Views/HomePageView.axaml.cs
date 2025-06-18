@@ -22,9 +22,6 @@ namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
-    public static IVROverlay Overlay;
-    public static IVRCalibrator Calibrator;
-
     public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
         AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
 
@@ -103,7 +100,7 @@ public partial class HomePageView : UserControl
 
         try
         {
-            var cameraDevices = DeviceEnumerator.ListCameras();
+            var cameraDevices = App.DeviceEnumerator.GetCameras();
 
             var cameraEntries = cameraDevices.Keys;
             LeftCameraAddressEntry.ItemsSource = cameraEntries;
@@ -217,7 +214,7 @@ public partial class HomePageView : UserControl
         {
             viewModel.SelectedCalibrationText = "Full Calibration";
         }
-        
+
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
@@ -231,7 +228,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -268,7 +265,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -305,7 +302,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -341,7 +338,7 @@ public partial class HomePageView : UserControl
             viewModel.SelectedCalibrationText = "5-Point Quick Calibration";
         }
 
-        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
@@ -351,7 +348,7 @@ public partial class HomePageView : UserControl
             viewModel.SelectedCalibrationText = "Full Calibration";
         }
 
-        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)

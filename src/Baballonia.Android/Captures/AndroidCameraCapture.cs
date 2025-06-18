@@ -9,9 +9,7 @@ using Android.Util;
 using Android.Views;
 using Baballonia.Services.Inference;
 using Java.Lang;
-using Java.Net;
 using OpenCvSharp;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Exception = System.Exception;
@@ -19,10 +17,10 @@ using Exception = System.Exception;
 namespace Baballonia.Android.Captures;
 
 /// <summary>
-/// Android UVC Camera implementation for Capture
-/// Uses Android's Camera2 API with UVC device support
+/// Android Camera implementation for Capture
+/// Uses Android's Camera2 API
 /// </summary>
-public class AndroidUVCCapture : Capture
+public class AndroidCameraCapture : Capture
 {
     private readonly Context _context;
     private UsbManager _usbManager;
@@ -56,7 +54,7 @@ public class AndroidUVCCapture : Capture
         }
     }
 
-    public AndroidUVCCapture(string url) : base(url)
+    public AndroidCameraCapture(string url) : base(url)
     {
         _context = Application.Context;
         _usbManager = (UsbManager)_context.GetSystemService(Context.UsbService);
@@ -76,17 +74,10 @@ public class AndroidUVCCapture : Capture
             // Start background thread for camera operations
             StartBackgroundThread();
 
-            // Try to find and connect to UVC device
-            if (!await ConnectToUVCDevice())
-            {
-                Log.Error("AndroidUVCClass", "Failed to connect to UVC device");
-                return false;
-            }
-
             // Setup camera capture
             if (!await SetupCameraCapture())
             {
-                Log.Error("AndroidUVCClass", "Failed to setup camera capture");
+                Log.Error("AndroidCameraClass", "Failed to setup camera capture");
                 return false;
             }
 
@@ -96,7 +87,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error starting capture: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error starting capture: {ex.Message}");
             return false;
         }
     }
@@ -131,70 +122,9 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error stopping capture: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error stopping capture: {ex.Message}");
             return false;
         }
-    }
-
-    private async Task<bool> ConnectToUVCDevice()
-    {
-        try
-        {
-            // Find UVC devices
-            var deviceList = _usbManager.DeviceList;
-
-            foreach (var device in deviceList.Values)
-            {
-                // Check if this is a UVC device (Video class)
-                if (IsUVCDevice(device))
-                {
-                    _usbDevice = device;
-                    break;
-                }
-            }
-
-            if (_usbDevice == null)
-            {
-                Log.Error("AndroidUVCClass", "No UVC device found");
-                return false;
-            }
-
-            // Request permission and connect
-            if (!_usbManager.HasPermission(_usbDevice))
-            {
-                // In a real implementation, you would request permission here
-                Log.Error("AndroidUVCClass", "No permission for USB device");
-                return false;
-            }
-
-            _usbConnection = _usbManager.OpenDevice(_usbDevice);
-            if (_usbConnection == null)
-            {
-                Log.Error("AndroidUVCClass", "Failed to open USB device");
-                return false;
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Error("AndroidUVCClass", $"Error connecting to UVC device: {ex.Message}");
-            return false;
-        }
-    }
-
-    private bool IsUVCDevice(UsbDevice device)
-    {
-        // Check if device has Video class interface (class 14)
-        for (int i = 0; i < device.InterfaceCount; i++)
-        {
-            var usbInterface = device.GetInterface(i);
-            if (usbInterface.InterfaceClass == UsbClass.Video)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private async Task<bool> SetupCameraCapture()
@@ -210,8 +140,6 @@ public class AndroidUVCCapture : Capture
 
             _imageReader.SetOnImageAvailableListener(new ImageAvailableListener(this), _backgroundHandler);
 
-            // For UVC devices, we might need to use external camera ID
-            // This is a simplified approach - in practice you'd need to enumerate UVC cameras
             var cameraIds = _cameraManager.GetCameraIdList();
 
             // Fallback to first available camera
@@ -222,7 +150,7 @@ public class AndroidUVCCapture : Capture
                 if (int.TryParse(Url, out var index))
                 {
                     var clampedIndex = System.Math.Clamp(index, 0, cameraIds.Length);
-                    targetCameraId = cameraIds[index];
+                    targetCameraId = cameraIds[clampedIndex];
                 }
                 else
                 {
@@ -232,7 +160,7 @@ public class AndroidUVCCapture : Capture
 
             if (string.IsNullOrEmpty(targetCameraId))
             {
-                Log.Error("AndroidUVCClass", "No camera found");
+                Log.Error("AndroidCameraClass", "No camera found");
                 return false;
             }
 
@@ -247,7 +175,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error setting up camera capture: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error setting up camera capture: {ex.Message}");
             return false;
         }
     }
@@ -270,7 +198,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (InterruptedException ex)
         {
-            Log.Error("AndroidUVCClass", $"Error stopping background thread: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error stopping background thread: {ex.Message}");
         }
     }
 
@@ -303,7 +231,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error creating capture session: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error creating capture session: {ex.Message}");
         }
     }
 
@@ -321,7 +249,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error starting capture: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error starting capture: {ex.Message}");
         }
     }
 
@@ -341,7 +269,7 @@ public class AndroidUVCCapture : Capture
         }
         catch (Exception ex)
         {
-            Log.Error("AndroidUVCClass", $"Error processing image: {ex.Message}");
+            Log.Error("AndroidCameraClass", $"Error processing image: {ex.Message}");
         }
         finally
         {
@@ -396,9 +324,9 @@ public class AndroidUVCCapture : Capture
     // Callback classes
     private class CameraStateCallback : CameraDevice.StateCallback
     {
-        private readonly AndroidUVCCapture _parent;
+        private readonly AndroidCameraCapture _parent;
 
-        public CameraStateCallback(AndroidUVCCapture parent)
+        public CameraStateCallback(AndroidCameraCapture parent)
         {
             _parent = parent;
         }
@@ -416,7 +344,7 @@ public class AndroidUVCCapture : Capture
 
         public override void OnError(CameraDevice camera, CameraError error)
         {
-            Log.Error("AndroidUVCClass", $"Camera error: {error}");
+            Log.Error("AndroidCameraClass", $"Camera error: {error}");
             camera.Close();
             _parent._cameraDevice = null;
         }
@@ -424,9 +352,9 @@ public class AndroidUVCCapture : Capture
 
     private class CaptureSessionStateCallback : CameraCaptureSession.StateCallback
     {
-        private readonly AndroidUVCCapture _parent;
+        private readonly AndroidCameraCapture _parent;
 
-        public CaptureSessionStateCallback(AndroidUVCCapture parent)
+        public CaptureSessionStateCallback(AndroidCameraCapture parent)
         {
             _parent = parent;
         }
@@ -438,15 +366,15 @@ public class AndroidUVCCapture : Capture
 
         public override void OnConfigureFailed(CameraCaptureSession session)
         {
-            Log.Error("AndroidUVCClass", "Capture session configuration failed");
+            Log.Error("AndroidCameraClass", "Capture session configuration failed");
         }
     }
 
     private class ImageAvailableListener : Java.Lang.Object, ImageReader.IOnImageAvailableListener
     {
-        private readonly AndroidUVCCapture _parent;
+        private readonly AndroidCameraCapture _parent;
 
-        public ImageAvailableListener(AndroidUVCCapture parent)
+        public ImageAvailableListener(AndroidCameraCapture parent)
         {
             _parent = parent;
         }

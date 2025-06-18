@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Baballonia.Contracts;
 using Baballonia.Desktop.Calibration.Aero;
 using Baballonia.Desktop.Captures;
@@ -6,6 +6,7 @@ using Baballonia.Services;
 using Baballonia.Services.Inference.Platforms;
 using Baballonia.Views;
 using System;
+using Baballonia.Helpers;
 using Velopack;
 
 namespace Baballonia.Desktop;
@@ -22,9 +23,10 @@ sealed class Program
         var builder = BuildAvaloniaApp();
         VelopackApp.Build().Run();
 
-        HomePageView.Overlay = new AeroOverlayTrainerCombo();
-        HomePageView.Calibrator = new AeroOverlayTrainerCombo();
-        InferenceService.PlatformConnectorType = typeof(DesktopConnector);
+        App.Overlay = new AeroOverlayTrainerCombo();
+        App.Calibrator = new AeroOverlayTrainerCombo();
+        App.PlatformConnectorType = typeof(DesktopConnector);
+        App.DeviceEnumerator = new DesktopDeviceEnumerator();
 
         return builder.StartWithClassicDesktopLifetime(args);
     }

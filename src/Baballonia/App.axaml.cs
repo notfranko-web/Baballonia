@@ -28,6 +28,11 @@ namespace Baballonia;
 
 public class App : Application
 {
+    public static IVROverlay Overlay;
+    public static IVRCalibrator Calibrator;
+    public static IDeviceEnumerator DeviceEnumerator;
+    public static Type PlatformConnectorType;
+
     private IHost? _host;
 
     public override void Initialize()

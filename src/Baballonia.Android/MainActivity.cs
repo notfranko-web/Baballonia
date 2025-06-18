@@ -91,9 +91,10 @@ public class MainActivity : AvaloniaMainActivity<App>
         {
             Log.Info("MainActivity", "CustomizeAppBuilder started");
 
-            HomePageView.Overlay = new DummyOverlayTrainerCombo();
-            HomePageView.Calibrator = new DummyOverlayTrainerCombo();
-            InferenceService.PlatformConnectorType = typeof(AndroidConnector);
+            App.Overlay = new DummyOverlayTrainerCombo();
+            App.Calibrator = new DummyOverlayTrainerCombo();
+            App.PlatformConnectorType = typeof(AndroidConnector);
+            App.DeviceEnumerator = new AndroidDeviceEnumerator();
 
             Log.Info("MainActivity", "CustomizeAppBuilder completed");
 
