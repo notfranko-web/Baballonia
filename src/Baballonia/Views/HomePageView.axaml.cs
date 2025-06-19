@@ -22,9 +22,6 @@ namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
-    public static IVROverlay Overlay;
-    public static IVRCalibrator Calibrator;
-
     public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
         AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
 
@@ -103,12 +100,21 @@ public partial class HomePageView : UserControl
 
         try
         {
-            var cameraDevices = DeviceEnumerator.ListCameras();
+            Task.Run(async () =>
+            {
+                App.DeviceEnumerator.Cameras = await App.DeviceEnumerator.UpdateCameras();
 
-            var cameraEntries = cameraDevices.Keys;
-            LeftCameraAddressEntry.ItemsSource = cameraEntries;
-            RightCameraAddressEntry.ItemsSource = cameraEntries;
-            FaceCameraAddressEntry.ItemsSource = cameraEntries;
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    LeftCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+                    RightCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+                    FaceCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+
+                    LeftCameraStart(null, null!);
+                    RightCameraStart(null, null!);
+                    FaceCameraStart(null, null!);
+                });
+            });
 
             // Set MinimumPrefixLength to 0 to show all items even when no text is entered
             // Set MinimumPopulateDelay to 0 to show the dropdown immediately
@@ -186,10 +192,6 @@ public partial class HomePageView : UserControl
             "Face_FlipYAxis",
             IsFaceTrackingModeProperty);
 
-        LeftCameraStart(null, null!);
-        RightCameraStart(null, null!);
-        FaceCameraStart(null, null!);
-
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
@@ -217,7 +219,7 @@ public partial class HomePageView : UserControl
         {
             viewModel.SelectedCalibrationText = "Full Calibration";
         }
-        
+
         UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
         UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
         UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
@@ -231,7 +233,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -268,7 +270,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -305,7 +307,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -341,7 +343,7 @@ public partial class HomePageView : UserControl
             viewModel.SelectedCalibrationText = "5-Point Quick Calibration";
         }
 
-        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
@@ -351,7 +353,7 @@ public partial class HomePageView : UserControl
             viewModel.SelectedCalibrationText = "Full Calibration";
         }
 
-        await Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)

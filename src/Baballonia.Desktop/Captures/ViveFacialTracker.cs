@@ -2,9 +2,8 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Desktop.Captures;
 
 public partial class ViveFacialTracker
 {

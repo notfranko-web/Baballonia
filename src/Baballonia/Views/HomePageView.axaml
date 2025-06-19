@@ -58,7 +58,10 @@
                 RowSpacing="12"
                 Rows="3">
                 <!--  Left Panel  -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid
+                    IsEnabled="{Binding ShouldShowEyeCalibration}"
+                    IsVisible="{Binding ShouldShowEyeCalibration}"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         Grid.Row="0"
                         Margin="0,0,12,12"
@@ -233,7 +236,10 @@
                 </Grid>
 
                 <!--  Right Panel  -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid
+                    IsEnabled="{Binding ShouldShowEyeCalibration}"
+                    IsVisible="{Binding ShouldShowEyeCalibration}"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         Grid.Row="0"
                         Margin="0,0,12,12"

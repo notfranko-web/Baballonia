@@ -149,7 +149,8 @@ public partial class HomePageViewModel : ViewModelBase
             return;
 
         // Handle camera address properties
-        HandleCameraAddressChange(propertyName);
+        if (App.DeviceEnumerator.Cameras is not null)
+            HandleCameraAddressChange(propertyName);
 
         // Save all other changes
         LocalSettingsService.Save(this);
@@ -175,7 +176,7 @@ public partial class HomePageViewModel : ViewModelBase
 
     private void UpdateCameraAddress(string displayedAddress, Action<string> updateAction)
     {
-        if (DeviceEnumerator.Cameras.TryGetValue(displayedAddress, out var deviceAddress))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(displayedAddress, out var deviceAddress))
         {
             updateAction(deviceAddress);
         }

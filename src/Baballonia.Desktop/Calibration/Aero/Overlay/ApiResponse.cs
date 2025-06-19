@@ -5,8 +5,8 @@ namespace Baballonia.Desktop.Calibration.Aero.Overlay;
 public class ApiResponse
 {
     [JsonProperty("result")]
-    public string Result { get; set; }
+    public required string Result { get; set; }
 
     [JsonProperty("message")]
-    public string Message { get; set; }
+    public required string Message { get; set; }
 }

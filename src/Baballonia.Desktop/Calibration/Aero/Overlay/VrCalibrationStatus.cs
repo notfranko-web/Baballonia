@@ -5,16 +5,16 @@ namespace Baballonia.Desktop.Calibration.Aero.Overlay;
 public class VrCalibrationStatus
 {
     [JsonProperty("running")]
-    public string Running { get; set; }
+    public required string Running { get; set; }
 
     [JsonProperty("recording")]
-    public string Recording { get; set; }
+    public required string Recording { get; set; }
 
     [JsonProperty("calibrationComplete")]
-    public string CalibrationComplete { get; set; }
+    public required string CalibrationComplete { get; set; }
 
     [JsonProperty("isTrained")]
-    public string Trained { get; set; }
+    public required string Trained { get; set; }
 
     [JsonProperty("currentIndex")]
     public int CurrentIndex { get; set; }

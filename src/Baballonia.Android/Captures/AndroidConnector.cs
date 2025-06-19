@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using Baballonia.Contracts;
-using Baballonia.Services.Inference.Captures;
+using Baballonia.Services.Inference;
+using Baballonia.Services.Inference.Platforms;
 using Microsoft.Extensions.Logging;
 
-namespace Baballonia.Services.Inference.Platforms;
+namespace Baballonia.Android.Captures;
 
 /// <summary>
 /// Special class for iOS, Android and UWP platforms where VideoCapture is not fully implemented
 /// Support for MJPEG video streams only presently!
 /// </summary>
-public class AndroidConnector : PlatformConnector
+public class AndroidConnector : PlatformConnector, IPlatformConnector
 {
     private static readonly HashSet<string> IpConnectionsPrefixes
         = new(StringComparer.OrdinalIgnoreCase) { "http", };
@@ -18,7 +19,7 @@ public class AndroidConnector : PlatformConnector
     private static readonly HashSet<string> IpConnectionsSuffixes
         = new(StringComparer.OrdinalIgnoreCase) { "local", "local/" };
 
-    protected override Type DefaultCapture => typeof(IpCameraCapture);
+    protected override Type DefaultCapture => typeof(AndroidUVCCapture);
 
     public AndroidConnector(string url, ILogger logger, ILocalSettingsService settingsService) : base(url, logger, settingsService)
     {

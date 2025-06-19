@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Baballonia.Contracts;
-using Baballonia.Services.Inference.Captures;
+using Baballonia.Services.Inference.Platforms;
 using Microsoft.Extensions.Logging;
 
-namespace Baballonia.Services.Inference.Platforms;
+namespace Baballonia.Desktop.Captures;
 
 /// <summary>
 /// Base class for camera capture and frame processing
 /// Use OpenCV's IP capture class here!
 /// </summary>
-public class DesktopConnector : PlatformConnector
+public class DesktopConnector : PlatformConnector, IPlatformConnector
 {
     private static readonly HashSet<string> SerialConnections
         = new(StringComparer.OrdinalIgnoreCase) { "com", "/dev/ttyacm", "/dev/tty.usb", "/dev/cu.usb" };
