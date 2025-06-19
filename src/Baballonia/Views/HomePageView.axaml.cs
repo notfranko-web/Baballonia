@@ -100,12 +100,21 @@ public partial class HomePageView : UserControl
 
         try
         {
-            var cameraDevices = App.DeviceEnumerator.GetCameras();
+            Task.Run(async () =>
+            {
+                App.DeviceEnumerator.Cameras = await App.DeviceEnumerator.UpdateCameras();
 
-            var cameraEntries = cameraDevices.Keys;
-            LeftCameraAddressEntry.ItemsSource = cameraEntries;
-            RightCameraAddressEntry.ItemsSource = cameraEntries;
-            FaceCameraAddressEntry.ItemsSource = cameraEntries;
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    LeftCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+                    RightCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+                    FaceCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
+
+                    LeftCameraStart(null, null!);
+                    RightCameraStart(null, null!);
+                    FaceCameraStart(null, null!);
+                });
+            });
 
             // Set MinimumPrefixLength to 0 to show all items even when no text is entered
             // Set MinimumPopulateDelay to 0 to show the dropdown immediately
@@ -183,10 +192,6 @@ public partial class HomePageView : UserControl
             "Face_FlipYAxis",
             IsFaceTrackingModeProperty);
 
-        LeftCameraStart(null, null!);
-        RightCameraStart(null, null!);
-        FaceCameraStart(null, null!);
-
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
@@ -228,7 +233,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -265,7 +270,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }
@@ -302,7 +307,7 @@ public partial class HomePageView : UserControl
         string cameraAddress = selectedFriendlyName;
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.GetCameras().TryGetValue(selectedFriendlyName, out var deviceId))
+        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
             cameraAddress = deviceId;
         }

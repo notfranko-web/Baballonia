@@ -7,16 +7,19 @@ using System.Management;
 using System.Runtime.Versioning;
 using Baballonia.Contracts;
 using OpenCvSharp;
+using System.Threading.Tasks;
 
 namespace Baballonia.Helpers;
 
 public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
 {
+    public Dictionary<string, string> Cameras { get; set; }
+
     /// <summary>
     /// Lists available cameras with friendly names as dictionary keys and device identifiers as values.
     /// </summary>
     /// <returns>Dictionary with friendly names as keys and device IDs as values</returns>
-    public Dictionary<string, string> GetCameras()
+    public async Task<Dictionary<string, string>> UpdateCameras()
     {
         Dictionary<string, string> cameraDict = new Dictionary<string, string>();
 

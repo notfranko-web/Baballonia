@@ -5,16 +5,19 @@ using Android.Content;
 using Android.Hardware.Camera2;
 using Android.Hardware.Usb;
 using Android.Util;
+using System.Threading.Tasks;
 
 namespace Baballonia.Android;
 
 public sealed class AndroidDeviceEnumerator : IDeviceEnumerator
 {
+    public Dictionary<string, string> Cameras { get; set; }
+    
     /// <summary>
     /// Lists available cameras with friendly names as dictionary keys and device identifiers as values.
     /// </summary>
     /// <returns>Dictionary with friendly names as keys and device IDs as values</returns>
-    public Dictionary<string, string> GetCameras()
+    public async Task<Dictionary<string, string>> UpdateCameras()
     {
         var cameraDict = new Dictionary<string, string>();
 
@@ -78,7 +81,7 @@ public sealed class AndroidDeviceEnumerator : IDeviceEnumerator
                 {
                     string deviceName = device.DeviceName ?? "Unknown USB Camera";
                     string friendlyName = deviceName;
-                    
+
                     // For USB cameras, prefix the device identifier with "USB:" to distinguish from built-in cameras
                     string deviceId = $"USB:{deviceName}";
                     EnsureUniqueKey(cameraDict, friendlyName, deviceId);
