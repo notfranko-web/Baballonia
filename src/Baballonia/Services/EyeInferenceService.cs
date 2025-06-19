@@ -101,14 +101,18 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
             PlatformConnectors[(int)Camera.Left].Item1.InputSize.Width);
         PlatformConnectors[(int)Camera.Left].Item2.TransformRawImage(matLeft, cameraSettings);
         if (matLeft.Empty()) return false;
+        Mat histMatLeft = new();
+        Cv2.EqualizeHist(matLeft, histMatLeft);
 
         Mat matRight = new Mat<byte>(PlatformConnectors[(int)Camera.Right].Item1.InputSize.Height,
             PlatformConnectors[(int)Camera.Right].Item1.InputSize.Width);
         PlatformConnectors[(int)Camera.Right].Item2.TransformRawImage(matRight, cameraSettings);
         if (matRight.Empty()) return false;
+        Mat histMatRight = new();
+        Cv2.EqualizeHist(matRight, histMatRight);
 
         Mat matCombined = new Mat();
-        Cv2.Merge([matLeft, matRight], matCombined);
+        Cv2.Merge([histMatLeft, histMatRight], matCombined);
 
         var frameDataCombined = new FrameData
         {
