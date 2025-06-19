@@ -5,29 +5,21 @@ using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Management;
 using System.Runtime.Versioning;
+using Baballonia.Contracts;
 using OpenCvSharp;
+using System.Threading.Tasks;
 
 namespace Baballonia.Helpers;
 
-public static class DeviceEnumerator
+public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
 {
-    public static Dictionary<string, string> Cameras { get; private set; }
-
-    static DeviceEnumerator()
-    {
-        UpdateCameras();
-    }
-
-    public static void UpdateCameras()
-    {
-        Cameras = ListCameras();
-    }
+    public Dictionary<string, string> Cameras { get; set; }
 
     /// <summary>
     /// Lists available cameras with friendly names as dictionary keys and device identifiers as values.
     /// </summary>
     /// <returns>Dictionary with friendly names as keys and device IDs as values</returns>
-    public static Dictionary<string, string> ListCameras()
+    public async Task<Dictionary<string, string>> UpdateCameras()
     {
         Dictionary<string, string> cameraDict = new Dictionary<string, string>();
 
@@ -57,8 +49,7 @@ public static class DeviceEnumerator
         return cameraDict;
     }
 
-    // Use OpenCVSharp to detect available cameras
-    private static void AddOpenCvCameras(Dictionary<string, string> cameraDict)
+    private void AddOpenCvCameras(Dictionary<string, string> cameraDict)
     {
         int index = 0;
 
@@ -89,7 +80,7 @@ public static class DeviceEnumerator
     }
 
     [SupportedOSPlatform("windows")]
-    private static void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
+    private void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
     {
         try
         {
@@ -105,10 +96,8 @@ public static class DeviceEnumerator
                 bool indexed = false;
                 for (int i = 0; i < 10; i++) // Check first 10 indices
                 {
-                    using var capture = VideoCapture.FromCamera(i, VideoCaptureAPIs.DSHOW);
-                    if (capture.IsOpened())
+                    if (TryOpenCameraWithTimeout(i, TimeSpan.FromSeconds(1)))
                     {
-                        // This is a simplistic approach - ideally we'd have a more reliable way to match
                         EnsureUniqueKey(cameraDict, $"{deviceName}", i.ToString());
                         indexed = true;
                         break;
@@ -128,8 +117,66 @@ public static class DeviceEnumerator
         }
     }
 
+    private bool TryOpenCameraWithTimeout(int cameraIndex, TimeSpan timeout)
+    {
+        bool result = false;
+        VideoCapture capture = null;
+
+        var task = Task.Run(() =>
+        {
+            try
+            {
+                capture = VideoCapture.FromCamera(cameraIndex, VideoCaptureAPIs.DSHOW);
+                return capture.IsOpened();
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        try
+        {
+            result = task.Wait(timeout) && task.Result;
+        }
+        catch
+        {
+            result = false;
+        }
+        finally
+        {
+            capture?.Dispose();
+        }
+
+        return result;
+    }
+
+    [SupportedOSPlatform("windows")]
+    private string? GetSerialPortFriendlyName(string portName)
+    {
+        if (!OperatingSystem.IsWindows())
+            return null;
+
+        try
+        {
+            using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%({portName})%'");
+            using var collection = searcher.Get();
+
+            foreach (var device in collection)
+            {
+                return device["Caption"]?.ToString();
+            }
+        }
+        catch
+        {
+            // Fall back to port name if WMI fails
+        }
+
+        return null;
+    }
+
     [SupportedOSPlatform("linux")]
-    private static void AddLinuxUvcDevices(Dictionary<string, string> cameraDict)
+    private void AddLinuxUvcDevices(Dictionary<string, string> cameraDict)
     {
         [DllImport("libudev.so")] static extern IntPtr udev_new();
         [DllImport("libudev.so")] static extern IntPtr udev_unref(IntPtr udev);
@@ -234,7 +281,7 @@ public static class DeviceEnumerator
         }
     }
 
-    private static void AddSerialPorts(Dictionary<string, string> cameraDict)
+    private void AddSerialPorts(Dictionary<string, string> cameraDict)
     {
         try
         {
@@ -277,31 +324,7 @@ public static class DeviceEnumerator
         }
     }
 
-    [SupportedOSPlatform("windows")]
-    private static string? GetSerialPortFriendlyName(string portName)
-    {
-        if (!OperatingSystem.IsWindows())
-            return null;
-
-        try
-        {
-            using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%({portName})%'");
-            using var collection = searcher.Get();
-
-            foreach (var device in collection)
-            {
-                return device["Caption"]?.ToString();
-            }
-        }
-        catch
-        {
-            // Fall back to port name if WMI fails
-        }
-
-        return null;
-    }
-
-    private static void EnsureUniqueKey(Dictionary<string, string> dict, string key, string value)
+    private void EnsureUniqueKey(Dictionary<string, string> dict, string key, string value)
     {
         string uniqueKey = key;
         int counter = 1;

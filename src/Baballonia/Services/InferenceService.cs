@@ -62,18 +62,9 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// </summary>
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex)
     {
-        if (OperatingSystem.IsAndroid())
-        {
-            PlatformConnectors[(int)camera].Item2 = new AndroidConnector(cameraIndex, logger, settingsService);
-            PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
-        }
-        else // if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            // Else, for WinUI, macOS, watchOS, MacCatalyst, tvOS, Tizen, etc...
-            // Use the standard OpenCVSharp VideoCapture backend
-            PlatformConnectors[(int)camera].Item2 = new DesktopConnector(cameraIndex, logger, settingsService);
-            PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
-        }
+        var platformConnector = Activator.CreateInstance(App.PlatformConnectorType, cameraIndex, logger, settingsService)!;
+        PlatformConnectors[(int)camera].Item2 = (PlatformConnector)platformConnector;
+        PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
     }
 
     /// <summary>

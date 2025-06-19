@@ -5,9 +5,10 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Baballonia.Services.Inference;
 using OpenCvSharp;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Android.Captures;
 
 /// <summary>
 /// Captures and decodes a known-size MJPEG stream, commonly used by IP Cameras

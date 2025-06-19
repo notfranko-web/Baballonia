@@ -200,6 +200,7 @@ public class ParameterSenderService(
 
     private void ProcessEyeExpressionData(float[] expressions, string prefix = "")
     {
+        if (expressions is null) return;
         if (expressions.Length == 0) return;
 
         // Process each expression and create OSC messages
@@ -219,6 +220,7 @@ public class ParameterSenderService(
 
     private void ProcessFaceExpressionData(float[] expressions, string prefix = "")
     {
+        if (expressions == null) return;
         if (expressions.Length == 0) return;
 
         // Process each expression and create OSC messages

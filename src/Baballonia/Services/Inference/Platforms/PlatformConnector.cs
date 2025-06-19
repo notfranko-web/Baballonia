@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
-using Baballonia.Services.Inference.Captures;
 using Baballonia.Services.Inference.Models;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
@@ -103,7 +102,7 @@ public abstract class PlatformConnector
             Logger.LogWarning("Invalid or empty frame detected; skipping frame processing.");
             return false;
         }
-        
+
         // Removed frame count check to always update the buffer
         if (floatArray.Length < size.Width * size.Height)
             throw new ArgumentException("Bad floatArray size");
@@ -113,7 +112,7 @@ public abstract class PlatformConnector
 
         fixed (float* array = floatArray)
         {
-            using var finalMat = Mat<float>.FromPixelData(size.Height, size.Width, new IntPtr(array));
+            using var finalMat = new Mat(size.Height, size.Width, MatType.CV_32F, new IntPtr(array));
             settings.Brightness = 1.0f / 255.0f;
             bool result = TransformRawImage(finalMat, settings);
             if (result)
@@ -204,6 +203,7 @@ public abstract class PlatformConnector
             data[3] = -(double)targetSize.Width / resultMat.Width * sin * vscale;
             data[4] = (double)targetSize.Height / resultMat.Height * cos * vscale;
             data[5] = ((double)targetSize.Height + ((double)targetSize.Width * sin - (double)targetSize.Height * cos) * vscale) * 0.5;
+
 
             Cv2.WarpAffine(resultMat, outputMat, matrix, targetSize);
         }

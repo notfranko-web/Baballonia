@@ -15,24 +15,6 @@
         <None Update="LocalSettings.json">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="onnx_artifacts\training\checkpoint\paramfrozen_tensors.pbseq">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="onnx_artifacts\training\checkpoint\paramtrain_tensors.pbseq">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="onnx_artifacts\training\eval_model.onnx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="onnx_artifacts\training\optimizer_model.onnx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="onnx_artifacts\training\training_model.onnx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="onnx_artifacts\baball_model.onnx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="Firmware\Windows\espflash.exe">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -60,7 +42,7 @@
         <PackageReference Include="Microsoft.ML" Version="4.0.2" />
         <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="4.0.2" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
+        <PackageReference Include="OpenCvSharp4" Version="4.8.0.20230708" />
         <PackageReference Include="OscCore" Version="1.0.5" />
         <PackageReference Include="RangeSlider.Avalonia" Version="2.1.0" />
         <PackageReference Include="SkiaSharp" Version="3.119.0" />

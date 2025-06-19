@@ -4,9 +4,10 @@ using System.IO;
 using System.IO.Ports;
 using System.Numerics;
 using System.Threading.Tasks;
+using Baballonia.Services.Inference;
 using OpenCvSharp;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Desktop.Captures;
 
 /// <summary>
 /// Serial Camera capture class intended for use on Desktop platforms

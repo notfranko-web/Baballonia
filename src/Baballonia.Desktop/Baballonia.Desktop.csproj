@@ -7,6 +7,7 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Assets\IconOpaque_32x32.ico</ApplicationIcon>
         <Company>Paradigm Reality Enhancement Labs</Company>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -23,7 +24,7 @@
         <PackageReference Include="SkiaSharp" Version="3.119.0" />
 
 	    <!-- Windows-specific -->
-        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
 	    <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
         <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
 
@@ -110,6 +111,27 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Calibration\Windows\turbojpeg.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\training\checkpoint\paramfrozen_tensors.pbseq">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\training\checkpoint\paramtrain_tensors.pbseq">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\training\eval_model.onnx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\training\optimizer_model.onnx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\training\training_model.onnx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\baball_model.onnx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="onnx_artifacts\temporal_eye_tracking_model.onnx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

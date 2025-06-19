@@ -183,7 +183,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         var platformConnector = PlatformConnectors[0].Item2;
         if (platformConnector is null) return false;
 
-        var imageMat = new Mat<byte>(platformSettings.InputSize.Height, platformSettings.InputSize.Width);
+        var imageMat = new Mat(platformSettings.InputSize.Height, platformSettings.InputSize.Width, MatType.CV_8U);
 
         if (platformConnector.TransformRawImage(imageMat, cameraSettings) != true)
         {

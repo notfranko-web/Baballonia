@@ -1,11 +1,11 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Baballonia.Services.Inference;
 using OpenCvSharp;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Desktop.Captures;
 
 /// <summary>
 /// Vive Facial Tracker camera capture
@@ -100,7 +100,7 @@ public class VftCapture : Capture
                 IsReady = _videoCapture?.Read(_orignalMat) == true;
                 if (IsReady)
                 {
-                    Mat yuvConvert = Mat.FromPixelData(400, 400, MatType.CV_8UC2, _orignalMat.Data);
+                    Mat yuvConvert = new Mat(400, 400, MatType.CV_8UC2, _orignalMat.Data);
                     yuvConvert = yuvConvert.CvtColor(ColorConversionCodes.YUV2GRAY_Y422, 0);
                     yuvConvert = yuvConvert.ColRange(new OpenCvSharp.Range(0, 200));
                     yuvConvert = yuvConvert.Resize(new Size(400, 400));

@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Baballonia.Services.Inference;
 using OpenCvSharp;
 
-namespace Baballonia.Services.Inference.Captures;
+namespace Baballonia.Desktop.Captures;
 
 /// <summary>
 /// Wrapper class for OpenCV. We use this class when we know our camera isn't a:
 /// 1) Serial Camera
 /// 2) IP Camera capture
-/// 3) Or we aren't on an unsupported mobile platform (iOS or Android. Tizen/WatchOS are ok though??)
+/// 3) Or we aren't on an unsupported mobile platform (iOS or Android. Tizen/watchOS are ok though??)
 /// </summary>
 public sealed class OpenCvCapture : Capture
 {
@@ -59,7 +60,7 @@ public sealed class OpenCvCapture : Capture
     public OpenCvCapture(string url) : base(url) { }
 
     private Task? _updateTask;
-    private CancellationTokenSource _updateTaskCTS = new();
+    private readonly CancellationTokenSource _updateTaskCts = new();
 
     private static readonly VideoCaptureAPIs PreferredBackend;
 
@@ -118,7 +119,7 @@ public sealed class OpenCvCapture : Capture
         _videoCapture.ConvertRgb = true;
         IsReady = _videoCapture.IsOpened();
 
-        CancellationToken token = _updateTaskCTS.Token;
+        CancellationToken token = _updateTaskCts.Token;
         _updateTask = Task.Run(() => VideoCapture_UpdateLoop(_videoCapture, token));
 
         return IsReady;
@@ -161,7 +162,7 @@ public sealed class OpenCvCapture : Capture
             return Task.FromResult(false);
 
         if (_updateTask != null) {
-            _updateTaskCTS.Cancel();
+            _updateTaskCts.Cancel();
             _updateTask.Wait();
         }
 
