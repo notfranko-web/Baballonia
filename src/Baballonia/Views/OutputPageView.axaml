@@ -5,15 +5,21 @@
     x:Class="Baballonia.Views.OutputPageView"
     x:DataType="splitViewPane:OutputPageViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:assets="clr-namespace:Baballonia.Assets"
     xmlns:controls="clr-namespace:Baballonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:l="using:Jeek.Avalonia.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer>
-        <StackPanel Classes="Page">
-            <TextBlock Classes="Header" Text="{l:Localize Shell_Output.Content}" />
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Classes="Header" Text="{x:Static assets:Resources.Shell_Output_Content}" />
             <controls:ContentExample>
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Button
@@ -38,33 +44,30 @@
                     </Button>
                 </StackPanel>
             </controls:ContentExample>
-
-            <controls:ContentExample>
-                <StackPanel>
-                    <ScrollViewer
-                        Height="425"
-                        HorizontalScrollBarVisibility="Auto"
-                        IsTabStop="False"
-                        VerticalScrollBarVisibility="Auto"
-                        x:Name="LogScroller">
-                        <StackPanel
-                            HorizontalAlignment="Stretch"
-                            Orientation="Vertical"
-                            VerticalAlignment="Stretch">
-                            <ItemsControl
-                                HorizontalAlignment="Stretch"
-                                ItemsSource="{Binding View.FilteredLog}"
-                                VerticalAlignment="Stretch">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </ScrollViewer>
-                </StackPanel>
-            </controls:ContentExample>
         </StackPanel>
-    </ScrollViewer>
+
+        <controls:ContentExample Grid.Row="2">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Auto"
+                IsTabStop="False"
+                VerticalScrollBarVisibility="Auto"
+                x:Name="LogScroller">
+                <StackPanel
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical"
+                    VerticalAlignment="Stretch">
+                    <ItemsControl
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding View.FilteredLog}"
+                        VerticalAlignment="Stretch">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </controls:ContentExample>
+    </Grid>
 </UserControl>

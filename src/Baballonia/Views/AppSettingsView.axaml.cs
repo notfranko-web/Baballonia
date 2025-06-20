@@ -5,9 +5,9 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Baballonia.Contracts;
+using Baballonia.Assets;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Jeek.Avalonia.Localization;
 
 namespace Baballonia.Views;
 
@@ -96,7 +96,6 @@ public partial class AppSettingsView : UserControl
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
             await _languageSelectorService.SetLanguageAsync(item!.Name!);
-            UpdateThemes();
         });
     }
 
@@ -105,9 +104,9 @@ public partial class AppSettingsView : UserControl
     {
         var selectedIndex = _themeComboBox.SelectedIndex;
         _themeComboBox.Items.Clear();
-        _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Default.Content"), Name="DefaultTheme" });
-        _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Light.Content"), Name="Light" });
-        _themeComboBox.Items.Add(new ComboBoxItem { Content=Localizer.Get("Settings_Theme_Dark.Content"), Name="Dark" });
+        _themeComboBox.Items.Add(new ComboBoxItem { Content=Assets.Resources.Settings_Theme_Default_Content, Name="DefaultTheme" });
+        _themeComboBox.Items.Add(new ComboBoxItem { Content=Assets.Resources.Settings_Theme_Light_Content, Name="Light" });
+        _themeComboBox.Items.Add(new ComboBoxItem { Content=Assets.Resources.Settings_Theme_Dark_Content, Name="Dark" });
         _themeComboBox.SelectedIndex = selectedIndex;
     }
 

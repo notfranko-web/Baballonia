@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Jeek.Avalonia.Localization;
 
 namespace Baballonia.ViewModels;
 
@@ -20,7 +19,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
         {
-            Items = new ObservableCollection<ListItemTemplate>(_androidTemplates);
+            Items = new ObservableCollection<ListItemTemplate>(_mobileTemplates);
         }
         else
         {
@@ -39,7 +38,7 @@ public partial class MainViewModel : ViewModelBase
         new(typeof(AppSettingsViewModel), "SettingsRegular", "Settings"),
     ];
 
-    private readonly List<ListItemTemplate> _androidTemplates =
+    private readonly List<ListItemTemplate> _mobileTemplates =
     [
         new(typeof(HomePageViewModel), "HomeRegular", "Home"),
         new(typeof(CalibrationViewModel), "EditRegular", "Calibration"),

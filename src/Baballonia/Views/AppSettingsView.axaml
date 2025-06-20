@@ -5,9 +5,9 @@
     x:Class="Baballonia.Views.AppSettingsView"
     x:DataType="splitViewPane:AppSettingsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:assets="clr-namespace:Baballonia.Assets"
     xmlns:controls="clr-namespace:Baballonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:l="using:Jeek.Avalonia.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -16,16 +16,16 @@
             <TextBlock Classes="Header" Text="App Settings" />
 
             <controls:SettingsBlock
-                Description="{l:Localize ThemeSettings.Description}"
+                Description="{x:Static assets:Resources.ThemeSettings_Description}"
                 IconPath="DarkLightTheme"
-                Title="{l:Localize ThemeSettings.Header}">
+                Title="{x:Static assets:Resources.ThemeSettings_Header}">
                 <controls:SettingsBlock.SettingsContent>
                     <ComboBox VerticalAlignment="Center" x:Name="ThemeCombo" />
                 </controls:SettingsBlock.SettingsContent>
             </controls:SettingsBlock>
 
             <controls:SettingsBlock
-                Description="Set the app's language."
+                Description="Set the app's language. It will update when you leave this page."
                 IconPath="LanguageRegular"
                 Title="Language">
                 <controls:SettingsBlock.SettingsContent>
@@ -45,187 +45,178 @@
                 HorizontalContentAlignment="Stretch"
                 IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
                 VerticalAlignment="Stretch">
-                    <Expander.Header>
-                        <Grid ColumnDefinitions="Auto,Auto,*">
-                            <PathIcon
-                              Data="{StaticResource WirelessRegular}"
-                              Grid.Column="0"
-                              Margin="10,10,20,10"
-                              VerticalAlignment="Center"
-                              Width="32" />
-                            <StackPanel
-                                Grid.Column="1"
-                                HorizontalAlignment="Stretch"
-                                Margin="0,10,0,10">
-                                <TextBlock
-                                  FontSize="16"
-                                  FontWeight="SemiBold"
-                                  Margin="5"
-                                  Text="{l:Localize OscSettings.Description}" />
-                                <TextBlock
-                                  FontSize="14"
-                                  Foreground="{DynamicResource SystemChromeGrayColor}"
-                                  Margin="5"
-                                  Text="{l:Localize OscSettings.Header}" />
-                            </StackPanel>
-                        </Grid>
-                    </Expander.Header>
-                    <Grid
-                        ColumnDefinitions="Auto,Auto"
-                        Margin="0,4"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                        <Grid.Styles>
-                            <Style Selector="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="Margin" Value="0,0,16,0" />
-                                <Setter Property="FontSize" Value="15" />
-                            </Style>
-                            <Style Selector="TextBox">
-                                <Setter Property="Margin" Value="0,8" />
-                                <Setter Property="MinWidth" Value="800" />
-                            </Style>
-                        </Grid.Styles>
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
+                            Data="{StaticResource WirelessRegular}"
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="{x:Static assets:Resources.OscSettings_Description}" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="{x:Static assets:Resources.OscSettings_Header}" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <Grid
+                    ColumnDefinitions="Auto,*,Auto"
+                    Margin="0,4"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                    <Grid.Styles>
+                        <Style Selector="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="VerticalAlignment" Value="Bottom" />
+                            <Setter Property="Margin" Value="0,8" />
+                        </Style>
+                        <Style Selector="TextBox">
+                            <Setter Property="Margin" Value="0,8" />
+                        </Style>
+                    </Grid.Styles>
 
-                      <TextBlock
+                    <TextBlock
                         Grid.Column="0"
                         Grid.Row="0"
                         Text="Use OSC Query" />
-                      <CheckBox
-                        Grid.Column="1"
+                    <CheckBox
+                        Grid.Column="2"
                         Grid.Row="0"
                         IsChecked="{Binding UseOscQuery, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                         x:Name="UseOscQuery" />
 
-                        <TextBlock
-                            Grid.Column="0"
-                            Grid.Row="1"
-                            Text="Receive Port" />
-                        <TextBox
-                            Grid.Column="1"
-                            Grid.Row="1"
-                            Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
-                            Watermark="Input the receive port..."
-                            x:Name="OscTargetInPort" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="1"
+                        Text="Receive Port" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="1"
+                        Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
+                        x:Name="OscTargetInPort" />
 
-                        <TextBlock
-                            Grid.Column="0"
-                            Grid.Row="2"
-                            Text="IP Address" />
-                        <TextBox
-                            Grid.Column="1"
-                            Grid.Row="2"
-                            Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
-                            Watermark="Input the target IP..."
-                            x:Name="OscTargetIpAddress" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="2"
+                        Text="IP Address" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="2"
+                        Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
+                        x:Name="OscTargetIpAddress" />
 
-                        <TextBlock
-                            Grid.Column="0"
-                            Grid.Row="3"
-                            Text="Send Port" />
-                        <TextBox
-                            Grid.Column="1"
-                            Grid.Row="3"
-                            Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
-                            Watermark="Input the send port..."
-                            x:Name="OscTargetOutPort" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="3"
+                        Text="Send Port" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="3"
+                        Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
+                        x:Name="OscTargetOutPort" />
 
-                        <TextBlock
-                          Grid.Column="0"
-                          Grid.Row="4"
-                          Text="OSC Prefix" />
-                        <TextBox
-                          Grid.Column="1"
-                          Grid.Row="4"
-                          Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}"
-                          Watermark="Input the OSC prefix..."
-                          x:Name="OscPrefix" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="4"
+                        Text="OSC Prefix" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="4"
+                        Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}"
+                        x:Name="OscPrefix" />
 
-                        <TextBlock
-                            Grid.Column="0"
-                            Grid.Row="5"
-                            Text="Recalibrate Address" />
-                        <TextBox
-                            Grid.Column="1"
-                            Grid.Row="5"
-                            Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
-                            Watermark="Input the recalibrate address..."
-                            x:Name="RecalibrateAddress" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="5"
+                        Text="Recalibrate Address" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="5"
+                        Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
+                        x:Name="RecalibrateAddress" />
 
-                        <TextBlock
-                            Grid.Column="0"
-                            Grid.Row="6"
-                            Text="Recenter Address" />
-                        <TextBox
-                            Grid.Column="1"
-                            Grid.Row="6"
-                            Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
-                            Watermark="Input the recenter address..."
-                            x:Name="RecenterAddress" />
-                    </Grid>
+                    <TextBlock
+                        Grid.Column="0"
+                        Grid.Row="6"
+                        Text="Recenter Address" />
+                    <TextBox
+                        Grid.Column="2"
+                        Grid.Row="6"
+                        Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
+                        x:Name="RecenterAddress" />
+                </Grid>
             </Expander>
 
             <Expander
-                  HorizontalAlignment="Stretch"
-                  HorizontalContentAlignment="Stretch"
-                  IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
-                  VerticalAlignment="Stretch">
-                  <Expander.Header>
-                      <Grid ColumnDefinitions="Auto,Auto,*">
-                          <PathIcon
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
+                VerticalAlignment="Stretch">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <PathIcon
                             Data="{StaticResource DataFunnelRegular}"
-                              Grid.Column="0"
-                              Margin="10,10,20,10"
-                              VerticalAlignment="Center"
-                              Width="32" />
-                          <StackPanel
-                              Grid.Column="1"
-                              HorizontalAlignment="Stretch"
-                              Margin="0,10,0,10">
-                              <TextBlock
-                                  FontSize="16"
-                                  FontWeight="SemiBold"
-                                  Margin="5"
-                                  Text="One-Euro filter settings" />
-                              <TextBlock
-                                  FontSize="14"
-                                  Foreground="{DynamicResource SystemChromeGrayColor}"
-                                  Margin="5"
-                                  Text="Filter Settings" />
-                          </StackPanel>
-                      </Grid>
-                  </Expander.Header>
-               <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
-                 <StackPanel
-                   Grid.Column="0"
-                   Grid.Row="0"
-                   Margin="0,8">
-                   <TextBlock FontWeight="Bold" Text="Minimum frequency cutoff" />
-                   <TextBlock Text="Minimum frequency cutoff" />
-                 </StackPanel>
-                 <NumericUpDown
-                   Grid.Column="2"
-                   Grid.Row="0"
-                   Margin="0,8"
-                   TextAlignment="Center"
-                   Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}"
-                   Width="300" />
+                            Grid.Column="0"
+                            Margin="10,10,20,10"
+                            VerticalAlignment="Center"
+                            Width="32" />
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,10,0,10">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Margin="5"
+                                Text="One-Euro filter settings" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource SystemChromeGrayColor}"
+                                Margin="5"
+                                Text="Filter Settings" />
+                        </StackPanel>
+                    </Grid>
+                </Expander.Header>
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                    <StackPanel
+                        Grid.Column="0"
+                        Grid.Row="0"
+                        Margin="0,8">
+                        <TextBlock FontWeight="Bold" Text="Minimum frequency cutoff" />
+                        <TextBlock Text="Minimum frequency cutoff" />
+                    </StackPanel>
+                    <NumericUpDown
+                        Grid.Column="2"
+                        Grid.Row="0"
+                        Margin="0,8"
+                        TextAlignment="Center"
+                        Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}" />
 
-                 <StackPanel
-                   Grid.Column="0"
-                   Grid.Row="1"
-                   Margin="0,8">
-                   <TextBlock FontWeight="Bold" Text="Speed coefficient" />
-                   <TextBlock Text="Speed coefficient" />
-                 </StackPanel>
-                 <NumericUpDown
-                   Grid.Column="2"
-                   Grid.Row="1"
-                   Margin="0,8"
-                   TextAlignment="Center"
-                   Value="{Binding OneEuroSpeedCutoff}"
-                   Width="300" />
-               </Grid>
-              </Expander>
+                    <StackPanel
+                        Grid.Column="0"
+                        Grid.Row="1"
+                        Margin="0,8">
+                        <TextBlock FontWeight="Bold" Text="Speed coefficient" />
+                        <TextBlock Text="Speed coefficient" />
+                    </StackPanel>
+                    <NumericUpDown
+                        Grid.Column="2"
+                        Grid.Row="1"
+                        Margin="0,8"
+                        TextAlignment="Center"
+                        Value="{Binding OneEuroSpeedCutoff}" />
+                </Grid>
+            </Expander>
 
             <controls:SettingsToggle
                 Description="Use your GPU to make things run faster!"
@@ -240,10 +231,10 @@
                 Title="Check For Updates" />
 
             <Border
-                IsEnabled="{Binding OnboardingEnabled}"
-                IsVisible="{Binding OnboardingEnabled}"
                 Background="{DynamicResource SystemChromeMediumLowColor}"
                 CornerRadius="6"
+                IsEnabled="{Binding OnboardingEnabled}"
+                IsVisible="{Binding OnboardingEnabled}"
                 Padding="15,5,15,5">
                 <Grid ColumnDefinitions="Auto, Auto,*,Auto" VerticalAlignment="Center">
                     <PathIcon

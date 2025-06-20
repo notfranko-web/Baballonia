@@ -13,7 +13,7 @@ namespace Baballonia.Helpers;
 
 public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
 {
-    public Dictionary<string, string> Cameras { get; set; }
+    public Dictionary<string, string> Cameras { get; set; } = null!;
 
     /// <summary>
     /// Lists available cameras with friendly names as dictionary keys and device identifiers as values.
@@ -120,7 +120,7 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
     private bool TryOpenCameraWithTimeout(int cameraIndex, TimeSpan timeout)
     {
         bool result = false;
-        VideoCapture capture = null;
+        VideoCapture capture = null!;
 
         var task = Task.Run(() =>
         {

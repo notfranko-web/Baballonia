@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
-using Jeek.Avalonia.Localization;
 
 namespace Baballonia.Services;
 
@@ -29,9 +28,9 @@ public class LanguageSelectorService(ILocalSettingsService localSettingsService)
 
     public Task SetRequestedLanguageAsync()
     {
-        Localizer.Language = Language == DefaultLanguage ?
+        Assets.Resources.Culture = new CultureInfo(Language == DefaultLanguage ?
             CultureInfo.CurrentCulture.TwoLetterISOLanguageName :
-            Language;
+            Language);
         return Task.CompletedTask;
     }
 

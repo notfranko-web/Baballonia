@@ -18,7 +18,6 @@ using Baballonia.ViewModels.SplitViewPane;
 using Baballonia.Views;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
-using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -55,8 +54,6 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        Localizer.SetLocalizer(new JsonLocalizer());
-
         var locator = new ViewLocator();
         DataTemplates.Add(locator);
 
@@ -100,18 +97,22 @@ public class App : Application
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
 
-                services.AddTransient<OutputPageViewModel>();
-                services.AddTransient<OutputPageView>();
-                services.AddTransient<AppSettingsViewModel>();
-                services.AddTransient<AppSettingsView>();
                 services.AddTransient<HomePageViewModel>();
                 services.AddTransient<HomePageView>();
                 services.AddTransient<CalibrationViewModel>();
                 services.AddTransient<CalibrationView>();
-                services.AddTransient<FirmwareViewModel>();
-                services.AddTransient<FirmwareView>();
-                services.AddTransient<OnboardingViewModel>();
-                services.AddTransient<OnboardingView>();
+                services.AddTransient<OutputPageViewModel>();
+                services.AddTransient<OutputPageView>();
+                services.AddTransient<AppSettingsViewModel>();
+                services.AddTransient<AppSettingsView>();
+
+                if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+                {
+                    services.AddTransient<FirmwareViewModel>();
+                    services.AddTransient<FirmwareView>();
+                    services.AddTransient<OnboardingViewModel>();
+                    services.AddTransient<OnboardingView>();
+                }
 
                 services.AddHostedService(provider => provider.GetService<OscRecvService>()!);
                 services.AddHostedService(provider => provider.GetService<ParameterSenderService>()!);
