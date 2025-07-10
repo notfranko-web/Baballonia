@@ -13,33 +13,33 @@ class Program
 
         // Get serial port information
         // string port = GetSerialPort();
-        string port = SerialPort.GetPortNames().FirstOrDefault()!;
+        string port = "COM4"; //mine is always COM4
         // const int baudRate = 921600;
+        SerialCommandSender sender = new SerialCommandSender(port);
+        FirmwareService firmwareService = new FirmwareService(sender);
 
         try
         {
-            // Send the payload over serial
-            FirmwareService.SetIsDataPaused(port, true);
+            firmwareService.WaitForHearbeat();
+            firmwareService.SetIsDataPaused(true);
 
-            bool loop = true;
-            var networks = FirmwareService.ScanForWifiNetworks(port);
-            do
-            {
-                networks = FirmwareService.ScanForWifiNetworks(port);
+            JsonDocument? networks = null;
+            while (true){
+                networks = firmwareService.ScanForWifiNetworks();
                 if (networks is not null)
-                {
-                    loop = false;
-                }
-            } while (loop);
+                    break;
+
+                Console.WriteLine("Networks not found, retrying...");
+            }
 
             Console.WriteLine("Networks:");
-            Console.WriteLine(networks);
+            Console.WriteLine(networks.RootElement.GetRawText());
 
-            var currentNetworks = FirmwareService.GetWifiStatus(port);
-            Console.WriteLine("Current Network:");
-            Console.WriteLine(currentNetworks);
+            //var currentNetworks = FirmwareService.GetWifiStatus(port);
+            //Console.WriteLine("Current Network:");
+            //Console.WriteLine(currentNetworks);
 
-            FirmwareService.SetIsDataPaused(port, false);
+            firmwareService.SetIsDataPaused(false);
         }
         catch (Exception ex)
         {
