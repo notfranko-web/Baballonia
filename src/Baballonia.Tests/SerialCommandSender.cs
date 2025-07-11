@@ -77,6 +77,8 @@ namespace Baballonia.Tests
         }
         public void WriteLine(string payload)
         {
+            serialPort.DiscardInBuffer();
+
             // Convert the payload to bytes
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
 
@@ -89,6 +91,7 @@ namespace Baballonia.Tests
                 Thread.Sleep(50); // Small pause between chunks
             }
             serialPort.Write("\n");
+
         }
 
         //Async stuff currently unused

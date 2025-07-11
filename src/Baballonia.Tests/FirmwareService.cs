@@ -15,35 +15,34 @@ namespace Baballonia.Tests
         private ILogger<FirmwareService> _logger;
         private ICommandSender? _commandSender = null;
 
-        public FirmwareService(ILogger<FirmwareService> loger, CommandSenderFactory commandSenderFactory)
+        private bool JsonHasPrefix(JsonDocument json, string key)
         {
-            this._logger = loger;
-            this._commandSenderFactory = commandSenderFactory;
-        }
-        public void StartSession(string port)
-        {
-            _commandSender = _commandSenderFactory.Create(port);
-        }
-        public void StopSession()
-        {
-            if (_commandSender != null)
+            if (json.RootElement.ValueKind != JsonValueKind.Object) return false;
+
+            foreach (var prop in json.RootElement.EnumerateObject())
             {
-                _commandSender.Dispose();
-                _commandSender = null;
+                if (prop.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    return true;
             }
+
+            return false;
         }
 
-        public void SetIsDataPaused(bool isPaused)
+        private JsonDocument? FindJsonWithKeyPrefix(List<JsonDocument> docs, string keyToFind)
         {
-            var payload = Commands.SetDataPaused(isPaused);
-            _logger.LogDebug("Sending payload: {}", payload);
-            _commandSender.WriteLine(payload);
+            foreach (var doc in docs)
+            {
+                if (JsonHasPrefix(doc, keyToFind))
+                    return doc;
+            }
 
-            var resstr = _commandSender.ReadLine();
-            var jsons = FindJsonObjects(resstr);
-            jsons.ForEach(j => _logger.LogDebug("Recieved json: {}", j.RootElement.GetRawText()));
+            return null;
         }
 
+        private string[] FindAvalibleComPorts()
+        {
+            return SerialPort.GetPortNames().Distinct().ToArray();  // https://stackoverflow.com/questions/33401217/serialport-getportnames-returns-same-port-multiple-times
+        }
         private List<JsonDocument> FindJsonObjects(string input)
         {
             var jsonObjects = new List<JsonDocument>();
@@ -81,48 +80,31 @@ namespace Baballonia.Tests
             return jsonObjects;
 
         }
-        public JsonDocument? ScanForWifiNetworks()
-        {
-            var payload = Commands.ScanWifiNetworks();
-            _logger.LogDebug("Sending payload: {}", payload);
-            _commandSender.WriteLine(payload);
-            while (true)
-            {
-                Thread.Sleep(10); // give it some breathing time
 
-                var resstr = _commandSender.ReadLine();
-                var jsons = FindJsonObjects(resstr);
-                jsons.ForEach(j => _logger.LogDebug("Recieved json: {}", j.RootElement.GetRawText()));
-                if (jsons.Count > 0)
-                {
-                    var networksJson = FindJsonWithKeyPrefix(jsons, "networks");
-                    if (networksJson != null)
-                        return networksJson;
-                }
-            }
+        public FirmwareService(ILogger<FirmwareService> loger, CommandSenderFactory commandSenderFactory)
+        {
+            this._logger = loger;
+            this._commandSenderFactory = commandSenderFactory;
         }
 
-        private JsonDocument? FindJsonWithKeyPrefix(List<JsonDocument> docs, string keyToFind)
+        public void StartSession(string port)
         {
-            foreach (var doc in docs)
-            {
-                if (doc.RootElement.ValueKind != JsonValueKind.Object) continue;
-
-                foreach (var prop in doc.RootElement.EnumerateObject())
-                {
-                    if (prop.Name.Equals(keyToFind, StringComparison.OrdinalIgnoreCase))
-                        return doc;
-                }
-            }
-
-            return null;
+            _commandSender = _commandSenderFactory.Create(port);
         }
 
-
+        public void StopSession()
+        {
+            if (_commandSender != null)
+            {
+                _commandSender.Dispose();
+                _commandSender = null;
+            }
+        }
         public JsonDocument? WaitForHeartbeat()
         {
             return WaitForHeartbeat(TimeSpan.FromSeconds(10));
         }
+
         public JsonDocument? WaitForHeartbeat(TimeSpan timeout)
         {
             var startTime = DateTime.Now;
@@ -142,12 +124,6 @@ namespace Baballonia.Tests
                 }
             }
         }
-
-        private string[] FindAvalibleComPorts()
-        {
-            return SerialPort.GetPortNames();
-        }
-
 
         public string[] ProbeComPorts(TimeSpan timeout)
         {
@@ -182,6 +158,61 @@ namespace Baballonia.Tests
 
             return [.. goodPorts];
         }
+
+        public JsonDocument? SetIsDataPaused(bool isPaused)
+        {
+            return SendCommandReadResponse(Commands.SetDataPaused(isPaused), "results");
+        }
+
+        public JsonDocument? ScanForWifiNetworks()
+        {
+            return SendCommandReadResponse(Commands.ScanWifiNetworks(), "networks");
+        }
+
+        public JsonDocument? SetWifi(string ssid, string password)
+        {
+            return SendCommandReadResponse(Commands.SetWifi(ssid, password), "results");
+        }
+        public JsonDocument? GetWifiStatus()
+        {
+            return SendCommandReadResponse(Commands.GetWifiStatus(), "results");
+        }
+        public JsonDocument? ConnectWifi()
+        {
+            return SendCommandReadResponse(Commands.ConnectWifi(), "results");
+        }
+        public JsonDocument? StartStreaming()
+        {
+            return SendCommandReadResponse(Commands.StartStreaming(), "results");
+        }
+        public JsonDocument? GetDeviceMode()
+        {
+            return SendCommandReadResponse(Commands.GetDeviceMode(), "results");
+        }
+        public JsonDocument? SetDeviceMode(Commands.Mode mode)
+        {
+            return SendCommandReadResponse(Commands.SwitchMode(mode), "results");
+        }
+
+        private JsonDocument? SendCommandReadResponse(string command, string responseJsonRootKey)
+        {
+            var payload = command;
+            _logger.LogDebug("Sending payload: {}", payload);
+            _commandSender.WriteLine(payload);
+            JsonExtractor jsonExtractor = new JsonExtractor();
+            while (true)
+            {
+                Thread.Sleep(10); // give it some breathing time
+
+                JsonDocument json = jsonExtractor.ReadUntilValidJson(() => _commandSender.ReadLine());
+                _logger.LogDebug("Recieved json: {}", json.RootElement.GetRawText());
+                if (JsonHasPrefix(json, responseJsonRootKey))
+                    return json;
+
+            }
+        }
+
+
 
         public void Dispose()
         {
