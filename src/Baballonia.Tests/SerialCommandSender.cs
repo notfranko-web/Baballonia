@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Baballonia.Tests
 {
-    public class SerialCommandSender
+    public class SerialCommandSender : ICommandSender
     {
         private const int DefaultBaudRate = 115200; // esptool-rs: Setting baud rate higher than 115,200 can cause issues
         private string port;
@@ -19,6 +20,7 @@ namespace Baballonia.Tests
         public SerialCommandSender(string port)
         {
             this.port = port;
+
             serialPort = new SerialPort(port, DefaultBaudRate);
 
             // Set serial port parameters
@@ -36,15 +38,16 @@ namespace Baballonia.Tests
             serialPort.DiscardInBuffer();
             serialPort.DiscardOutBuffer();
         }
-        ~SerialCommandSender()
+
+        public void Dispose()
         {
-            if(serialPort.IsOpen)
+            if (serialPort.IsOpen)
                 serialPort.Close();
 
             serialPort.Dispose();
         }
 
-        public string ReadResponse()
+        public string ReadLine()
         {
             DateTime startTime = DateTime.Now;
 
@@ -54,8 +57,7 @@ namespace Baballonia.Tests
                 // Check for timeout
                 if ((DateTime.Now - startTime).TotalMilliseconds > timeout)
                 {
-                    //OnCommandError("Timeout waiting for serial response");
-                    throw new Exception("Read timeout reached");
+                    throw new TimeoutException("Reading timeout reached");
                 }
 
                 // Read available data
@@ -69,14 +71,12 @@ namespace Baballonia.Tests
                     // Small delay to prevent CPU spinning
                     Thread.Sleep(10);
                 }
-            } while (serialPort.BytesToRead > 0 || responseBuilder.Length == 0);
+            } while (responseBuilder.Length == 0);
 
             return responseBuilder.ToString().Trim();
         }
-        public void WriteCommand(string payload)
+        public void WriteLine(string payload)
         {
-
-            Console.WriteLine($"Issuing command: {payload}");
             // Convert the payload to bytes
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
 
@@ -119,8 +119,9 @@ namespace Baballonia.Tests
 
         public async Task WriteCommandAsync(string payload)
         {
-            await WithLock(async () => {
-                await Task.Run(() => WriteCommand(payload));
+            await WithLock(async () =>
+            {
+                await Task.Run(() => WriteLine(payload));
             });
         }
 
@@ -129,7 +130,7 @@ namespace Baballonia.Tests
             return await WithLock(async () =>
             {
                 await _lock.WaitAsync();
-                return await Task.Run(ReadResponse);
+                return await Task.Run(ReadLine);
             });
         }
 
@@ -137,11 +138,13 @@ namespace Baballonia.Tests
         {
             return await WithLock(async () =>
             {
-                return await Task.Run(() => {
-                    WriteCommand(payload);
-                    return ReadResponse();
+                return await Task.Run(() =>
+                {
+                    WriteLine(payload);
+                    return ReadLine();
                 });
             });
         }
+
     }
 }
