@@ -76,6 +76,8 @@ public class CameraController : IDisposable
     private int _mjpegPort = 8080;
     private readonly string _mjpegBoundary = "mjpegstream";
 
+    private (int, int) CameraSize { get; set; } = (0, 0);
+
     public CameraController(
         HomePageView view,
         ILocalSettingsService localSettingsService,
@@ -177,6 +179,7 @@ public class CameraController : IDisposable
             case CamViewMode.Cropping:
                 useColor = true;
                 valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image, out dims);
+                CameraSize = dims;
                 break;
             default:
                 return;
@@ -306,7 +309,28 @@ public class CameraController : IDisposable
     {
         if (_bitmap is null) return;
 
-        _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+        // Special BSB2E-like stereo camera logic
+        var halfWidth = CameraSize.Item1 / 2;
+        if (CameraSize.Item1 / 2 == CameraSize.Item2)
+        {
+            if (_camera == Camera.Left)
+            {
+                _overlayRectangle = new Rect(0, 0, halfWidth - 1, _bitmap.Size.Height - 1);
+            }
+            else if (_camera == Camera.Right)
+            {
+                _overlayRectangle = new Rect(halfWidth, 0, halfWidth - 1, _bitmap.Size.Height - 1);
+            }
+            else // Face
+            {
+                _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+            }
+        }
+        else
+        {
+            _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+        }
+
         await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, 0);
         await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, 0);
         await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, _bitmap.Size.Width);
