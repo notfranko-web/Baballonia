@@ -239,8 +239,10 @@ public class CameraController : IDisposable
                 _canvas.Height = dims.height;
             }
 
-            _rectangleWindow.Width = _overlayRectangle.Width;
-            _rectangleWindow.Height = _overlayRectangle.Height;
+            if (_overlayRectangle.Width != -1)
+                _rectangleWindow.Width = _overlayRectangle.Width;
+            if (_overlayRectangle.Height != -1)
+                _rectangleWindow.Height = _overlayRectangle.Height;
             Canvas.SetLeft(_rectangleWindow, _overlayRectangle.X);
             Canvas.SetTop(_rectangleWindow, _overlayRectangle.Y);
         }

@@ -1,53 +1,23 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Baballonia.Services.Inference;
-using OpenCvSharp;
 
-namespace Baballonia.Desktop.Captures;
+using System.Text.RegularExpressions;
+using OpenCvSharp;
+using Capture = Baballonia.SDK.Capture;
+
+namespace Baballonia.VFTCapture;
 
 /// <summary>
 /// Vive Facial Tracker camera capture
 /// </summary>
-public class VftCapture : Capture
+public partial class VftCapture : Capture
 {
-    /// <summary>
-    /// The VideoCapture that grabs frames from the VFT
-    /// </summary>
+    [GeneratedRegex(@"^/dev/video", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex MyRegex();
+
+    public override HashSet<Regex> Connections { get; set; }= [MyRegex()];
+
     private VideoCapture? _videoCapture;
-
-    /// <summary>
-    /// Gets a raw frame from the camera with timeout for safety.
-    /// </summary>
-    public override Mat RawMat => _mat;
-
-    private Mat _mat = new();
     private readonly Mat _orignalMat = new();
 
-    public override uint FrameCount { get; protected set; }
-
-    /// <summary>
-    /// Retrieves the dimensions of the video frame with timeout.
-    /// </summary>
-    public override (int width, int height) Dimensions => _dimensions;
-
-    private (int width, int height) _dimensions;
-
-    /// <summary>
-    /// Indicates if the camera is ready for capturing frames.
-    /// </summary>
-    public override bool IsReady { get; protected set; }
-
-    /// <summary>
-    /// Camera URL or source identifier.
-    /// </summary>
-    public override string Url { get; set; } = null!;
-
-    /// <summary>
-    /// Constructor that accepts a URL for the video source.
-    /// </summary>
-    /// <param name="url">URL for video source.</param>
     public VftCapture(string url) : base(url) { }
 
     private bool _loop;
@@ -106,10 +76,9 @@ public class VftCapture : Capture
                     yuvConvert = yuvConvert.Resize(new Size(400, 400));
                     yuvConvert = yuvConvert.GaussianBlur(new Size(15, 15), 0);
 
-                    _mat = yuvConvert.LUT(lut);
-                    FrameCount++;
-                    _dimensions.width = _mat.Width;
-                    _dimensions.height = _mat.Height;
+                    RawMat = yuvConvert.LUT(lut);
+                    Dimensions.width = RawMat.Width;
+                    Dimensions.height = RawMat.Height;
                 }
             }
             catch (Exception)

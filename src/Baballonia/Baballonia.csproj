@@ -142,6 +142,7 @@
 		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Baballonia.SDK\Baballonia.SDK.csproj" />
 	  <ProjectReference Include="..\HyperText.Avalonia\HyperText.Avalonia\HyperText.Avalonia.csproj" />
 	</ItemGroup>
 	<ItemGroup>

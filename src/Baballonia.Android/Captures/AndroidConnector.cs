@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Baballonia.Contracts;
 using Baballonia.Services.Inference;
 using Baballonia.Services.Inference.Platforms;
@@ -13,20 +14,22 @@ namespace Baballonia.Android.Captures;
 /// </summary>
 public class AndroidConnector : PlatformConnector, IPlatformConnector
 {
-    private static readonly HashSet<string> IpConnectionsPrefixes
-        = new(StringComparer.OrdinalIgnoreCase) { "http", };
+    private static readonly HashSet<Regex> IpConnectionsPrefixes
+        = new() { new Regex(@"^https?://", RegexOptions.IgnoreCase) };
 
-    private static readonly HashSet<string> IpConnectionsSuffixes
-        = new(StringComparer.OrdinalIgnoreCase) { "local", "local/" };
+    private static readonly HashSet<Regex> IpConnectionsSuffixes
+        = new() { new Regex(@"\.local/?$", RegexOptions.IgnoreCase) };
 
-    protected override Type DefaultCapture => typeof(AndroidCamera2Capture);
+    private static readonly HashSet<Regex> AndroidCamera2CapturePrefixes
+        = new() { new Regex(@"^\d+$") };
 
     public AndroidConnector(string url, ILogger logger, ILocalSettingsService settingsService) : base(url, logger, settingsService)
     {
         Captures = new()
         {
-            { (IpConnectionsPrefixes, areSuffixes: false), typeof(IpCameraCapture) },
-            { (IpConnectionsSuffixes, areSuffixes: true), typeof(IpCameraCapture) }
+            { (IpConnectionsPrefixes), typeof(IpCameraCapture) },
+            { (IpConnectionsSuffixes), typeof(IpCameraCapture) },
+            { (AndroidCamera2CapturePrefixes), typeof(AndroidCamera2Capture) }
         };
     }
 }

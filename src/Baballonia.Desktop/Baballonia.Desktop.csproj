@@ -39,6 +39,10 @@
         <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj" />
+        <ProjectReference Include="..\Baballonia.SDK\Baballonia.SDK.csproj" />
+        <ProjectReference Include="..\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj" />
+        <ProjectReference Include="..\Baballonia.VFTCapture\Baballonia.VFTCapture.csproj" />
         <ProjectReference Include="..\Baballonia\Baballonia.csproj" />
     </ItemGroup>
 

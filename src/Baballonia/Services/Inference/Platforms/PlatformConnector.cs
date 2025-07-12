@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Services.Inference.Models;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
+using Capture = Baballonia.SDK.Capture;
 
 namespace Baballonia.Services.Inference.Platforms;
 
@@ -33,11 +35,7 @@ public abstract class PlatformConnector
     /// Add (or remove) from this collection to support platform specific connectors at runtime
     /// Or support weird hardware setups
     /// </summary>
-    public Dictionary<(HashSet<string> strings, bool areSuffixes), Type> Captures;
-
-    protected abstract Type DefaultCapture { get; }
-
-    private uint _lastFrameCount = 0;
+    public Dictionary<HashSet<Regex>, Type> Captures;
 
     public PlatformConnector(string url, ILogger logger, ILocalSettingsService localSettingsService)
     {
@@ -54,38 +52,29 @@ public abstract class PlatformConnector
         if (string.IsNullOrEmpty(url)) return;
 
         this.Url = url;
-        foreach (var capture in Captures)
+
+        try
         {
-            if (capture.Key.Item2)
+            foreach (var capture in Captures)
             {
-                if (capture.Key.Item1.Any(prefix => url.EndsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                if (capture.Key.Any(regex => regex.IsMatch(url)))
                 {
                     Capture = (Capture)Activator.CreateInstance(capture.Value, url)!;
                     Logger.LogInformation($"Changed capture source to {capture.Value.Name} with url {url}.");
                     break;
                 }
             }
-            else
+
+            if (Capture is not null)
             {
-                if (capture.Key.Item1.Any(prefix => url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                {
-                    Capture = (Capture)Activator.CreateInstance(capture.Value, url)!;
-                    Logger.LogInformation($"Changed capture source to {capture.Value.Name} with url {url}.");
-                    break;
-                }
+                Capture.StartCapture();
+                Logger.LogInformation($"Starting {Capture.GetType().Name} capture source...");
             }
         }
-
-        if (Capture is null)
+        catch (Exception e)
         {
-            Capture = (Capture)Activator.CreateInstance(DefaultCapture, url)!;
-            Logger.LogInformation($"Defaulting capture source to {DefaultCapture.Name} with url {url}.");
-        }
-
-        if (Capture is not null)
-        {
-            Capture.StartCapture();
-            Logger.LogInformation($"Starting {Capture.GetType().Name} capture source...");
+            Console.WriteLine(e);
+            throw;
         }
     }
 
@@ -96,7 +85,7 @@ public abstract class PlatformConnector
     public unsafe bool ExtractFrameData(Span<float> floatArray, Size size, CameraSettings settings)
     {
         // Check if capture is ready and has valid data
-        if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null || 
+        if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null ||
             Capture.RawMat.Width <= 0 || Capture.RawMat.Height <= 0)
         {
             Logger.LogWarning("Invalid or empty frame detected; skipping frame processing.");
@@ -107,30 +96,20 @@ public abstract class PlatformConnector
         if (floatArray.Length < size.Width * size.Height)
             throw new ArgumentException("Bad floatArray size");
 
-        uint currentFrameCount = Capture.FrameCount;
-        Logger.LogDebug($"Processing frame with count: {currentFrameCount}");
-
         fixed (float* array = floatArray)
         {
             using var finalMat = new Mat(size.Height, size.Width, MatType.CV_32F, new IntPtr(array));
             settings.Brightness = 1.0f / 255.0f;
-            bool result = TransformRawImage(finalMat, settings);
-            if (result)
-            {
-                _lastFrameCount = currentFrameCount;
-                Logger.LogDebug("Frame successfully processed and transformed");
-            }
-            else
-            {
-                Logger.LogWarning("TransformRawImage failed; skipping inference for this frame.");
-            }
-            return result;
+            return TransformRawImage(finalMat, settings);
         }
     }
 
     public unsafe bool TransformRawImage(Mat outputMat, CameraSettings settings)
     {
-        if (Capture?.IsReady != true || Capture.RawMat == null || Capture.RawMat.DataPointer == null || 
+        if (Capture?.IsReady != true || Capture.RawMat == null)
+            return false;
+
+        if (Capture.RawMat.DataPointer == null ||
             Capture.RawMat.Width <= 0 || Capture.RawMat.Height <= 0 || Capture.RawMat.Channels() <= 0)
             return false;
 

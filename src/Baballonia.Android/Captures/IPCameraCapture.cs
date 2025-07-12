@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Baballonia.Services.Inference;
 using OpenCvSharp;
+using Capture = Baballonia.SDK.Capture;
 
 namespace Baballonia.Android.Captures;
 
@@ -18,13 +21,8 @@ namespace Baballonia.Android.Captures;
 /// </summary>
 public sealed class IpCameraCapture(string url) : Capture(url)
 {
-    public override (int width, int height) Dimensions =>
-        DefaultFrameDimensions; // Constant Babble Cam res (240x240)
+    public override HashSet<Regex> Connections { get; set; }
 
-    public override uint FrameCount { get; protected set; }
-    public override Mat RawMat { get; } = new();
-    public override bool IsReady { get; protected set; }
-    public override string Url { get; set; } = null!;
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -141,7 +139,6 @@ public sealed class IpCameraCapture(string url) : Capture(url)
                 {
                     try
                     {
-                        FrameCount++;
                         Mat.FromImageData(TrimEnd(frameBuffer), ImreadModes.Color).CopyTo(RawMat);
                     }
                     catch (Exception)
