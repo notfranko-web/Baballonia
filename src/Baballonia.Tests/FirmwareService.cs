@@ -1,17 +1,23 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using static Baballonia.Tests.FirmwareCommands;
+using static Baballonia.Tests.FirmwareResponses;
 
 namespace Baballonia.Tests
 {
+    /// <summary>
+    /// <term>Example usage:</term><br/>
+    /// <description>
+    /// firmwareService.StartSession(CommandSenderType.Serial, selectedPort);<br/>
+    /// firmwareService.WaitForHeartbeat();<br/>
+    /// var res = firmwareService.SendCommand(FirmwareCommands.Builder().SetDataPaused(true).build());<br/>
+    /// firmwareService.StopSession();
+    /// </description>
+    /// </summary>
     public class FirmwareService : IDisposable
     {
-        private CommandSenderFactory _commandSenderFactory;
+        private ICommandSenderFactory _commandSenderFactory;
         private ILogger<FirmwareService> _logger;
         private ICommandSender? _commandSender = null;
 
@@ -41,8 +47,9 @@ namespace Baballonia.Tests
 
         private string[] FindAvalibleComPorts()
         {
-            return SerialPort.GetPortNames().Distinct().ToArray();  // https://stackoverflow.com/questions/33401217/serialport-getportnames-returns-same-port-multiple-times
-        }
+            // GetPortNames() may return single port multiple times 
+            // https://stackoverflow.com/questions/33401217/serialport-getportnames-returns-same-port-multiple-times
+            return SerialPort.GetPortNames().Distinct().ToArray();          }
         private List<JsonDocument> FindJsonObjects(string input)
         {
             var jsonObjects = new List<JsonDocument>();
@@ -81,15 +88,15 @@ namespace Baballonia.Tests
 
         }
 
-        public FirmwareService(ILogger<FirmwareService> loger, CommandSenderFactory commandSenderFactory)
+        public FirmwareService(ILogger<FirmwareService> loger, ICommandSenderFactory commandSenderFactory)
         {
-            this._logger = loger;
-            this._commandSenderFactory = commandSenderFactory;
+            _logger = loger;
+            _commandSenderFactory = commandSenderFactory;
         }
 
-        public void StartSession(string port)
+        public void StartSession(CommandSenderType type, string port)
         {
-            _commandSender = _commandSenderFactory.Create(port);
+            _commandSender = _commandSenderFactory.Create(type, port);
         }
 
         public void StopSession()
@@ -133,7 +140,7 @@ namespace Baballonia.Tests
             {
                 try
                 {
-                    StartSession(port);
+                    StartSession(CommandSenderType.Serial, port);
                     _logger.LogInformation("Probing {}", port);
                     var heartbeat = WaitForHeartbeat(timeout);
                     if (heartbeat != null)
@@ -159,39 +166,12 @@ namespace Baballonia.Tests
             return [.. goodPorts];
         }
 
-        public JsonDocument? SetIsDataPaused(bool isPaused)
+        public CommandResponse SendCommand(CommandRoot command)
         {
-            return SendCommandReadResponse(Commands.SetDataPaused(isPaused), "results");
-        }
+            var jsonDoc = SendCommandReadResponse(command.serialize(), "results");
+            var response = jsonDoc.Deserialize<CommandResponse>();
 
-        public JsonDocument? ScanForWifiNetworks()
-        {
-            return SendCommandReadResponse(Commands.ScanWifiNetworks(), "networks");
-        }
-
-        public JsonDocument? SetWifi(string ssid, string password)
-        {
-            return SendCommandReadResponse(Commands.SetWifi(ssid, password), "results");
-        }
-        public JsonDocument? GetWifiStatus()
-        {
-            return SendCommandReadResponse(Commands.GetWifiStatus(), "results");
-        }
-        public JsonDocument? ConnectWifi()
-        {
-            return SendCommandReadResponse(Commands.ConnectWifi(), "results");
-        }
-        public JsonDocument? StartStreaming()
-        {
-            return SendCommandReadResponse(Commands.StartStreaming(), "results");
-        }
-        public JsonDocument? GetDeviceMode()
-        {
-            return SendCommandReadResponse(Commands.GetDeviceMode(), "results");
-        }
-        public JsonDocument? SetDeviceMode(Commands.Mode mode)
-        {
-            return SendCommandReadResponse(Commands.SwitchMode(mode), "results");
+            return response;
         }
 
         private JsonDocument? SendCommandReadResponse(string command, string responseJsonRootKey)
@@ -211,8 +191,6 @@ namespace Baballonia.Tests
 
             }
         }
-
-
 
         public void Dispose()
         {

@@ -4,57 +4,12 @@ using System.IO.Ports;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Baballonia.Tests.FirmwareResponses;
 
 namespace Baballonia.Tests;
 
 public class Program
 {
-    public class WifiNetwork
-    {
-        [JsonPropertyName("ssid")]
-        public string Ssid { get; set; }
-
-        [JsonPropertyName("channel")]
-        public int Channel { get; set; }
-
-        [JsonPropertyName("rssi")]
-        public int Rssi { get; set; }
-
-        [JsonPropertyName("mac_address")]
-        public string MacAddress { get; set; }
-
-        [JsonPropertyName("auth_mode")]
-        public int AuthMode { get; set; }
-    }
-    public class WifiScanResult
-    {
-        [JsonPropertyName("networks")]
-        public List<WifiNetwork> Networks { get; set; }
-    }
-    public class WifiStatus
-    {
-        [JsonPropertyName("status")]
-        public string Status { get; set; }
-        [JsonPropertyName("networks_configured")]
-        public int NetworksConfigured { get; set; }
-        [JsonPropertyName("ip_address")]
-        public string IpAddress { get; set; }
-
-    }
-
-    public class ResultWrapper
-    {
-        [JsonPropertyName("result")]
-        public string Result { get; set; }
-    }
-
-    public class OuterResponse
-    {
-        [JsonPropertyName("results")]
-        public List<string> Results { get; set; }
-    }
-
-
     static void Main(string[] args)
     {
         Console.WriteLine("ESP32-S3 Wi-Fi Tool");
@@ -78,7 +33,7 @@ public class Program
         try
         {
             string[] goodPorts = { "COM4" }; //firmwareService.ProbeComPorts(TimeSpan.FromSeconds(10));
-            string selectedPort = "COM4";
+            string selectedPort = "";
 
             if (goodPorts.Length < 1)
             {
@@ -97,9 +52,9 @@ public class Program
             }
 
 
-            firmwareService.StartSession(selectedPort);
+            firmwareService.StartSession(CommandSenderType.Serial, selectedPort);
             firmwareService.WaitForHeartbeat();
-            firmwareService.SetIsDataPaused(true);
+            firmwareService.SendCommand(FirmwareCommands.Builder().SetDataPaused(true).build());
 
             string[] menu = {
                 "Scan for WiFi networks",
@@ -112,7 +67,7 @@ public class Program
                 "Exit"
             };
 
-            WifiScanResult? scanResult = null;
+            List<WifiNetwork> scanResult = null;
             bool shouldRun = true;
             while (shouldRun)
             {
@@ -120,18 +75,19 @@ public class Program
                 switch (selection.index)
                 {
                     case 0:
-                        JsonDocument? networks = null;
                         while (true)
                         {
-                            networks = firmwareService.ScanForWifiNetworks();
-                            if (networks is not null)
+                            var scanres = firmwareService.SendCommand(FirmwareCommands.Builder().ScanWifiNetworks().build());
+                            if (scanres is not null)
+                            {
+                                scanResult = scanres.Results.First().CastResponseType<WifiNetworkArgs>().Args.Networks;
+                                scanResult = scanResult.OrderByDescending(n => n.Rssi).ToList();
                                 break;
+                            }
 
                             _logger.LogWarning("Networks not found, retrying...");
                         }
-                        _logger.LogInformation("Found networks: {}", networks.RootElement.GetRawText());
-                        scanResult = networks.RootElement.Deserialize<WifiScanResult>();
-                        scanResult.Networks = scanResult.Networks.OrderByDescending(n => n.Rssi).ToList();
+                        _logger.LogInformation("Found {} networks}", scanResult.Count);
                         break;
                     case 1:
                         if (scanResult is null)
@@ -150,32 +106,28 @@ public class Program
 
                         var pwd = AskUser("Enter WiFi password");
 
-                        firmwareService.SetWifi(scanResult.Networks[selectedRow.index].Ssid, pwd);
+                        firmwareService.SendCommand(FirmwareCommands.Builder().SetWifi(scanResult[selectedRow.index].Ssid, pwd).build());
                         break;
                     case 3:
-                        // this is stupid and inconsistent
-                        // TODO: ask Summer to fix this
-                        var wifiStatusJson = firmwareService.GetWifiStatus();
-                        var wifiStatusResults = wifiStatusJson.RootElement.Deserialize<OuterResponse>();
-                        var wifiStatusWrapper = JsonSerializer.Deserialize<ResultWrapper>(wifiStatusResults.Results.First());
-                        var wifiStatus = JsonSerializer.Deserialize<WifiStatus>(wifiStatusWrapper.Result);
+                        var res = firmwareService.SendCommand(FirmwareCommands.Builder().GetWifiStatus().build());
+                        var wifiStatus = res.Results.First().CastResponseType<WifiStatusArgs>();
 
-                        Console.WriteLine($"WiFi Status: {wifiStatus.Status}");
-                        Console.WriteLine($"Networks configured: {wifiStatus.NetworksConfigured}");
-                        Console.WriteLine($"IP Address: {wifiStatus.IpAddress}");
+                        Console.WriteLine($"WiFi Status: {wifiStatus.Args.Status}");
+                        Console.WriteLine($"Networks configured: {wifiStatus.Args.NetworksConfigured}");
+                        Console.WriteLine($"IP Address: {wifiStatus.Args.IpAddress}");
 
                         break;
                     case 4:
-                        firmwareService.ConnectWifi();
+                        firmwareService.SendCommand(FirmwareCommands.Builder().ConnectWifi().build());
                         break;
                     case 5:
-                        firmwareService.StartStreaming();
+                        firmwareService.SendCommand(FirmwareCommands.Builder().StartStreaming().build());
                         break;
                     case 6:
-                        Commands.Mode[] deviceModeOptions = {
-                            Commands.Mode.Wifi,
-                            Commands.Mode.UVC,
-                            Commands.Mode.Auto
+                        FirmwareCommands.Mode[] deviceModeOptions = {
+                             FirmwareCommands.Mode.Wifi,
+                             FirmwareCommands.Mode.UVC,
+                             FirmwareCommands.Mode.Auto
                         };
                         string[] modeOptions =
                         {
@@ -184,7 +136,7 @@ public class Program
                             "Auto - Automatic mode selection"
                         };
                         var selectedMode = AskUser("Select new device mode", modeOptions);
-                        firmwareService.SetDeviceMode(deviceModeOptions[selectedMode.index]);
+                        firmwareService.SendCommand(FirmwareCommands.Builder().SetStreamMode(deviceModeOptions[selectedMode.index]).build());
                         break;
                     case 7:
                         shouldRun = false;
@@ -193,7 +145,7 @@ public class Program
                 }
             }
 
-            firmwareService.SetIsDataPaused(false);
+            firmwareService.SendCommand(FirmwareCommands.Builder().SetDataPaused(false).build());
             firmwareService.StopSession();
         }
         catch (Exception ex)
@@ -243,14 +195,14 @@ public class Program
 
     }
 
-    public static void PrintWifiScanResult(WifiScanResult result)
+    public static void PrintWifiScanResult(List<WifiNetwork> result)
     {
         // Print header
         Console.WriteLine("{0,-25} {1,7} {2,6} {3,-20} {4,10}", "SSID", "Channel", "RSSI", "MAC Address", "Auth Mode");
         Console.WriteLine(new string('-', 75));
 
         // Print each network
-        foreach (var network in result.Networks)
+        foreach (var network in result)
         {
             Console.WriteLine("{0,-25} {1,7} {2,6} {3,-20} {4,10}",
                 network.Ssid,
@@ -260,11 +212,11 @@ public class Program
                 network.AuthMode);
         }
     }
-    public static string[] GetWifiScanResultLines(WifiScanResult result)
+    public static string[] GetWifiScanResultLines(List<WifiNetwork> result)
     {
         var lines = new List<string>();
 
-        foreach (var network in result.Networks)
+        foreach (var network in result)
         {
             lines.Add(string.Format("{0,-25} {1,7} {2,6} {3,-20} {4,10}",
                 network.Ssid,

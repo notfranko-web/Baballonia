@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Baballonia.Tests
+﻿namespace Baballonia.Tests
 {
-    public class CommandSenderFactory
+    public class CommandSenderFactory : ICommandSenderFactory
     {
-        public ICommandSender Create(string port)
+        public ICommandSender Create(CommandSenderType type, string port)
         {
-            return new SerialCommandSender(port);
+            switch (type)  
+            {
+                case CommandSenderType.Serial:
+                    return new SerialCommandSender(port);
+            };
+            throw new NotImplementedException();
         }
     }
 }
