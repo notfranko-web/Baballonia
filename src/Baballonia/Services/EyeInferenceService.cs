@@ -33,6 +33,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     private readonly ILocalSettingsService _settingsService = settingsService;
 
     // Minimum number of frames required before processing
+    private const int ExpectedRawExpressions = 3;
     private const int FramesForInference = 4;
 
     /// <summary>
@@ -53,7 +54,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
             if (speedCoeff == 0f) speedCoeff = 1f;
             var eyeModel = await _settingsService.ReadSettingAsync<string>("EyeHome_EyeModel") ?? "eyeModel.onnx";
 
-            float[] noisy_point = new float[10];
+            float[] noisy_point = new float[ExpectedRawExpressions];
             var filter = new OneEuroFilter(
                 x0: noisy_point,
                 minCutoff: minCutoff,
@@ -206,28 +207,23 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         - EyeDilate 10
          */
 
-        float[] convertedExpressions = new float[11];
-        convertedExpressions[0] = arKitExpressions[0] + arKitExpressions[2]; // LeftEyeX, Pitch + Convergence
-        convertedExpressions[1] = arKitExpressions[1];                       // LeftEyeY, Yaw
-        convertedExpressions[2] = arKitExpressions[0] + arKitExpressions[2]; // RightEyeX, Pitch + Convergence
-        convertedExpressions[3] = arKitExpressions[1];                       // RightEyeY
-        convertedExpressions[4] = arKitExpressions[3];                       // LeftEyeLid
-        convertedExpressions[5] = arKitExpressions[4];                       // RightEyeLid
-        convertedExpressions[6] = arKitExpressions[5];                       // BrowRaise
-        convertedExpressions[7] = arKitExpressions[6];                       // BrowAngry
-        convertedExpressions[8] = arKitExpressions[7];                       // EyeWiden
-        convertedExpressions[9] = arKitExpressions[8];                       // EyeSquint
-        convertedExpressions[10] = arKitExpressions[9];                      // EyeDilation
+        // Filter ARKit Expressions. This is broken rn!
+        arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
+
+        const float maxAngle = 70f;
+        float[] convertedExpressions = new float[6];
+        convertedExpressions[0] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        convertedExpressions[1] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        convertedExpressions[4] = 1f;
+        convertedExpressions[5] = 1f;
         arKitExpressions = convertedExpressions;
 
         float time = (float)sw.Elapsed.TotalSeconds;
         var delta = time - PlatformConnectors[(int)Camera.Left].Item1.LastTime;
         PlatformConnectors[(int)Camera.Left].Item1.Ms = delta * 1000f;
         PlatformConnectors[(int)Camera.Right].Item1.Ms = delta * 1000f;
-
-        // Filter ARKit Expressions. This is broken rn!
-        // var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
-        // arKitExpressions = smoothedExpressions;
 
         PlatformConnectors[(int)Camera.Left].Item1.LastTime = time;
         PlatformConnectors[(int)Camera.Right].Item1.LastTime = time;

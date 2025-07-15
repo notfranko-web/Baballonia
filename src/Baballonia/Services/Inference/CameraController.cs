@@ -271,19 +271,11 @@ public class CameraController : IDisposable
 
     public void StartCamera(string cameraAddress)
     {
-
-        // Open the camera if it was set prior AND it isn't running already
-        // This shit doesn't work on Linux!??
-        Task.Run(async () =>
+        if (!string.IsNullOrEmpty(cameraAddress))
         {
-            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
-            if (!string.IsNullOrEmpty(cameraAddress))
-            {
-                StopCamera();
-                _inferenceService.SetupInference(_camera, cameraAddress);
-            }
-        });
-
+            StopCamera();
+            _inferenceService.SetupInference(_camera, cameraAddress);
+        }
     }
 
     public void StopCamera()
@@ -313,30 +305,49 @@ public class CameraController : IDisposable
 
         // Special BSB2E-like stereo camera logic
         var halfWidth = CameraSize.Item1 / 2;
+
+        int x;
+        int y;
+        int width;
+        int height;
+
         if (CameraSize.Item1 / 2 == CameraSize.Item2)
         {
-            if (_camera == Camera.Left)
+            switch (_camera)
             {
-                _overlayRectangle = new Rect(0, 0, halfWidth - 1, _bitmap.Size.Height - 1);
-            }
-            else if (_camera == Camera.Right)
-            {
-                _overlayRectangle = new Rect(halfWidth, 0, halfWidth - 1, _bitmap.Size.Height - 1);
-            }
-            else // Face
-            {
-                _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+                case Camera.Left:
+                    x = 0;
+                    y = 0;
+                    width = halfWidth - 1;
+                    height = (int)_bitmap.Size.Height - 1;
+                    break;
+                case Camera.Right:
+                    x = halfWidth;
+                    y = 0;
+                    width = halfWidth - 1;
+                    height = (int)_bitmap.Size.Height - 1;
+                    break;
+                default: // Face
+                    x = 0;
+                    y = 0;
+                    width = (int)_bitmap.Size.Width;
+                    height = (int)_bitmap.Size.Height;
+                    break;
             }
         }
         else
         {
-            _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
+            x = 0;
+            y = 0;
+            width = (int)_bitmap.Size.Width;
+            height = (int)_bitmap.Size.Height;
         }
 
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, 0);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, 0);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, _bitmap.Size.Width);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, _bitmap.Size.Height);
+        _overlayRectangle = new Rect(x, y, width, height);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, x);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, y);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, width);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, height);
     }
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
