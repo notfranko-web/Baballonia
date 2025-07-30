@@ -33,7 +33,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     private readonly ILocalSettingsService _settingsService = settingsService;
 
     // Minimum number of frames required before processing
-    private const int ExpectedRawExpressions = 3;
+    private const int ExpectedRawExpressions = 4;
     private const int FramesForInference = 4;
 
     /// <summary>
@@ -216,8 +216,8 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         convertedExpressions[1] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
         convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
         convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[4] = 1f;
-        convertedExpressions[5] = 1f;
+        convertedExpressions[4] = arKitExpressions[3];
+        convertedExpressions[5] = arKitExpressions[3];
         arKitExpressions = convertedExpressions;
 
         float time = (float)sw.Elapsed.TotalSeconds;
