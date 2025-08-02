@@ -1,16 +1,9 @@
+using System.Numerics;
 using StereoKit;
 
 public class OverlayManager
 {
-    public void Initialize()
-    {
-        // TODO: Initialize StereoKit, VR context, load video/sphere resources
-    }
-
-    public void PlayIntroVideo()
-    {
-        // TODO: Play 10s intro video in VR
-    }
+    private Pose SpherePose;
 
     private MjpegStreamCapture? _leftEyeStream;
     private MjpegStreamCapture? _rightEyeStream;
@@ -22,17 +15,30 @@ public class OverlayManager
     private TimeSpan _gazeDuration = TimeSpan.FromMinutes(3);
     private System.Action<float>? _progressCallback;
 
+    public void Initialize()
+    {
+        Task.Run(() =>
+        {
+            SK.Initialize();
+            SK.Run(() =>
+            {
+                var point = GetPointInFrontOfUser(2);
+                Mesh.Sphere.Draw(Material.Default, Matrix.TRS(point, Quat.Identity, 0.1f));
+            });
+        });
+    }
+
+
     public void StartGazeTraining(System.Action<float> onProgress)
     {
-        // Setup sphere, progress bar, and start capture
         _isGazeTraining = true;
         _gazeStartTime = DateTime.UtcNow;
         _progressCallback = onProgress;
         _samples.Clear();
         _dataWriter = new TrainingDataWriter("training_data.bin");
         _gazeCapture = new GazeCapture(GetHeadPosition, GetHeadRotation, GetSpherePosition);
-        _leftEyeStream = new MjpegStreamCapture("http://localhost:8081", mat => OnEyeFrame(mat, true));
-        _rightEyeStream = new MjpegStreamCapture("http://localhost:8082", mat => OnEyeFrame(mat, false));
+        _leftEyeStream = new MjpegStreamCapture("http://localhost:8080", mat => OnEyeFrame(mat, true));
+        _rightEyeStream = new MjpegStreamCapture("http://localhost:8081", mat => OnEyeFrame(mat, false));
         _leftEyeStream.Start();
         _rightEyeStream.Start();
     }
@@ -64,21 +70,21 @@ public class OverlayManager
         return mat.ImEncode(".jpg");
     }
 
-    private System.Numerics.Vector3 GetHeadPosition() => new System.Numerics.Vector3(0, 0, 0); // TODO: Replace with actual head tracking
-    private System.Numerics.Quaternion GetHeadRotation() => System.Numerics.Quaternion.Identity; // TODO: Replace with actual head tracking
-    private System.Numerics.Vector3 GetSpherePosition() => new System.Numerics.Vector3(0, 0, 3); // TODO: Replace with sphere position
-
+    private System.Numerics.Vector3 GetHeadPosition() => Input.Head.position;
+    private System.Numerics.Quaternion GetHeadRotation() => Input.Head.orientation; 
+    private System.Numerics.Vector3 GetSpherePosition() => new System.Numerics.Vector3(0, 0, 3);
+    private Vector3 GetPointInFrontOfUser(float distance = 1f) => Input.Head.position + (Input.Head.Forward * distance);
 
     private System.Func<float>? _trainerProgressFunc;
-private bool _showTrainingGraph = false;
-private DateTime _trainingStartTime;
+    private bool _showTrainingGraph = false;
+    private DateTime _trainingStartTime;
 
-public void ShowTrainingGraph(System.Func<float> getTrainerProgress)
-{
-    _trainerProgressFunc = getTrainerProgress;
-    _showTrainingGraph = true;
-    _trainingStartTime = DateTime.UtcNow;
-}
+    public void ShowTrainingGraph(System.Func<float> getTrainerProgress)
+    {
+        _trainerProgressFunc = getTrainerProgress;
+        _showTrainingGraph = true;
+        _trainingStartTime = DateTime.UtcNow;
+    }
 
     public void Update()
     {

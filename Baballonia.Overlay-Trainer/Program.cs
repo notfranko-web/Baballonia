@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 class Program
 {
     static async Task Main(string[] args)
@@ -13,7 +11,7 @@ class Program
         coordinator.StartIntro();
 
         // Start REST API server in background
-        var restTask = restApi.StartAsync(5000);
+        await restApi.StartAsync();
 
         // Main VR/render loop
         while (true)

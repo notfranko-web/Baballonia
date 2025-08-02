@@ -1,5 +1,4 @@
 using Microsoft.ML.OnnxRuntime;
-using System.Threading.Tasks;
 
 public class TrainerManager
 {

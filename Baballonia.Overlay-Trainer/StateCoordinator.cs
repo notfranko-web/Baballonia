@@ -23,7 +23,6 @@ public class StateCoordinator
     public void StartIntro()
     {
         CurrentState = AppState.IntroVideo;
-        _overlay.PlayIntroVideo();
     }
 
     public void StartGazeTraining()

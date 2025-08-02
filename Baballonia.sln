@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia", "src\Baballonia\Baballonia.csproj", "{00505DCC-588E-4E46-8F91-2AF6A88CBC78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia", "src\Baballonia\Baballonia.csproj", "{00505DCC-588E-4E46-8F91-2AF6A88CBC78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Android", "src\Baballonia.Android\Baballonia.Android.csproj", "{63DAAA66-AF92-4170-9F89-6C2846B8E389}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Desktop", "src\Baballonia.Desktop\Baballonia.Desktop.csproj", "{12649311-9B1B-4EDF-8917-4609499D70BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.Desktop", "src\Baballonia.Desktop\Baballonia.Desktop.csproj", "{12649311-9B1B-4EDF-8917-4609499D70BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{82C6A0B4-5014-4BE4-9F52-7DC1989134E3}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,23 +19,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.iOS", "src\Baballonia.iOS\Baballonia.iOS.csproj", "{7720B7DB-1021-4F42-86C2-EBF1FD6BD461}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCFaceTracking.Babble", "src\VRCFaceTracking.Baballonia\VRCFaceTracking.Babble.csproj", "{8E0592BC-591A-4460-8D7C-F4332B440162}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRCFaceTracking.Babble", "src\VRCFaceTracking.Baballonia\VRCFaceTracking.Babble.csproj", "{8E0592BC-591A-4460-8D7C-F4332B440162}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Tests", "src\Baballonia.Tests\Baballonia.Tests.csproj", "{10F4B957-D0DA-4B65-8EA6-20491B031C60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperText.Avalonia", "src\HyperText.Avalonia\HyperText.Avalonia\HyperText.Avalonia.csproj", "{E78D7748-EB97-E3A4-05A1-0F5138626F84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HyperText.Avalonia", "src\HyperText.Avalonia\HyperText.Avalonia\HyperText.Avalonia.csproj", "{E78D7748-EB97-E3A4-05A1-0F5138626F84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCFaceTracking.Core", "src\VRCFaceTracking\VRCFaceTracking.Core\VRCFaceTracking.Core.csproj", "{675C25C0-5E62-BCA7-FCA7-430A07D644C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRCFaceTracking.Core", "src\VRCFaceTracking\VRCFaceTracking.Core\VRCFaceTracking.Core.csproj", "{675C25C0-5E62-BCA7-FCA7-430A07D644C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCFaceTracking.SDK", "src\VRCFaceTracking\VRCFaceTracking.SDK\VRCFaceTracking.SDK.csproj", "{5A0F4F7B-3BFB-1630-D332-CA001501439E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRCFaceTracking.SDK", "src\VRCFaceTracking\VRCFaceTracking.SDK\VRCFaceTracking.SDK.csproj", "{5A0F4F7B-3BFB-1630-D332-CA001501439E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.SDK", "src\Baballonia.SDK\Baballonia.SDK.csproj", "{04D1AB25-86F7-4EE5-907F-67C067E26924}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.SDK", "src\Baballonia.SDK\Baballonia.SDK.csproj", "{04D1AB25-86F7-4EE5-907F-67C067E26924}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.OpenCVCapture", "src\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj", "{7DBED48D-9A54-4D44-BE5B-0538B0B31A99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.OpenCVCapture", "src\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj", "{7DBED48D-9A54-4D44-BE5B-0538B0B31A99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.SerialCameraCapture", "src\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj", "{2E6C572A-2499-45DC-8A65-7EBA9706A25A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.SerialCameraCapture", "src\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj", "{2E6C572A-2499-45DC-8A65-7EBA9706A25A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.VFTCapture", "src\Baballonia.VFTCapture\Baballonia.VFTCapture.csproj", "{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.VFTCapture", "src\Baballonia.VFTCapture\Baballonia.VFTCapture.csproj", "{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Overlay-Trainer", "Baballonia.Overlay-Trainer\Baballonia.Overlay-Trainer.csproj", "{42922296-1CEC-4136-9D6B-1396CF84E95A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,6 +98,10 @@ Global
 		{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42922296-1CEC-4136-9D6B-1396CF84E95A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42922296-1CEC-4136-9D6B-1396CF84E95A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42922296-1CEC-4136-9D6B-1396CF84E95A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42922296-1CEC-4136-9D6B-1396CF84E95A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,8 +110,12 @@ Global
 		{E78D7748-EB97-E3A4-05A1-0F5138626F84} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
 		{675C25C0-5E62-BCA7-FCA7-430A07D644C7} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
 		{5A0F4F7B-3BFB-1630-D332-CA001501439E} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
-		{BA0A656D-FF1D-4E15-B43C-9BE5AE692256} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
-		{2E6C572A-2499-45DC-8A65-7EBA9706A25A} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
 		{7DBED48D-9A54-4D44-BE5B-0538B0B31A99} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
+		{2E6C572A-2499-45DC-8A65-7EBA9706A25A} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
+		{BA0A656D-FF1D-4E15-B43C-9BE5AE692256} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
+		{42922296-1CEC-4136-9D6B-1396CF84E95A} = {82C6A0B4-5014-4BE4-9F52-7DC1989134E3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D6643ED-DDC1-4236-9471-024DCCFC81F6}
 	EndGlobalSection
 EndGlobal
