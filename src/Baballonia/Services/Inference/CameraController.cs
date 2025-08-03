@@ -76,6 +76,8 @@ public class CameraController : IDisposable
     private int _mjpegPort = 8080;
     private readonly string _mjpegBoundary = "mjpegstream";
 
+    private (int, int) CameraSize { get; set; } = (0, 0);
+
     public CameraController(
         HomePageView view,
         ILocalSettingsService localSettingsService,
@@ -177,6 +179,7 @@ public class CameraController : IDisposable
             case CamViewMode.Cropping:
                 useColor = true;
                 valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image, out dims);
+                CameraSize = dims;
                 break;
             default:
                 return;
@@ -236,8 +239,10 @@ public class CameraController : IDisposable
                 _canvas.Height = dims.height;
             }
 
-            _rectangleWindow.Width = _overlayRectangle.Width;
-            _rectangleWindow.Height = _overlayRectangle.Height;
+            if (_overlayRectangle.Width != -1)
+                _rectangleWindow.Width = _overlayRectangle.Width;
+            if (_overlayRectangle.Height != -1)
+                _rectangleWindow.Height = _overlayRectangle.Height;
             Canvas.SetLeft(_rectangleWindow, _overlayRectangle.X);
             Canvas.SetTop(_rectangleWindow, _overlayRectangle.Y);
         }
@@ -266,19 +271,11 @@ public class CameraController : IDisposable
 
     public void StartCamera(string cameraAddress)
     {
-
-        // Open the camera if it was set prior AND it isn't running already
-        // This shit doesn't work on Linux!??
-        Task.Run(async () =>
+        if (!string.IsNullOrEmpty(cameraAddress))
         {
-            var cameraAddress = await _localSettingsService.ReadSettingAsync<string>(_cameraKey);
-            if (!string.IsNullOrEmpty(cameraAddress))
-            {
-                StopCamera();
-                _inferenceService.SetupInference(_camera, cameraAddress);
-            }
-        });
-
+            StopCamera();
+            _inferenceService.SetupInference(_camera, cameraAddress);
+        }
     }
 
     public void StopCamera()
@@ -306,11 +303,51 @@ public class CameraController : IDisposable
     {
         if (_bitmap is null) return;
 
-        _overlayRectangle = new Rect(0, 0, _bitmap.Size.Width, _bitmap.Size.Height);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, 0);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, 0);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, _bitmap.Size.Width);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, _bitmap.Size.Height);
+        // Special BSB2E-like stereo camera logic
+        var halfWidth = CameraSize.Item1 / 2;
+
+        int x;
+        int y;
+        int width;
+        int height;
+
+        if (CameraSize.Item1 / 2 == CameraSize.Item2)
+        {
+            switch (_camera)
+            {
+                case Camera.Left:
+                    x = 0;
+                    y = 0;
+                    width = halfWidth - 1;
+                    height = (int)_bitmap.Size.Height - 1;
+                    break;
+                case Camera.Right:
+                    x = halfWidth;
+                    y = 0;
+                    width = halfWidth - 1;
+                    height = (int)_bitmap.Size.Height - 1;
+                    break;
+                default: // Face
+                    x = 0;
+                    y = 0;
+                    width = (int)_bitmap.Size.Width;
+                    height = (int)_bitmap.Size.Height;
+                    break;
+            }
+        }
+        else
+        {
+            x = 0;
+            y = 0;
+            width = (int)_bitmap.Size.Width;
+            height = (int)_bitmap.Size.Height;
+        }
+
+        _overlayRectangle = new Rect(x, y, width, height);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, x);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, y);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, width);
+        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, height);
     }
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)

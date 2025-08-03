@@ -11,7 +11,9 @@ using Baballonia.Services.Inference;
 using Java.Lang;
 using OpenCvSharp;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Capture = Baballonia.SDK.Capture;
 using Exception = System.Exception;
 
 namespace Baballonia.Android.Captures;
@@ -22,8 +24,9 @@ namespace Baballonia.Android.Captures;
 /// </summary>
 public class AndroidCamera2Capture : Capture
 {
+    public override HashSet<Regex> Connections { get; set; }
+
     private readonly Context _context;
-    private UsbManager _usbManager;
     private UsbDevice _usbDevice;
     private UsbDeviceConnection _usbConnection;
     private CameraManager _cameraManager;
@@ -33,36 +36,15 @@ public class AndroidCamera2Capture : Capture
     private Handler _backgroundHandler;
     private HandlerThread _backgroundThread;
 
-    private Mat _currentFrame;
-    private readonly object _frameLock = new object();
-    private bool _isCapturing = false;
-
-    public override string Url { get; set; }
-    public override uint FrameCount { get; protected set; }
-    public override bool IsReady { get; protected set; }
-
-    public override (int width, int height) Dimensions { get; }
-
-    public override Mat RawMat
-    {
-        get
-        {
-            lock (_frameLock)
-            {
-                return _currentFrame?.Clone() ?? EmptyMat;
-            }
-        }
-    }
+    private readonly object _frameLock = new();
+    private bool _isCapturing;
 
     public AndroidCamera2Capture(string url) : base(url)
     {
         _context = Application.Context;
-        _usbManager = (UsbManager)_context.GetSystemService(Context.UsbService);
-        _cameraManager = (CameraManager)_context.GetSystemService(Context.CameraService);
-
-        Dimensions = DefaultFrameDimensions;
-        _currentFrame = EmptyMat;
+        _cameraManager = (CameraManager)_context.GetSystemService(Context.CameraService)!;
     }
+
 
     public override async Task<bool> StartCapture()
     {
@@ -262,9 +244,7 @@ public class AndroidCamera2Capture : Capture
 
             lock (_frameLock)
             {
-                _currentFrame?.Dispose();
-                _currentFrame = mat;
-                FrameCount++;
+                RawMat = mat;
             }
         }
         catch (Exception ex)

@@ -104,14 +104,23 @@ public partial class HomePageView : UserControl
             {
                 App.DeviceEnumerator.Cameras = await App.DeviceEnumerator.UpdateCameras();
 
+                var leftCameraAddress = await _localSettingsService.ReadSettingAsync<string>("EyeHome_LeftCameraIndex");
+                var rightCameraAddress = await _localSettingsService.ReadSettingAsync<string>("EyeHome_RightCameraIndex");
+
+                if (leftCameraAddress != rightCameraAddress)
+                {
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        LeftCameraStart(null, null!);
+                        RightCameraStart(null, null!);
+                    });
+                }
+
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     LeftCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
                     RightCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
                     FaceCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
-
-                    LeftCameraStart(null, null!);
-                    RightCameraStart(null, null!);
                     FaceCameraStart(null, null!);
                 });
             });
@@ -228,6 +237,8 @@ public partial class HomePageView : UserControl
     // Event handlers for left camera
     public void LeftCameraStart(object? sender, RoutedEventArgs e)
     {
+        if (App.DeviceEnumerator.Cameras == null) return;
+
         LeftCameraController.StopCamera();
         string selectedFriendlyName = LeftCameraAddressEntry.Text!;
         string cameraAddress = selectedFriendlyName;
@@ -265,6 +276,8 @@ public partial class HomePageView : UserControl
     // Event handlers for right camera
     public void RightCameraStart(object? sender, RoutedEventArgs e)
     {
+        if (App.DeviceEnumerator.Cameras == null) return;
+
         RightCameraController.StopCamera();
         string selectedFriendlyName = RightCameraAddressEntry.Text!;
         string cameraAddress = selectedFriendlyName;
@@ -302,6 +315,8 @@ public partial class HomePageView : UserControl
     // Event handlers for face camera
     public void FaceCameraStart(object? sender, RoutedEventArgs e)
     {
+        if (App.DeviceEnumerator.Cameras == null) return;
+
         FaceCameraController.StopCamera();
         string selectedFriendlyName = FaceCameraAddressEntry.Text!;
         string cameraAddress = selectedFriendlyName;
@@ -338,22 +353,16 @@ public partial class HomePageView : UserControl
 
     private async void OnQuickVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is HomePageViewModel viewModel)
-        {
-            viewModel.SelectedCalibrationText = "5-Point Quick Calibration";
-        }
-
+        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = false; });
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = true; });
     }
 
     private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is HomePageViewModel viewModel)
-        {
-            viewModel.SelectedCalibrationText = "Full Calibration";
-        }
-
+        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = false; });
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
+        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = true; });
     }
 
     private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)
