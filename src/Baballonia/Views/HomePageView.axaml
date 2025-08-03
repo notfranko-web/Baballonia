@@ -61,6 +61,7 @@
                 <Grid
                     IsEnabled="{Binding ShouldShowEyeCalibration}"
                     IsVisible="{Binding ShouldShowEyeCalibration}"
+                    VerticalAlignment="Top"
                     RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
@@ -239,6 +240,7 @@
                 <Grid
                     IsEnabled="{Binding ShouldShowEyeCalibration}"
                     IsVisible="{Binding ShouldShowEyeCalibration}"
+                    VerticalAlignment="Top"
                     RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
@@ -414,7 +416,9 @@
                 </Grid>
 
                 <!--  Face Panel  -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                <Grid
+                    VerticalAlignment="Top"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock
                         FontSize="20"
                         FontWeight="Medium"
