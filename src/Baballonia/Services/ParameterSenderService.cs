@@ -140,8 +140,9 @@ public class ParameterSenderService(
 
         foreach (var parameterName in allParameterNames)
         {
-            var lower = await localSettingsService.ReadSettingAsync<float>($"{parameterName}Lower");
-            var upper = await localSettingsService.ReadSettingAsync<float>($"{parameterName}Upper");
+            var lower = await localSettingsService.ReadSettingAsync<float?>($"{parameterName}Lower") ?? 0;
+
+            var upper = await localSettingsService.ReadSettingAsync<float?>($"{parameterName}Upper") ?? 1;
 
             _expressionSettings[parameterName] = (lower, upper);
         }
