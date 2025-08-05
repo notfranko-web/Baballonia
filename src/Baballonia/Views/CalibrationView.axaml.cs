@@ -9,14 +9,10 @@ namespace Baballonia.Views;
 
 public partial class CalibrationView : UserControl
 {
-    private CalibrationViewModel _viewModel;
-    private HomePageView _homeView;
 
     public CalibrationView()
     {
         InitializeComponent();
-        _viewModel = Ioc.Default.GetService<CalibrationViewModel>()!;
-        _homeView = Ioc.Default.GetService<HomePageView>()!;
 
         if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
         {
@@ -40,16 +36,6 @@ public partial class CalibrationView : UserControl
                 }
             };
         }
-    }
-
-    private void ResetMin(object? sender, RoutedEventArgs e)
-    {
-        _viewModel.ResetCalibrationValues(CalibrationViewModel.Selection.Min);
-    }
-
-    private void ResetMax(object? sender, RoutedEventArgs e)
-    {
-        _viewModel.ResetCalibrationValues(CalibrationViewModel.Selection.Max);
     }
 }
 

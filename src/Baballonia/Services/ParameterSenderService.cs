@@ -17,7 +17,8 @@ namespace Baballonia.Services;
 
 public class ParameterSenderService(
     OscSendService sendService,
-    ILocalSettingsService localSettingsService) : BackgroundService
+    ILocalSettingsService localSettingsService,
+    CalibrationService calibrationService) : BackgroundService
 {
     public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
     public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
@@ -29,9 +30,6 @@ public class ParameterSenderService(
     private CameraController _leftCameraController;
     private CameraController _rightCameraController;
     private CameraController _faceCameraController;
-
-    // Cache for expression settings to avoid repeated async calls
-    private readonly ConcurrentDictionary<string, (float Lower, float Upper)> _expressionSettings = new();
 
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()
@@ -100,12 +98,6 @@ public class ParameterSenderService(
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        // Subscribe to property changes
-        CalibrationViewModel.ExpressionUpdated += OnCalibrationPropertyChanged;
-
-        // Load initial settings
-        await LoadInitialSettings();
-
         try
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -128,75 +120,8 @@ public class ParameterSenderService(
         }
         finally
         {
-            // Unsubscribe when done
-            CalibrationViewModel.ExpressionUpdated -= OnCalibrationPropertyChanged;
+
         }
-    }
-
-    private async Task LoadInitialSettings()
-    {
-        // Load all initial settings into cache
-        var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
-
-        foreach (var parameterName in allParameterNames)
-        {
-            var lower = await localSettingsService.ReadSettingAsync<float?>($"{parameterName}Lower") ?? 0;
-
-            var upper = await localSettingsService.ReadSettingAsync<float?>($"{parameterName}Upper") ?? 1;
-
-            _expressionSettings[parameterName] = (lower, upper);
-        }
-    }
-
-    private void OnCalibrationPropertyChanged(string expression, float value)
-    {
-        if (string.IsNullOrEmpty(expression))
-            return;
-
-        // Parse property name to extract parameter and bound type
-        // Assuming property names follow pattern like "LeftEyeXLower" or "LeftEyeXUpper"
-        string parameterName = string.Empty;
-        bool isUpper = false;
-
-        if (expression.EndsWith("Lower"))
-        {
-            parameterName = expression.Substring(0, expression.Length - 5); // Remove "Lower"
-            isUpper = false;
-        }
-        else if (expression.EndsWith("Upper"))
-        {
-            parameterName = expression.Substring(0, expression.Length - 5); // Remove "Upper"
-            isUpper = true;
-        }
-
-        if (_expressionSettings.TryGetValue(parameterName, out var currentSettings))
-        {
-            if (isUpper)
-            {
-                _expressionSettings[parameterName] = (currentSettings.Lower, value);
-            }
-            else
-            {
-                _expressionSettings[parameterName] = (value, currentSettings.Upper);
-            }
-        }
-        else
-        {
-            // If not found, create new entry with default for the other bound
-            if (isUpper)
-            {
-                _expressionSettings[parameterName] = (0f, value);
-            }
-            else
-            {
-                _expressionSettings[parameterName] = (value, 1f);
-            }
-        }
-    }
-
-    private (float Lower, float Upper) GetExpressionSettings(string parameterName)
-    {
-        return _expressionSettings.TryGetValue(parameterName, out var settings) ? settings : (0f, 1f);
     }
 
     private void ProcessEyeExpressionData(float[] expressions, string prefix = "")
@@ -208,7 +133,7 @@ public class ParameterSenderService(
         for (int i = 0; i < Math.Min(expressions.Length, _eyeExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = GetExpressionSettings(_eyeExpressionMap.ElementAt(i).Key);
+            var settings = calibrationService.GetExpressionSettings(_eyeExpressionMap.ElementAt(i).Key);
 
             var msg = new OscMessage(prefix + _eyeExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
@@ -228,7 +153,7 @@ public class ParameterSenderService(
         for (int i = 0; i < Math.Min(expressions.Length, _faceExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = GetExpressionSettings(_faceExpressionMap.ElementAt(i).Key);
+            var settings = calibrationService.GetExpressionSettings(_faceExpressionMap.ElementAt(i).Key);
 
             var msg = new OscMessage(prefix + _faceExpressionMap.ElementAt(i).Value,
                 Math.Clamp(

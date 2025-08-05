@@ -93,6 +93,7 @@ public class App : Application
                 services.AddTransient<GithubService>();
                 services.AddTransient<FirmwareService>();
                 services.AddSingleton<IMainService, MainStandalone>();
+                services.AddSingleton<CalibrationService, CalibrationService>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
