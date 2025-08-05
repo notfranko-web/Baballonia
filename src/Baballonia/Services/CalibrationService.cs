@@ -8,7 +8,7 @@ using Discord.Commands.Builders;
 
 namespace Baballonia.Services;
 
-public class CalibrationService
+public class CalibrationService : ICalibrationService
 {
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()

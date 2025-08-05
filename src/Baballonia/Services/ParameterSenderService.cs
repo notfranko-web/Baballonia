@@ -18,7 +18,7 @@ namespace Baballonia.Services;
 public class ParameterSenderService(
     OscSendService sendService,
     ILocalSettingsService localSettingsService,
-    CalibrationService calibrationService) : BackgroundService
+    ICalibrationService calibrationService) : BackgroundService
 {
     public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
     public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;

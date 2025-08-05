@@ -27,12 +27,12 @@ public partial class CalibrationViewModel : ViewModelBase
     public ObservableCollection<SliderBindableSetting> CheekSettings { get; set; }
 
     private ILocalSettingsService _settingsService { get; }
-    private readonly CalibrationService _calibrationService;
+    private readonly ICalibrationService _calibrationService;
 
     public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
-        _calibrationService = Ioc.Default.GetService<CalibrationService>()!;
+        _calibrationService = Ioc.Default.GetService<ICalibrationService>()!;
 
         EyeSettings =
         [
