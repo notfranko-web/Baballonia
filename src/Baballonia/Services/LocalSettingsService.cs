@@ -4,7 +4,9 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
+using Baballonia.Helpers;
 using Baballonia.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Baballonia.Services;
@@ -18,15 +20,27 @@ public class LocalSettingsService : ILocalSettingsService
     private readonly string _localSettingsFile;
 
     private Dictionary<string, JsonElement> _settings;
+    private DebounceFunction debouncedSave;
 
     private readonly Task _isInitializedTask;
+    private readonly ILogger<LocalSettingsService> _logger;
 
-    public LocalSettingsService(IOptions<LocalSettingsOptions> options)
+    public LocalSettingsService(IOptions<LocalSettingsOptions> options, ILogger<LocalSettingsService> logger)
     {
         var opt = options.Value;
 
         var applicationDataFolder = Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
         _localSettingsFile = opt.LocalSettingsFile ?? Path.Combine(applicationDataFolder, DefaultLocalSettingsFile);
+
+        debouncedSave = new DebounceFunction(async () =>
+        {
+            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            await File.WriteAllTextAsync(_localSettingsFile, json);
+            logger.LogInformation("Saving settings");
+        }, 2000);
 
         _settings = new Dictionary<string, JsonElement>();
 
@@ -71,12 +85,7 @@ public class LocalSettingsService : ILocalSettingsService
 
         _settings[key] = JsonSerializer.SerializeToElement<T>(value);
 
-        var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-
-        await File.WriteAllTextAsync(_localSettingsFile, json);
+        debouncedSave.Call();
     }
 
     public async Task Load(object instance)
