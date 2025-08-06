@@ -177,9 +177,6 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
-# Click-Once directory
-publish/
-
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
@@ -398,3 +395,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /src/AvaloniaMiaDev.Desktop/.publish
+/src/Baballonia.Desktop/installers
