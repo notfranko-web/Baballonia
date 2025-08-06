@@ -33,7 +33,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     private readonly ILocalSettingsService _settingsService = settingsService;
 
     // Minimum number of frames required before processing
-    private const int ExpectedRawExpressions = 4;
+    private const int ExpectedRawExpressions = 6;
     private const int FramesForInference = 4;
 
     /// <summary>
@@ -212,12 +212,19 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
 
         const float maxAngle = 70f;
         float[] convertedExpressions = new float[6];
-        convertedExpressions[0] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[1] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[4] = arKitExpressions[3];
-        convertedExpressions[5] = arKitExpressions[3];
+        float gazeX = (arKitExpressions[4] + arKitExpressions[1])/2;
+        float gazeY = (arKitExpressions[3] + arKitExpressions[0])/2;
+        convertedExpressions[0] = (((gazeX * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        convertedExpressions[1] = (((gazeY * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        convertedExpressions[2] = (((gazeX * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        convertedExpressions[3] = (((gazeY * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+
+        //convertedExpressions[0] = (((arKitExpressions[4] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        //convertedExpressions[1] = (((arKitExpressions[3] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        //convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
+        //convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        convertedExpressions[4] = arKitExpressions[5];
+        convertedExpressions[5] = arKitExpressions[2];
         arKitExpressions = convertedExpressions;
 
         float time = (float)sw.Elapsed.TotalSeconds;
