@@ -181,50 +181,29 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         using var results = PlatformConnectors[(int)Camera.Left].Item1.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
 
-        /* We expect 10 floats:
-        - EyePitch 0
-        - EyeYaw 1
-        - EyeConvergence 2
-        - LeftEyeLid 3
-        - RightEyeLid 4
-        - BrowRaise 5
-        - BrowAngry 6
-        - EyeWiden 7
-        - EyeSquint 8
-        - EyeDilate 9
-
-        We need to convert this to:
-        - LeftEyeX 0
-        - LeftEyeY 1
-        - RightEyeX 2
-        - RightEyeY 3
-        - LeftEyeLid 4
-        - RightEyeLid 5
-        - BrowRaise 6
-        - BrowAngry 7
-        - EyeWiden 8
-        - EyeSquint 9
-        - EyeDilate 10
-         */
-
         // Filter ARKit Expressions. This is broken rn!
         arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
 
-        const float maxAngle = 70f;
-        float[] convertedExpressions = new float[6];
-        float gazeX = (arKitExpressions[4] + arKitExpressions[1])/2;
-        float gazeY = (arKitExpressions[3] + arKitExpressions[0])/2;
-        convertedExpressions[0] = (((gazeX * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[1] = (((gazeY * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[2] = (((gazeX * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[3] = (((gazeY * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
+        // [left pitch, left yaw, left lid...
+        float[] convertedExpressions = new float[ExpectedRawExpressions];
+        convertedExpressions[0] = arKitExpressions[0];
 
-        //convertedExpressions[0] = (((arKitExpressions[4] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        //convertedExpressions[1] = (((arKitExpressions[3] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        //convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        //convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[4] = arKitExpressions[5];
-        convertedExpressions[5] = arKitExpressions[2];
+        // left_eye_yaw_corrected = (right_eye_yaw * (1 - left_openness)) + (left_eye_yaw * left_openness)
+        convertedExpressions[1] = (arKitExpressions[4] * (1 - arKitExpressions[2])) + (arKitExpressions[1] * arKitExpressions[2]);
+
+        // left_openness = 1 - float(predictions_L[2])
+        convertedExpressions[2] = 1f - arKitExpressions[2];
+
+        // ..right pitch, right yaw, right lid]
+        convertedExpressions[3] = arKitExpressions[3];
+
+        // right_eye_yaw_corrected = (left_eye_yaw * (1 - right_openness)) + (right_eye_yaw * right_openness)
+        convertedExpressions[4] = (arKitExpressions[2] * (1 - arKitExpressions[5])) +
+                                  (arKitExpressions[3] * arKitExpressions[2]);
+
+        // right_openness = 1 - float(predictions_R[2])
+        convertedExpressions[5] = 1f - arKitExpressions[2];
+
         arKitExpressions = convertedExpressions;
 
         float time = (float)sw.Elapsed.TotalSeconds;
