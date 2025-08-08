@@ -307,11 +307,10 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     /// <param name="dimensions"></param>
     /// <param name="cameraSettings"></param>
     /// <returns></returns>
-    public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image, out (int width, int height) dimensions)
+    public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image)
     {
         var index = (int)cameraSettings.Camera;
         var platformConnector = PlatformConnectors[index].Item2;
-        dimensions = (0, 0);
         image = new Mat();
 
         if (platformConnector is null)
@@ -326,10 +325,6 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         if (platformConnector.Capture.RawMat is null)
             return false;
 
-        if (platformConnector.Capture.Dimensions == (0, 0))
-            return false;
-
-        dimensions = platformConnector.Capture!.Dimensions;
         if (color == (platformConnector.Capture!.RawMat.Channels() == 1 ? ColorType.Gray8 : ColorType.Bgr24))
         {
             image = platformConnector.Capture!.RawMat;
@@ -362,10 +357,9 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public override bool GetImage(CameraSettings cameraSettings, out Mat? image, out (int width, int height) dimensions)
+    public override bool GetImage(CameraSettings cameraSettings, out Mat? image)
     {
         image = null;
-        dimensions = (0, 0);
         var platformSettings = PlatformConnectors[(int)cameraSettings.Camera].Item1;
         var platformConnector = PlatformConnectors[(int)cameraSettings.Camera].Item2;
         if (platformConnector is null) return false;
@@ -379,7 +373,6 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         }
 
         image = imageMat;
-        dimensions = (imageMat.Width, imageMat.Height);
         return true;
     }
 

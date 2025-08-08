@@ -172,14 +172,17 @@ public class CameraController : IDisposable
         {
             case CamViewMode.Tracking:
                 useColor = false;
-                valid = _inferenceService.GetImage(CameraSettings, out image, out dims);
+                valid = _inferenceService.GetImage(CameraSettings, out image);
                 if (valid) // Don't run infer on raw images
+                {
+                    CameraSize = (image.Width, image.Height);
                     _inferenceService.GetExpressionData(CameraSettings, out ArExpressions);
+                }
                 break;
             case CamViewMode.Cropping:
                 useColor = true;
-                valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image, out dims);
-                CameraSize = dims;
+                valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image);
+                CameraSize = (image.Width, image.Height);
                 break;
             default:
                 return;
@@ -189,7 +192,7 @@ public class CameraController : IDisposable
         {
             _viewBox.Margin = new Thickness(0, 0, 0, 16);
 
-            if (dims.width == 0 || dims.height == 0 || image is null ||
+            if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null ||
                 double.IsNaN(_mouthWindow.Width) || double.IsNaN(_mouthWindow.Height))
             {
                 ResetViewSizes();
@@ -204,11 +207,11 @@ public class CameraController : IDisposable
             // Create or update bitmap if needed
             if (_bitmap is null ||
                 _edgeCaseFlip ||
-                _bitmap.PixelSize.Width != dims.width ||
-                _bitmap.PixelSize.Height != dims.height)
+                _bitmap.PixelSize.Width != CameraSize.Item1 ||
+                _bitmap.PixelSize.Height != CameraSize.Item2)
             {
                 _bitmap = new WriteableBitmap(
-                    new PixelSize(dims.width, dims.height),
+                    new PixelSize(CameraSize.Item1, CameraSize.Item2),
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
@@ -231,12 +234,12 @@ public class CameraController : IDisposable
             // Update MJPEG frame
             UpdateMjpegFrame(image);
 
-            if (_mouthWindow.Width != dims.width || _mouthWindow.Height != dims.height)
+            if (_mouthWindow.Width != CameraSize.Item1 || _mouthWindow.Height != CameraSize.Item2)
             {
-                _mouthWindow.Width = dims.width;
-                _mouthWindow.Height = dims.height;
-                _canvas.Width = dims.width;
-                _canvas.Height = dims.height;
+                _mouthWindow.Width = CameraSize.Item1;
+                _mouthWindow.Height = CameraSize.Item2;
+                _canvas.Width = CameraSize.Item1;
+                _canvas.Height = CameraSize.Item2;
             }
 
             if (_overlayRectangle.Width != -1)

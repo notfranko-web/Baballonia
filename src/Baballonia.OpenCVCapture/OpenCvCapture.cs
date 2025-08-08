@@ -80,12 +80,6 @@ public sealed partial class OpenCvCapture(string url) : Capture(url)
             try
             {
                 IsReady = capture.Read(RawMat);
-
-                if (IsReady)
-                {
-                    Dimensions.width = RawMat.Width;
-                    Dimensions.height = RawMat.Height;
-                }
             }
             catch (Exception)
             {

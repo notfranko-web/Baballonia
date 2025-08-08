@@ -19,12 +19,6 @@ public abstract class Capture
     public string Url { get; set; }
 
     /// <summary>
-    /// Dimensions for this frame. Needs to be explicitly defined when dealing with
-    /// custom capture sources (IE Serial/Cameras)
-    /// </summary>
-    public (int width, int height) Dimensions;
-
-    /// <summary>
     /// Represents the incoming frame data for this capture source.
     /// Will be `dimension` in BGR color space
     /// </summary>
