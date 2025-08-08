@@ -195,8 +195,13 @@ public class ParameterSenderService(
 
     private (float Lower, float Upper) GetExpressionSettings(string parameterName)
     {
-        return _expressionSettings.TryGetValue(parameterName, out var settings) ? settings : (0f, 1f);
+        var settings = _expressionSettings.TryGetValue(parameterName, out var s) ? s : (0f, 0f); // This never fails, instead it outputs two zeros.
+
+        return (settings.Item1 == 0f && settings.Item2 == 0f)
+            ? (0f, 1f)
+            : settings;
     }
+
 
     private void ProcessEyeExpressionData(float[] expressions, string prefix = "")
     {
