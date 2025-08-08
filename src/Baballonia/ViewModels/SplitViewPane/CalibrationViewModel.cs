@@ -11,17 +11,23 @@ public partial class CalibrationViewModel : ViewModelBase
 {
     public static event Action<string, float> ExpressionUpdated;
 
-    [ObservableProperty] [property: SavedSetting("LeftEyeXLower", -1f)] private float _leftEyeXLower;
+    [ObservableProperty] [property: SavedSetting("LeftEyeXLower", 0f)] private float _leftEyeXLower;
     [ObservableProperty] [property: SavedSetting("LeftEyeYLower", 1f)] private float _leftEyeYLower;
 
-    [ObservableProperty] [property: SavedSetting("RightEyeXLower", -1f)] private float _rightEyeXLower;
+    [ObservableProperty] [property: SavedSetting("RightEyeXLower", 0f)] private float _rightEyeXLower;
     [ObservableProperty] [property: SavedSetting("RightEyeYLower", 1f)] private float _rightEyeYLower;
 
-    [ObservableProperty] [property: SavedSetting("LeftEyeXUpper", -1f)] private float _leftEyeXUpper;
+    [ObservableProperty] [property: SavedSetting("LeftEyeXUpper", 0f)] private float _leftEyeXUpper;
     [ObservableProperty] [property: SavedSetting("LeftEyeYUpper", 1f)] private float _leftEyeYUpper;
 
-    [ObservableProperty] [property: SavedSetting("RightEyeXUpper", -1f)] private float _rightEyeXUpper;
+    [ObservableProperty] [property: SavedSetting("RightEyeXUpper", 0f)] private float _rightEyeXUpper;
     [ObservableProperty] [property: SavedSetting("RightEyeYUpper", 1f)] private float _rightEyeYUpper;
+
+    [ObservableProperty] [property: SavedSetting("LeftEyeLidLower", 0f)] private float _leftEyeLidLower;
+    [ObservableProperty] [property: SavedSetting("LeftEyeLidUpper", 1f)] private float _leftEyeLidUpper;
+
+    [ObservableProperty] [property: SavedSetting("RightEyeLidLower", 0f)] private float _rightEyeLidLower;
+    [ObservableProperty] [property: SavedSetting("RightEyeLidUpper", 1f)] private float _rightEyeLidUpper;
 
     [ObservableProperty] [property: SavedSetting("CheekPuffLeftLower", 0f)] private float _cheekPuffLeftLower;
     [ObservableProperty] [property: SavedSetting("CheekPuffLeftUpper", 1f)] private float _cheekPuffLeftUpper;
@@ -159,7 +165,7 @@ public partial class CalibrationViewModel : ViewModelBase
     [ObservableProperty] [property: SavedSetting("TongueTwistRightUpper", 1f)] private float _tongueTwistRightUpper;
 
     private ILocalSettingsService _settingsService { get; }
-    
+
     public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;

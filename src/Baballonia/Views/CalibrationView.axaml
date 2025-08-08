@@ -77,7 +77,7 @@
                                 <twoRangeSlider:RangeSlider
                                     LowerSelectedValue="{Binding LeftEyeXLower, Mode=TwoWay}"
                                     Maximum="1"
-                                    Minimum="-1"
+                                    Minimum="0"
                                     TickFrequency="0.01"
                                     UpperSelectedValue="{Binding LeftEyeXUpper, Mode=TwoWay}" />
                             </StackPanel>
@@ -101,11 +101,35 @@
                                 <twoRangeSlider:RangeSlider
                                     LowerSelectedValue="{Binding LeftEyeYLower, Mode=TwoWay}"
                                     Maximum="1"
-                                    Minimum="-1"
+                                    Minimum="0"
                                     TickFrequency="0.01"
                                     UpperSelectedValue="{Binding LeftEyeYUpper, Mode=TwoWay}" />
                             </StackPanel>
                         </Grid>
+                    </Border>
+
+                    <!--  Left Eye Lid  -->
+                    <Border
+                      Margin="0,0,0,8"
+                      Padding="16"
+                      Background="{DynamicResource SystemChromeMediumLowColor}"
+                      CornerRadius="8">
+                      <Grid>
+                        <StackPanel>
+                          <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Left Eye Lid: " />
+                            <Run Text="{Binding LeftEyeLidLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding LeftEyeLidUpper, StringFormat={}{0:0.00}}" />
+                          </TextBlock>
+                          <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding LeftEyeLidLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding LeftEyeLidUpper, Mode=TwoWay}" />
+                        </StackPanel>
+                      </Grid>
                     </Border>
 
                     <!--  Right Eye X  -->
@@ -125,7 +149,7 @@
                                 <twoRangeSlider:RangeSlider
                                     LowerSelectedValue="{Binding RightEyeXLower, Mode=TwoWay}"
                                     Maximum="1"
-                                    Minimum="-1"
+                                    Minimum="0"
                                     TickFrequency="0.01"
                                     UpperSelectedValue="{Binding RightEyeXUpper, Mode=TwoWay}" />
                             </StackPanel>
@@ -148,11 +172,34 @@
                                 <twoRangeSlider:RangeSlider
                                     LowerSelectedValue="{Binding RightEyeYLower, Mode=TwoWay}"
                                     Maximum="1"
-                                    Minimum="-1"
+                                    Minimum="0"
                                     TickFrequency="0.01"
                                     UpperSelectedValue="{Binding RightEyeYUpper, Mode=TwoWay}" />
                             </StackPanel>
                         </Grid>
+                    </Border>
+                    <!--  Right Eye Lid  -->
+                    <Border
+                      Margin="0,0,0,8"
+                      Padding="16"
+                      Background="{DynamicResource SystemChromeMediumLowColor}"
+                      CornerRadius="8">
+                      <Grid>
+                        <StackPanel>
+                          <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Run FontWeight="SemiBold" Text="Right Eye Lid: " />
+                            <Run Text="{Binding RightEyeLidLower, StringFormat={}{0:0.00}}" />
+                            <Run Text="-" />
+                            <Run Text="{Binding RightEyeLidUpper, StringFormat={}{0:0.00}}" />
+                          </TextBlock>
+                          <twoRangeSlider:RangeSlider
+                            LowerSelectedValue="{Binding RightEyeLidLower, Mode=TwoWay}"
+                            Maximum="1"
+                            Minimum="0"
+                            TickFrequency="0.01"
+                            UpperSelectedValue="{Binding RightEyeLidUpper, Mode=TwoWay}" />
+                        </StackPanel>
+                      </Grid>
                     </Border>
                 </StackPanel>
             </Expander>

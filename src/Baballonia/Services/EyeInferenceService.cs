@@ -180,29 +180,36 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         // Run inference!
         using var results = PlatformConnectors[(int)Camera.Left].Item1.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
-
-        // Filter ARKit Expressions. This is broken rn!
         arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
+
+        var MUL_V = 2.0f;
+        var MUL_Y = 2.0f;
+
+        var left_pitch = arKitExpressions[0] * MUL_Y - (MUL_Y/2);
+        var left_yaw = arKitExpressions[1] * MUL_V - (MUL_V/2);
+        var left_lid = 1 - arKitExpressions[2];
+
+        var right_pitch = arKitExpressions[3] * MUL_Y - (MUL_Y/2);
+        var right_yaw = arKitExpressions[4] * MUL_V - (MUL_V/2);
+        var right_lid = 1 - arKitExpressions[5];
+
+        var eye_Y = ((left_pitch * left_lid) + (right_pitch * right_lid)) / (left_lid + right_lid);
+
+        var left_eye_yaw_corrected = (right_yaw * (1 - left_lid)) + (left_yaw * left_lid);
+        var right_eye_yaw_corrected = (left_yaw * (1 - right_lid)) + (right_yaw * right_lid);
+
 
         // [left pitch, left yaw, left lid...
         float[] convertedExpressions = new float[ExpectedRawExpressions];
-        convertedExpressions[0] = arKitExpressions[0];
 
-        // left_eye_yaw_corrected = (right_eye_yaw * (1 - left_openness)) + (left_eye_yaw * left_openness)
-        convertedExpressions[1] = (arKitExpressions[4] * (1 - arKitExpressions[2])) + (arKitExpressions[1] * arKitExpressions[2]);
+        // swap eyes at this point
+        convertedExpressions[0] /*left pitch*/  = right_eye_yaw_corrected;
+        convertedExpressions[1] /*left yaw*/    = eye_Y;
+        convertedExpressions[2] /*left lid*/    = right_lid;
 
-        // left_openness = 1 - float(predictions_L[2])
-        convertedExpressions[2] = 1f - arKitExpressions[2];
-
-        // ..right pitch, right yaw, right lid]
-        convertedExpressions[3] = arKitExpressions[3];
-
-        // right_eye_yaw_corrected = (left_eye_yaw * (1 - right_openness)) + (right_eye_yaw * right_openness)
-        convertedExpressions[4] = (arKitExpressions[2] * (1 - arKitExpressions[5])) +
-                                  (arKitExpressions[3] * arKitExpressions[2]);
-
-        // right_openness = 1 - float(predictions_R[2])
-        convertedExpressions[5] = 1f - arKitExpressions[2];
+        convertedExpressions[3] /*right pitch*/ = left_eye_yaw_corrected;
+        convertedExpressions[4] /*right yaw*/   = eye_Y;
+        convertedExpressions[5] /*right lid*/   = left_lid;
 
         arKitExpressions = convertedExpressions;
 

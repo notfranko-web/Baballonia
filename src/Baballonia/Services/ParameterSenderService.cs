@@ -36,17 +36,17 @@ public class ParameterSenderService(
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()
     {
-        { "/LeftEyeX", "/LeftEyeX" },
-        { "/LeftEyeY", "/LeftEyeY" },
-        { "/RightEyeX", "/RightEyeX" },
-        { "/RightEyeY", "/RightEyeY" },
-        { "/LeftEyeLid", "/LeftEyeLid" },
-        { "/RightEyeLid", "/RightEyeLid" },
-        { "/BrowRaise", "/BrowRaise" },
-        { "/BrowAngry", "/BrowAngry" },
-        { "/EyeWiden", "/EyeWiden" },
-        { "/EyeSquint", "/EyeSquint" },
-        { "/EyeDilate", "/EyeDilate" },
+        { "LeftEyeX", "/LeftEyeX" },
+        { "LeftEyeY", "/LeftEyeY" },
+        { "LeftEyeLid", "/LeftEyeLid" },
+        { "RightEyeX", "/RightEyeX" },
+        { "RightEyeY", "/RightEyeY" },
+        { "RightEyeLid", "/RightEyeLid" },
+        { "BrowRaise", "/BrowRaise" },
+        { "BrowAngry", "/BrowAngry" },
+        { "EyeWiden", "/EyeWiden" },
+        { "EyeSquint", "/EyeSquint" },
+        { "EyeDilate", "/EyeDilate" },
     };
 
     private readonly Dictionary<string, string> _faceExpressionMap = new()
@@ -212,7 +212,7 @@ public class ParameterSenderService(
             var msg = new OscMessage(prefix + _eyeExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
-                    0,
+                    -1,
                     1));
             _sendQueue.Enqueue(msg);
         }
@@ -228,7 +228,6 @@ public class ParameterSenderService(
         {
             var weight = expressions[i];
             var settings = GetExpressionSettings(_faceExpressionMap.ElementAt(i).Key);
-
             var msg = new OscMessage(prefix + _faceExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
