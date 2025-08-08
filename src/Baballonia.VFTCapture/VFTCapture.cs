@@ -77,8 +77,6 @@ public partial class VftCapture : Capture
                     yuvConvert = yuvConvert.GaussianBlur(new Size(15, 15), 0);
 
                     RawMat = yuvConvert.LUT(lut);
-                    Dimensions.width = RawMat.Width;
-                    Dimensions.height = RawMat.Height;
                 }
             }
             catch (Exception)

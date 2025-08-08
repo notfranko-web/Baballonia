@@ -33,7 +33,7 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     private readonly ILocalSettingsService _settingsService = settingsService;
 
     // Minimum number of frames required before processing
-    private const int ExpectedRawExpressions = 4;
+    private const int ExpectedRawExpressions = 6;
     private const int FramesForInference = 4;
 
     /// <summary>
@@ -180,44 +180,37 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         // Run inference!
         using var results = PlatformConnectors[(int)Camera.Left].Item1.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
-
-        /* We expect 10 floats:
-        - EyePitch 0
-        - EyeYaw 1
-        - EyeConvergence 2
-        - LeftEyeLid 3
-        - RightEyeLid 4
-        - BrowRaise 5
-        - BrowAngry 6
-        - EyeWiden 7
-        - EyeSquint 8
-        - EyeDilate 9
-
-        We need to convert this to:
-        - LeftEyeX 0
-        - LeftEyeY 1
-        - RightEyeX 2
-        - RightEyeY 3
-        - LeftEyeLid 4
-        - RightEyeLid 5
-        - BrowRaise 6
-        - BrowAngry 7
-        - EyeWiden 8
-        - EyeSquint 9
-        - EyeDilate 10
-         */
-
-        // Filter ARKit Expressions. This is broken rn!
         arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
 
-        const float maxAngle = 70f;
-        float[] convertedExpressions = new float[6];
-        convertedExpressions[0] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[1] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[2] = (((arKitExpressions[1] * 108.42045593261719f) - 54.210227966308594f) * 1.2f) / maxAngle;
-        convertedExpressions[3] = (((arKitExpressions[0] * 107.78239440917969f) - 53.891197204589844f) * 1.1f) / maxAngle;
-        convertedExpressions[4] = arKitExpressions[3];
-        convertedExpressions[5] = arKitExpressions[3];
+        var MUL_V = 2.0f;
+        var MUL_Y = 2.0f;
+
+        var left_pitch = arKitExpressions[0] * MUL_Y - (MUL_Y/2);
+        var left_yaw = arKitExpressions[1] * MUL_V - (MUL_V/2);
+        var left_lid = 1 - arKitExpressions[2];
+
+        var right_pitch = arKitExpressions[3] * MUL_Y - (MUL_Y/2);
+        var right_yaw = arKitExpressions[4] * MUL_V - (MUL_V/2);
+        var right_lid = 1 - arKitExpressions[5];
+
+        var eye_Y = ((left_pitch * left_lid) + (right_pitch * right_lid)) / (left_lid + right_lid);
+
+        var left_eye_yaw_corrected = (right_yaw * (1 - left_lid)) + (left_yaw * left_lid);
+        var right_eye_yaw_corrected = (left_yaw * (1 - right_lid)) + (right_yaw * right_lid);
+
+
+        // [left pitch, left yaw, left lid...
+        float[] convertedExpressions = new float[ExpectedRawExpressions];
+
+        // swap eyes at this point
+        convertedExpressions[0] /*left pitch*/  = right_eye_yaw_corrected;
+        convertedExpressions[1] /*left yaw*/    = eye_Y;
+        convertedExpressions[2] /*left lid*/    = right_lid;
+
+        convertedExpressions[3] /*right pitch*/ = left_eye_yaw_corrected;
+        convertedExpressions[4] /*right yaw*/   = eye_Y;
+        convertedExpressions[5] /*right lid*/   = left_lid;
+
         arKitExpressions = convertedExpressions;
 
         float time = (float)sw.Elapsed.TotalSeconds;
@@ -314,11 +307,10 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     /// <param name="dimensions"></param>
     /// <param name="cameraSettings"></param>
     /// <returns></returns>
-    public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image, out (int width, int height) dimensions)
+    public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image)
     {
         var index = (int)cameraSettings.Camera;
         var platformConnector = PlatformConnectors[index].Item2;
-        dimensions = (0, 0);
         image = new Mat();
 
         if (platformConnector is null)
@@ -333,10 +325,6 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         if (platformConnector.Capture.RawMat is null)
             return false;
 
-        if (platformConnector.Capture.Dimensions == (0, 0))
-            return false;
-
-        dimensions = platformConnector.Capture!.Dimensions;
         if (color == (platformConnector.Capture!.RawMat.Channels() == 1 ? ColorType.Gray8 : ColorType.Bgr24))
         {
             image = platformConnector.Capture!.RawMat;
@@ -369,10 +357,9 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public override bool GetImage(CameraSettings cameraSettings, out Mat? image, out (int width, int height) dimensions)
+    public override bool GetImage(CameraSettings cameraSettings, out Mat? image)
     {
         image = null;
-        dimensions = (0, 0);
         var platformSettings = PlatformConnectors[(int)cameraSettings.Camera].Item1;
         var platformConnector = PlatformConnectors[(int)cameraSettings.Camera].Item2;
         if (platformConnector is null) return false;
@@ -386,7 +373,6 @@ public class EyeInferenceService(ILogger<InferenceService> logger, ILocalSetting
         }
 
         image = imageMat;
-        dimensions = (imageMat.Width, imageMat.Height);
         return true;
     }
 

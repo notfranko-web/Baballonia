@@ -239,17 +239,18 @@ public partial class HomePageView : UserControl
     {
         if (App.DeviceEnumerator.Cameras == null) return;
 
-        LeftCameraController.StopCamera();
         string selectedFriendlyName = LeftCameraAddressEntry.Text!;
-        string cameraAddress = selectedFriendlyName;
+        if (string.IsNullOrWhiteSpace(selectedFriendlyName)) return;
+
+        LeftCameraController.StopCamera();
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
         if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
-            cameraAddress = deviceId;
+            selectedFriendlyName = deviceId;
         }
 
-        LeftCameraController.StartCamera(cameraAddress);
+        LeftCameraController.StartCamera(selectedFriendlyName);
     }
 
     public void LeftCameraStop(object? sender, RoutedEventArgs e)
@@ -278,17 +279,18 @@ public partial class HomePageView : UserControl
     {
         if (App.DeviceEnumerator.Cameras == null) return;
 
-        RightCameraController.StopCamera();
         string selectedFriendlyName = RightCameraAddressEntry.Text!;
-        string cameraAddress = selectedFriendlyName;
+        if (string.IsNullOrWhiteSpace(selectedFriendlyName)) return;
+
+        RightCameraController.StopCamera();
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
         if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
-            cameraAddress = deviceId;
+            selectedFriendlyName = deviceId;
         }
 
-        RightCameraController.StartCamera(cameraAddress);
+        RightCameraController.StartCamera(selectedFriendlyName);
     }
 
     public void RightCameraStop(object? sender, RoutedEventArgs e)
@@ -317,17 +319,18 @@ public partial class HomePageView : UserControl
     {
         if (App.DeviceEnumerator.Cameras == null) return;
 
-        FaceCameraController.StopCamera();
         string selectedFriendlyName = FaceCameraAddressEntry.Text!;
-        string cameraAddress = selectedFriendlyName;
+        if (string.IsNullOrEmpty(selectedFriendlyName)) return;
+
+        FaceCameraController.StopCamera();
 
         // If the friendly name exists in our dictionary, use the corresponding device ID
         if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
         {
-            cameraAddress = deviceId;
+            selectedFriendlyName = deviceId;
         }
 
-        FaceCameraController.StartCamera(cameraAddress);
+        FaceCameraController.StartCamera(selectedFriendlyName);
     }
 
     public void FaceCameraStop(object? sender, RoutedEventArgs e)

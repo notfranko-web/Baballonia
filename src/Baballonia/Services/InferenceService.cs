@@ -41,8 +41,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <param name="dimensions"></param>
     /// <param name="cameraSettings"></param>
     /// <returns></returns>
-    public abstract bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image,
-        out (int width, int height) dimensions);
+    public abstract bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image);
 
     /// <summary>
     /// Gets the prost-transform lip image for this frame
@@ -52,7 +51,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <param name="image"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public abstract bool GetImage(CameraSettings cameraSettings, out Mat? image, out (int width, int height) dimensions);
+    public abstract bool GetImage(CameraSettings cameraSettings, out Mat? image);
 
     /// <summary>
     /// Creates the proper video streaming classes based on the platform we're deploying to.
