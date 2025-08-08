@@ -42,6 +42,11 @@ public class ParameterSenderService(
         { "/RightEyeY", "/RightEyeY" },
         { "/LeftEyeLid", "/LeftEyeLid" },
         { "/RightEyeLid", "/RightEyeLid" },
+        { "/BrowRaise", "/BrowRaise" },
+        { "/BrowAngry", "/BrowAngry" },
+        { "/EyeWiden", "/EyeWiden" },
+        { "/EyeSquint", "/EyeSquint" },
+        { "/EyeDilate", "/EyeDilate" },
     };
 
     private readonly Dictionary<string, string> _faceExpressionMap = new()
