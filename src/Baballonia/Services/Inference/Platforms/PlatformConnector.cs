@@ -106,7 +106,7 @@ public abstract class PlatformConnector
 
     public unsafe bool TransformRawImage(Mat outputMat, CameraSettings settings)
     {
-        if (Capture?.IsReady != true || Capture.RawMat == null)
+        if (Capture?.RawMat == null || !Capture.IsReady)
             return false;
 
         if (Capture.RawMat.DataPointer == null ||

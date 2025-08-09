@@ -61,7 +61,7 @@ public class LocalSettingsService : ILocalSettingsService
             _settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
                         ?? new Dictionary<string, JsonElement>();
         }
-        catch
+        catch(Exception ex)
         {
             _settings = new Dictionary<string, JsonElement>();
         }
@@ -71,12 +71,24 @@ public class LocalSettingsService : ILocalSettingsService
     {
         await _isInitializedTask;
 
-        if (_settings.TryGetValue(key, out var obj))
+        try
         {
-            return obj.Deserialize<T>();
+            if (_settings.TryGetValue(key, out var obj))
+            {
+                    return obj.Deserialize<T>();
+            }
+        }
+        catch (Exception ignore)
+        {
+            // ignored
         }
 
         return defaultValue;
+    }
+
+    public void ForceSave()
+    {
+        debouncedSave.Force();
     }
 
     public async Task SaveSettingAsync<T>(string key, T value, bool forceLocal = false)

@@ -24,28 +24,18 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
-    public CameraSettings CameraSettings { get; private set; }
+    public CameraSettings CameraSettings { get; set; }
 
     public float[] ArExpressions = [];
 
-    private readonly HomePageView _view;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IInferenceService _inferenceService;
     private readonly Camera _camera;
 
-    // UI Elements
-    private readonly Rectangle _rectangleWindow;
-    private readonly Button _selectEntireFrameButton;
-    private readonly Viewbox _viewBox;
-    private readonly Image _mouthWindow;
-    private readonly Canvas _canvas;
-
     // State
     private CamViewMode _camViewMode = CamViewMode.Tracking;
+    public CamViewMode CamViewMode => _camViewMode;
     private Rect _overlayRectangle;
-    private bool _isCropping;
-    private double _dragStartX;
-    private double _dragStartY;
     private WriteableBitmap _bitmap;
 
     /// <summary>
@@ -54,113 +44,51 @@ public class CameraController : IDisposable
     /// </summary>
     private bool _edgeCaseFlip;
 
-    // Settings keys
-    private readonly string _cameraKey;
-    private readonly string _roiSettingKeyX;
-    private readonly string _roiSettingKeyY;
-    private readonly string _roiSettingKeyWidth;
-    private readonly string _roiSettingKeyHeight;
-    private readonly string _rotationSettingKey;
-    private readonly string _flipXSettingKey;
-    private readonly string _flipYSettingKey;
-
-    // Tracking mode property
-    private readonly StyledProperty<bool> _isTrackingModeProperty;
-
     private (int, int) CameraSize { get; set; } = (0, 0);
 
     private MjpegStreamingService _mjpegStreamingService;
-    private CameraService _cameraService;
+    public CropManager CropManager { get; } = new();
 
     public CameraController(
-        HomePageView view,
         ILocalSettingsService localSettingsService,
         IInferenceService inferenceService,
         Camera camera,
-        Rectangle rectangleWindow,
-        Button selectEntireFrameButton,
-        Viewbox viewBox,
-        Image mouthWindow,
-        Canvas canvas,
-        string cameraKey,
-        string roiSettingKeyX,
-        string roiSettingKeyY,
-        string roiSettingKeyWidth,
-        string roiSettingKeyHeight,
-        string rotationSettingKey,
-        string flipXSettingKey,
-        string flipYSettingKey,
-        StyledProperty<bool> isTrackingModeProperty)
+        CameraSettings cameraSettings)
     {
-        _view = view;
         _localSettingsService = localSettingsService;
         _inferenceService = inferenceService;
         _camera = camera;
-        _rectangleWindow = rectangleWindow;
-        _selectEntireFrameButton = selectEntireFrameButton;
-        _viewBox = viewBox;
-        _mouthWindow = mouthWindow;
-        _canvas = canvas;
-        _cameraKey = cameraKey;
-        _roiSettingKeyX = roiSettingKeyX;
-        _roiSettingKeyY = roiSettingKeyY;
-        _roiSettingKeyWidth = roiSettingKeyWidth;
-        _roiSettingKeyHeight = roiSettingKeyHeight;
-        _rotationSettingKey = rotationSettingKey;
-        _flipXSettingKey = flipXSettingKey;
-        _flipYSettingKey = flipYSettingKey;
-        _isTrackingModeProperty = isTrackingModeProperty;
-
-        _mjpegStreamingService = new MjpegStreamingService();
-        _cameraService = new CameraService(_localSettingsService, _inferenceService, camera);
-
-        // Set up event handlers
-        _mouthWindow.PointerPressed += OnPointerPressed;
-        _mouthWindow.PointerMoved += OnPointerMoved;
-        _mouthWindow.PointerReleased += OnPointerReleased;
+        CameraSettings = cameraSettings;
 
         // Configure rectangle
-        _rectangleWindow.Stroke = Brushes.Red;
-        _rectangleWindow.StrokeThickness = 2;
+        // _rectangleWindow.Stroke = Brushes.Red;
+        // _rectangleWindow.StrokeThickness = 2;
 
-        // Set initial mode
-        _view.SetValue(_isTrackingModeProperty, true);
+        _mjpegStreamingService = new MjpegStreamingService();
     }
 
-    public async Task UpdateImage()
+    public async Task UpdateImage(Action<WriteableBitmap> callback)
     {
-        var isCroppingModeUiVisible = _camViewMode == CamViewMode.Cropping;
-        _rectangleWindow.IsVisible = isCroppingModeUiVisible;
-        _selectEntireFrameButton.IsVisible = isCroppingModeUiVisible;
-        _viewBox.MaxHeight = isCroppingModeUiVisible ? double.MaxValue : 192;
-        _viewBox.MaxWidth = isCroppingModeUiVisible ? double.MaxValue : 192;
-
         bool valid;
         bool useColor;
         Mat? image;
-        (int width, int height) dims;
+
+        _overlayRectangle = CropManager.CropZone;
 
         if (_overlayRectangle is { X: 0, Y: 0, Width: 0, Height: 0 })
         {
-            var x = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyX);
-            var y = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyY);
-            var width = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyWidth);
-            var height = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyHeight);
+            var x = CameraSettings.RoiX;
+            var y = CameraSettings.RoiY;
+            var width = CameraSettings.RoiWidth;
+            var height = CameraSettings.RoiHeight;
             _overlayRectangle = new Rect(x, y, width, height);
+            CropManager.SetCropZone(_overlayRectangle);
         }
 
-        CameraSettings = new CameraSettings
-        {
-            Camera = _camera,
-            RoiX = (int)_overlayRectangle.X,
-            RoiY = (int)_overlayRectangle.Y,
-            RoiWidth = (int)_overlayRectangle.Width,
-            RoiHeight = (int)_overlayRectangle.Height,
-            RotationRadians = await _localSettingsService.ReadSettingAsync<float>(_rotationSettingKey),
-            UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>(_flipXSettingKey),
-            UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>(_flipYSettingKey),
-            Brightness = 1f
-        };
+        CameraSettings.RoiX = (int) _overlayRectangle.X;
+        CameraSettings.RoiY = (int) _overlayRectangle.Y;
+        CameraSettings.RoiWidth = (int) _overlayRectangle.Width;
+        CameraSettings.RoiHeight = (int) _overlayRectangle.Height;
 
         switch (_camViewMode)
         {
@@ -177,6 +105,8 @@ public class CameraController : IDisposable
                 useColor = true;
                 valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image);
                 CameraSize = (image.Width, image.Height);
+                CropManager.CameraSize.Width = image.Width;
+                CropManager.CameraSize.Height = image.Height;
                 break;
             default:
                 return;
@@ -184,18 +114,15 @@ public class CameraController : IDisposable
 
         if (valid)
         {
-            _viewBox.Margin = new Thickness(0, 0, 0, 16);
-
-            if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null ||
-                double.IsNaN(_mouthWindow.Width) || double.IsNaN(_mouthWindow.Height))
+            if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null)
             {
-                ResetViewSizes();
+                callback(null);
                 return;
             }
 
             if (CameraSettings.RoiWidth == 0 || CameraSettings.RoiHeight == 0)
             {
-                await SelectEntireFrame();
+                CropManager.SelectEntireFrame(_camera);
             }
 
             // Create or update bitmap if needed
@@ -209,7 +136,7 @@ public class CameraController : IDisposable
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
-                _mouthWindow.Source = _bitmap;
+                // _imageWindow.Source = _bitmap;
             }
 
             // Allocation-free image-update
@@ -227,178 +154,38 @@ public class CameraController : IDisposable
 
             // Update MJPEG frame
             UpdateMjpegFrame(image);
-
-            if (_mouthWindow.Width != CameraSize.Item1 || _mouthWindow.Height != CameraSize.Item2)
-            {
-                _mouthWindow.Width = CameraSize.Item1;
-                _mouthWindow.Height = CameraSize.Item2;
-                _canvas.Width = CameraSize.Item1;
-                _canvas.Height = CameraSize.Item2;
-            }
-
-            if (_overlayRectangle.Width != -1)
-                _rectangleWindow.Width = _overlayRectangle.Width;
-            if (_overlayRectangle.Height != -1)
-                _rectangleWindow.Height = _overlayRectangle.Height;
-            Canvas.SetLeft(_rectangleWindow, _overlayRectangle.X);
-            Canvas.SetTop(_rectangleWindow, _overlayRectangle.Y);
-        }
-        else
-        {
-            ResetViewSizes();
+            callback(_bitmap);
+            return;
         }
 
-        Dispatcher.UIThread.Post(_mouthWindow.InvalidateVisual, DispatcherPriority.Render);
-        Dispatcher.UIThread.Post(_canvas.InvalidateVisual, DispatcherPriority.Render);
-        Dispatcher.UIThread.Post(_rectangleWindow.InvalidateVisual, DispatcherPriority.Render);
-    }
+        callback(null);
 
-    private void ResetViewSizes()
-    {
-        _viewBox.Margin = new Thickness();
-        _mouthWindow.Width = 0;
-        _mouthWindow.Height = 0;
-        _canvas.Width = 0;
-        _canvas.Height = 0;
-        _rectangleWindow.Width = 0;
-        _rectangleWindow.Height = 0;
     }
-
-    public WriteableBitmap Bitmap => _bitmap;
 
     public void StartCamera(string cameraAddress)
     {
-        _cameraService.StartCamera(cameraAddress);
+        if (!string.IsNullOrEmpty(cameraAddress))
+        {
+            StopCamera();
+        }
+        _inferenceService.SetupInference(_camera, cameraAddress);
     }
 
     public void StopCamera()
     {
-        _cameraService.StopCamera();
+        _inferenceService.Shutdown(_camera);
     }
 
     public void SetTrackingMode()
     {
         _camViewMode = CamViewMode.Tracking;
         _edgeCaseFlip = true;
-        _isCropping = false;
-        _view.SetValue(_isTrackingModeProperty, true);
-        OnPointerReleased(null, null!); // Close and save any open crops
     }
 
     public void SetCroppingMode()
     {
         _camViewMode = CamViewMode.Cropping;
         _edgeCaseFlip = true;
-        _view.SetValue(_isTrackingModeProperty, false);
-    }
-
-    public async Task SelectEntireFrame()
-    {
-        if (_bitmap is null) return;
-
-        // Special BSB2E-like stereo camera logic
-        var halfWidth = CameraSize.Item1 / 2;
-
-        int x;
-        int y;
-        int width;
-        int height;
-
-        if (CameraSize.Item1 / 2 == CameraSize.Item2)
-        {
-            switch (_camera)
-            {
-                case Camera.Left:
-                    x = 0;
-                    y = 0;
-                    width = halfWidth - 1;
-                    height = (int)_bitmap.Size.Height - 1;
-                    break;
-                case Camera.Right:
-                    x = halfWidth;
-                    y = 0;
-                    width = halfWidth - 1;
-                    height = (int)_bitmap.Size.Height - 1;
-                    break;
-                default: // Face
-                    x = 0;
-                    y = 0;
-                    width = (int)_bitmap.Size.Width;
-                    height = (int)_bitmap.Size.Height;
-                    break;
-            }
-        }
-        else
-        {
-            x = 0;
-            y = 0;
-            width = (int)_bitmap.Size.Width;
-            height = (int)_bitmap.Size.Height;
-        }
-
-        _overlayRectangle = new Rect(x, y, width, height);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, x);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, y);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, width);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, height);
-    }
-
-    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (_camViewMode != CamViewMode.Cropping) return;
-
-        var position = e.GetPosition(_mouthWindow);
-        _dragStartX = position.X;
-        _dragStartY = position.Y;
-
-        _isCropping = true;
-    }
-
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
-    {
-        if (!_isCropping) return;
-
-        Image? image = sender as Image;
-
-        var position = e.GetPosition(_mouthWindow);
-
-        double x, y, w, h;
-
-        if (position.X < _dragStartX)
-        {
-            x = position.X;
-            w = _dragStartX - x;
-        }
-        else
-        {
-            x = _dragStartX;
-            w = position.X - _dragStartX;
-        }
-
-        if (position.Y < _dragStartY)
-        {
-            y = position.Y;
-            h = _dragStartY - y;
-        }
-        else
-        {
-            y = _dragStartY;
-            h = position.Y - _dragStartY;
-        }
-
-        _overlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
-    }
-
-    private async void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (!_isCropping) return;
-
-        _isCropping = false;
-
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyX, _overlayRectangle.X);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyY, _overlayRectangle.Y);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyWidth, _overlayRectangle.Width);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyHeight, _overlayRectangle.Height);
     }
 
     #region MJPEG Streaming
@@ -428,10 +215,6 @@ public class CameraController : IDisposable
     {
         _mjpegStreamingService.Dispose();
         StopCamera();
-
-        _mouthWindow.PointerPressed -= OnPointerPressed;
-        _mouthWindow.PointerMoved -= OnPointerMoved;
-        _mouthWindow.PointerReleased -= OnPointerReleased;
 
         _bitmap?.Dispose();
     }

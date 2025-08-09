@@ -1,102 +1,116 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Baballonia.Contracts;
-using Baballonia.Helpers;
 using Baballonia.Services;
+using Baballonia.Services.Inference;
+using Baballonia.Services.Inference.Enums;
+using Baballonia.Services.Inference.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
 public partial class HomePageViewModel : ViewModelBase
 {
-    // Camera properties
-    public WriteableBitmap LeftEyeBitmap { get; set; }
-    public WriteableBitmap RightEyeBitmap { get; set; }
-    public WriteableBitmap FaceBitmap { get; set; }
+
+    // This feels unorthodox but... i kinda like it?
+    public partial class CameraControllerModel : ObservableObject
+    {
+        public string Name;
+        public CameraController Controller { get; set; }
+        [ObservableProperty] private WriteableBitmap _bitmap;
+
+        [ObservableProperty] private string _displayAddress;
+        [ObservableProperty] private Rect _overlayRectangle;
+        [ObservableProperty] private bool _flipHorizontally = false;
+        [ObservableProperty] private bool _flipVertically = false;
+        [ObservableProperty] private float _rotation = 0;
+        [ObservableProperty] private bool _isCropMode = false;
+        [ObservableProperty] private string _hint;
+        [ObservableProperty] private bool _isCameraStarted = false;
+        public ObservableCollection<string> Suggestions { get; set; } = [];
+
+        private readonly ILocalSettingsService _localSettingsService;
+
+        public CameraControllerModel(ILocalSettingsService localSettingsService, string name)
+        {
+            _localSettingsService = localSettingsService;
+            Name = name;
+
+            Dispatcher.UIThread.Post(async () =>
+            {
+                DisplayAddress = await _localSettingsService.ReadSettingAsync<string>("LastOpened" + Name);
+            });
+        }
+
+        void SaveCameraConfig()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _localSettingsService.SaveSettingAsync(Name, Controller.CameraSettings);
+            });
+        }
+
+        partial void OnBitmapChanged(WriteableBitmap? value)
+        {
+            IsCameraStarted = value != null;
+        }
+
+        partial void OnOverlayRectangleChanged(Rect value)
+        {
+            SaveCameraConfig();
+        }
+
+        partial void OnDisplayAddressChanged(string value)
+        {
+            _localSettingsService.SaveSettingAsync("LastOpened" + Name, value);
+            SaveCameraConfig();
+        }
+
+        partial void OnFlipHorizontallyChanged(bool value)
+        {
+            Controller.CameraSettings.UseHorizontalFlip = value;
+            SaveCameraConfig();
+        }
+
+        partial void OnFlipVerticallyChanged(bool value)
+        {
+            Controller.CameraSettings.UseVerticalFlip = value;
+            SaveCameraConfig();
+        }
+
+        partial void OnRotationChanged(float value)
+        {
+            Controller.CameraSettings.RotationRadians = value;
+            SaveCameraConfig();
+        }
+
+        partial void OnIsCropModeChanged(bool value)
+        {
+            if (value)
+                Controller.SetCroppingMode();
+            else
+                Controller.SetTrackingMode();
+        }
+
+        public void SelectWholeFrame()
+        {
+            Controller.CropManager.SelectEntireFrame(Controller.CameraSettings.Camera);
+            OverlayRectangle = Controller.CropManager.CropZone;
+            SaveCameraConfig();
+        }
+    }
 
     [ObservableProperty] public bool _shouldShowEyeCalibration;
     [ObservableProperty] public string _selectedCalibrationText;
 
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
+    [ObservableProperty] [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
     private string _eyeModel;
-
-    // Left eye properties
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_LeftCameraDisplayedIndex", "")]
-    private string _leftCameraDisplayedAddress;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_LeftCameraIndex", "")]
-    private string _leftCameraAddress;
-
-    [ObservableProperty]
-    private Rect _leftOverlayRectangle;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FlipLeftEyeXAxis", false)]
-    private bool _flipLeftEyeXAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FlipLeftEyeYAxis", false)]
-    private bool _flipLeftEyeYAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_LeftEyeRotation", 0f)]
-    private float _leftEyeRotation;
-
-    // Right eye properties
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_RightCameraDisplayedIndex", "")]
-    private string _rightCameraDisplayedAddress;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_RightCameraIndex", "")]
-    private string _rightCameraAddress;
-
-    [ObservableProperty]
-    private Rect _rightOverlayRectangle;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FlipRightEyeXAxis", false)]
-    private bool _flipRightEyeXAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FlipRightEyeYAxis", false)]
-    private bool _flipRightEyeYAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_RightEyeRotation", 0f)]
-    private float _rightEyeRotation;
-
-    // Face properties
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FaceCameraDisplayedIndex", "")]
-    private string _faceCameraDisplayedAddress;
-
-    [ObservableProperty]
-    [property: SavedSetting("EyeHome_FaceCameraIndex", "")]
-    private string _faceCameraAddress;
-
-    [ObservableProperty]
-    [property: SavedSetting("Face_CameraROI")]
-    private Rect _faceOverlayRectangle;
-
-    [ObservableProperty]
-    [property: SavedSetting("Face_FlipXAxis", false)]
-    private bool _flipFaceXAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("Face_FlipYAxis", false)]
-    private bool _flipFaceYAxis;
-
-    [ObservableProperty]
-    [property: SavedSetting("Face_Rotation", 0f)]
-    private float _faceRotation;
 
     public IOscTarget OscTarget { get; }
     private OscRecvService OscRecvService { get; }
@@ -109,7 +123,20 @@ public partial class HomePageViewModel : ViewModelBase
     private int _messagesSent;
     [ObservableProperty] private string _messagesOutPerSecCount;
 
+    [ObservableProperty] private CameraControllerModel _leftCamera;
+    [ObservableProperty] private CameraControllerModel _rightCamera;
+    [ObservableProperty] private CameraControllerModel _faceCamera;
+
     private readonly DispatcherTimer _msgCounterTimer;
+    private readonly IEyeInferenceService _eyeInferenceService;
+    private readonly IFaceInferenceService _faceInferenceService;
+    private readonly ILocalSettingsService _localSettingsService;
+
+
+    private readonly DispatcherTimer _drawTimer = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(10)
+    };
 
     public HomePageViewModel()
     {
@@ -117,6 +144,9 @@ public partial class HomePageViewModel : ViewModelBase
         OscRecvService = Ioc.Default.GetService<OscRecvService>()!;
         OscSendService = Ioc.Default.GetService<OscSendService>()!;
         LocalSettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
+        _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
+        _eyeInferenceService = Ioc.Default.GetService<IEyeInferenceService>()!;
+        _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         LocalSettingsService.Load(this);
 
         ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
@@ -138,55 +168,116 @@ public partial class HomePageViewModel : ViewModelBase
         };
         _msgCounterTimer.Start();
 
-        PropertyChanged += OnPropertyChangedEventHandler;
+        LeftCamera = new CameraControllerModel(_localSettingsService, "LeftCamera");
+        RightCamera = new CameraControllerModel(_localSettingsService, "RightCamera");
+        FaceCamera = new CameraControllerModel(_localSettingsService, "FaceCamera");
+
+        Dispatcher.UIThread.Post(async () => { await SetupCameraControllers(); });
     }
 
-    private void OnPropertyChangedEventHandler(object? o, PropertyChangedEventArgs args)
+    private CameraController LeftCameraController { get; set; }
+    private CameraController RightCameraController { get; set; }
+    private CameraController FaceCameraController { get; set; }
+
+    private async Task SetupCameraControllers()
     {
-        string propertyName = args.PropertyName!;
+        Task.Run(async () =>
+        {
+            App.DeviceEnumerator.Cameras = await App.DeviceEnumerator.UpdateCameras();
+            Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var camerasKey in App.DeviceEnumerator.Cameras.Keys)
+                    LeftCamera.Suggestions.Add(camerasKey);
+            });
+        });
 
-        if (propertyName is "MessagesOutPerSecCount" or "MessagesInPerSecCount")
-            return;
+        var left = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+            new CameraSettings { Camera = Camera.Left });
+        var right = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+            new CameraSettings { Camera = Camera.Left });
+        var face = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+            new CameraSettings { Camera = Camera.Left });
 
-        // Handle camera address properties
-        if (App.DeviceEnumerator.Cameras is not null)
-            HandleCameraAddressChange(propertyName);
+        LeftCameraController = new CameraController(
+            _localSettingsService,
+            _eyeInferenceService,
+            Camera.Left,
+            left
+        );
 
-        // Save all other changes
-        LocalSettingsService.Save(this);
+        RightCameraController = new CameraController(
+            _localSettingsService,
+            _eyeInferenceService,
+            Camera.Right,
+            right
+        );
+
+        FaceCameraController = new CameraController(
+            _localSettingsService,
+            _faceInferenceService,
+            Camera.Face,
+            face
+        );
+
+        LeftCamera.Controller = LeftCameraController;
+        RightCamera.Controller = RightCameraController;
+        FaceCamera.Controller = FaceCameraController;
+
+        _drawTimer.Stop();
+        _drawTimer.Tick += async (s, e) =>
+        {
+            await LeftCameraController.UpdateImage(bitmap =>
+            {
+                // a hack to force the UI refresh
+                LeftCamera.Bitmap = null;
+                LeftCamera.Bitmap = bitmap;
+            });
+            await RightCameraController.UpdateImage(bitmap =>
+            {
+                RightCamera.Bitmap = null;
+                RightCamera.Bitmap = bitmap;
+            });
+            await FaceCameraController.UpdateImage(bitmap =>
+            {
+                FaceCamera.Bitmap = null;
+                FaceCamera.Bitmap = bitmap;
+            });
+        };
+        _drawTimer.Start();
+
+        var parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
+        parameterSenderService.RegisterLeftCameraController(LeftCameraController!);
+        parameterSenderService.RegisterRightCameraController(RightCameraController!);
+        parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
     }
 
-    private void HandleCameraAddressChange(string propertyName)
+    private void SaveCameraSettings()
     {
-        switch (propertyName)
-        {
-            case "LeftCameraDisplayedAddress":
-                UpdateCameraAddress(LeftCameraDisplayedAddress, address => LeftCameraAddress = address);
-                break;
-
-            case "RightCameraDisplayedAddress":
-                UpdateCameraAddress(RightCameraDisplayedAddress, address => RightCameraAddress = address);
-                break;
-
-            case "FaceCameraDisplayedAddress":
-                UpdateCameraAddress(FaceCameraDisplayedAddress, address => FaceCameraAddress = address);
-                break;
-        }
+        _localSettingsService.SaveSettingAsync("LeftCamera", LeftCameraController.CameraSettings);
+        _localSettingsService.SaveSettingAsync("RightCamera", RightCameraController.CameraSettings);
+        _localSettingsService.SaveSettingAsync("FaceCamera", FaceCameraController.CameraSettings);
     }
 
-    private void UpdateCameraAddress(string displayedAddress, Action<string> updateAction)
+    [RelayCommand]
+    private void CameraStart(CameraControllerModel model)
     {
-        if (App.DeviceEnumerator.Cameras.TryGetValue(displayedAddress, out var deviceAddress))
-        {
-            updateAction(deviceAddress);
-        }
-        else
-        {
-            updateAction(displayedAddress);
-        }
+        model.Controller.StartCamera(model.DisplayAddress);
+        SaveCameraSettings();
     }
 
-    private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
+    [RelayCommand]
+    private void CameraStop(CameraControllerModel model)
+    {
+        model.Controller.StopCamera();
+    }
+
+    [RelayCommand]
+    private void SelectWholeFrame(CameraControllerModel model)
+    {
+        model.SelectWholeFrame();
+    }
+
+private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
 
     ~HomePageViewModel()
     {

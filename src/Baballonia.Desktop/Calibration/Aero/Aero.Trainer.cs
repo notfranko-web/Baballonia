@@ -91,7 +91,7 @@ public partial class AeroOverlayTrainerCombo
         // Finally, close any open eye cameras. The inference service will spin these up
         leftCameraController.StopCamera();
         rightCameraController.StopCamera();
-        eyeInferenceService.SetupInference(Camera.Left, viewModel.LeftCameraAddress);
-        eyeInferenceService.SetupInference(Camera.Right, viewModel.RightCameraAddress);
+        // eyeInferenceService.SetupInference(Camera.Left, viewModel.LeftCameraAddress);
+        // eyeInferenceService.SetupInference(Camera.Right, viewModel.RightCameraAddress);
     }
 }

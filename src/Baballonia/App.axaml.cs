@@ -179,6 +179,8 @@ public class App : Application
                 break;
         }
 
+        _host.Services.GetRequiredService<IThemeSelectorService>().SetRequestedThemeAsync();
+
         base.OnFrameworkInitializationCompleted();
     }
 
@@ -194,6 +196,9 @@ public class App : Application
 
         var face = Ioc.Default.GetRequiredService<IFaceInferenceService>();
         face.Shutdown();
+
+        var settings = Ioc.Default.GetRequiredService<ILocalSettingsService>();
+        settings.ForceSave();
     }
 
     private void OnTrayShutdownClicked(object? sender, EventArgs e)

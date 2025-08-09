@@ -21,4 +21,10 @@ public class DebounceFunction
         _timer.Stop();
         _timer.Start();
     }
+
+    public void Force()
+    {
+        _timer.Stop();
+        _action();
+    }
 }
