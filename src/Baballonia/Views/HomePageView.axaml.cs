@@ -1,47 +1,15 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
-using Baballonia.Models;
-using Baballonia.Services;
-using Baballonia.Services.Inference;
-using Baballonia.Services.Inference.Enums;
-using Baballonia.Services.Inference.Models;
 using Baballonia.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.ML.OnnxRuntime;
-using Rectangle = Avalonia.Controls.Shapes.Rectangle;
-using Size = Avalonia.Size;
 
 namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
-    private CameraController LeftCameraController { get; set; }
-    private CameraController RightCameraController { get; set; }
-    private CameraController FaceCameraController { get; set; }
-
-    private readonly IEyeInferenceService _eyeInferenceService;
-    private readonly IFaceInferenceService _faceInferenceService;
-    private readonly HomePageViewModel _viewModel;
-    private readonly ILocalSettingsService _localSettingsService;
-
-    private readonly DispatcherTimer _drawTimer = new()
-    {
-        Interval = TimeSpan.FromMilliseconds(10)
-    };
-
     public HomePageView()
     {
         InitializeComponent();
@@ -53,33 +21,48 @@ public partial class HomePageView : UserControl
                 var window = this.GetVisualRoot() as Window;
                 if (window != null)
                 {
-                    var uniformGrid = this.FindControl<UniformGrid>("UniformGridPanel");
-                    if (window.ClientSize.Width < Utils.MobileWidth)
+                    var grid = this.FindControl<Grid>("CameraControlsGrid");
+                    var isMobile = window.ClientSize.Width < Utils.MobileWidth;
+                    if (isMobile)
                     {
-                        uniformGrid!.Columns = 1; // Vertical layout
-                        uniformGrid.Rows = 3;
+                        grid!.ColumnDefinitions = new ColumnDefinitions("*"); // Vertical layout
+                        grid.RowDefinitions = new RowDefinitions("*,*,*");
                     }
                     else
                     {
-                        uniformGrid!.Columns = 3; // Horizontal layout
-                        uniformGrid.Rows = 1;
+                        grid!.ColumnDefinitions = new ColumnDefinitions("*,*,*"); // Horizontal layout
+                        grid.RowDefinitions = new RowDefinitions("*");
+                    }
+
+                    // there is no default control to have equal width cells with automatic cell assignment
+                    // Uniform grid always has cells of equal width and height
+                    // and Grid requires children rows and cols position to be specified manually
+                    // so we use Grid and assign children here
+                    int columnsCount = isMobile ? 1 : 3;
+                    int row = 0;
+                    int col = 0;
+                    foreach (var child in grid.Children)
+                    {
+                        Grid.SetRow(child, row);
+                        Grid.SetColumn(child, col);
+
+                        col++;
+                        if (col >= columnsCount)
+                        {
+                            col = 0;
+                            row++;
+                        }
                     }
                 }
             };
         }
-
-
-        _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
-        _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
-        _eyeInferenceService = Ioc.Default.GetService<IEyeInferenceService>()!;
-        _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
-        _localSettingsService.Load(this);
-
         Loaded += (s, e) =>
         {
             if (this.DataContext is HomePageViewModel vm)
             {
                 SetupCropEvents(vm.LeftCamera, LeftMouthWindow);
+                SetupCropEvents(vm.RightCamera, RightMouthWindow);
+                SetupCropEvents(vm.FaceCamera, FaceMouthWindow);
             }
         };
     }
@@ -93,7 +76,7 @@ public partial class HomePageView : UserControl
             if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
             var pos = e.GetPosition(image);
             model.Controller.CropManager.StartCrop(pos);
-            model.OverlayRectangle = model.Controller.CropManager.CropZone;
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
         };
         image.PointerMoved += (sender, e) =>
         {
@@ -101,12 +84,14 @@ public partial class HomePageView : UserControl
 
             var pos = e.GetPosition(image);
             model.Controller.CropManager.UpdateCrop(pos);
-            model.OverlayRectangle = model.Controller.CropManager.CropZone;
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
         };
         image.PointerReleased += (sender, e) =>
         {
+            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+
             model.Controller.CropManager.EndCrop();
-            model.OverlayRectangle = model.Controller.CropManager.CropZone;
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
         };
     }
 

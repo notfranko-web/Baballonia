@@ -99,7 +99,7 @@ public abstract class PlatformConnector
         fixed (float* array = floatArray)
         {
             using var finalMat = new Mat(size.Height, size.Width, MatType.CV_32F, new IntPtr(array));
-            settings.Brightness = 1.0f / 255.0f;
+            // settings.Brightness = 1.0f / 255.0f;
             return TransformRawImage(finalMat, settings);
         }
     }
@@ -115,10 +115,10 @@ public abstract class PlatformConnector
 
         var sourceMat = Capture.RawMat;
 
-        int roiX = settings.RoiX;
-        int roiY = settings.RoiY;
-        int roiWidth = settings.RoiWidth;
-        int roiHeight = settings.RoiHeight;
+        int roiX = (int)settings.Roi.X;
+        int roiY = (int)settings.Roi.Y;
+        int roiWidth = (int)settings.Roi.Width;
+        int roiHeight = (int)settings.Roi.Height;
         int maxWidth = sourceMat.Width;
         int maxHeight = sourceMat.Height;
 

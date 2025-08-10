@@ -29,7 +29,8 @@ public class LocalSettingsService : ILocalSettingsService
     {
         var opt = options.Value;
 
-        var applicationDataFolder = Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
+        var applicationDataFolder =
+            Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
         _localSettingsFile = opt.LocalSettingsFile ?? Path.Combine(applicationDataFolder, DefaultLocalSettingsFile);
 
         debouncedSave = new DebounceFunction(async () =>
@@ -61,7 +62,7 @@ public class LocalSettingsService : ILocalSettingsService
             _settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
                         ?? new Dictionary<string, JsonElement>();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _settings = new Dictionary<string, JsonElement>();
         }
@@ -75,12 +76,12 @@ public class LocalSettingsService : ILocalSettingsService
         {
             if (_settings.TryGetValue(key, out var obj))
             {
-                    return obj.Deserialize<T>();
+                return obj.Deserialize<T>();
             }
         }
-        catch (Exception ignore)
+        catch (Exception ex)
         {
-            // ignored
+            _logger.LogError("Cannot load {} setting key: {}", key, ex.Message);
         }
 
         return defaultValue;
@@ -93,9 +94,19 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task SaveSettingAsync<T>(string key, T value, bool forceLocal = false)
     {
+        if (key == null)
+            return;
         await _isInitializedTask;
 
-        _settings[key] = JsonSerializer.SerializeToElement<T>(value);
+        try
+        {
+            _settings[key] = JsonSerializer.SerializeToElement<T>(value);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Cannot save {} setting key: {}", key, ex.Message);
+            return;
+        }
 
         debouncedSave.Call();
     }

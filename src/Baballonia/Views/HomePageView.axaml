@@ -53,12 +53,12 @@
                 </SplitButton>
             </Grid>
 
-            <UniformGrid
-                x:Name="UniformGridPanel"
+            <Grid
+                x:Name="CameraControlsGrid"
                 ColumnSpacing="12"
-                Columns="1"
                 RowSpacing="12"
-                Rows="3">
+                ColumnDefinitions="*,*,*"
+                RowDefinitions="*">
                 <!--  Left Panel  -->
                 <Grid
                     IsEnabled="{Binding ShouldShowEyeCalibration}"
@@ -163,7 +163,7 @@
 
                     <!--  Camera view section  -->
                     <Viewbox
-                        IsVisible="{Binding LeftCamera.IsCameraStarted}"
+                        IsVisible="{Binding LeftCamera.IsCameraRunning}"
                         x:Name="LeftViewBox"
                         Grid.Row="2"
                         Margin="0 0 0 16">
@@ -250,363 +250,390 @@
                         </Border>
                     </Expander>
                 </Grid>
+                <!--  Center Panel  -->
+                <Grid
+                    IsEnabled="{Binding ShouldShowEyeCalibration}"
+                    IsVisible="{Binding ShouldShowEyeCalibration}"
+                    VerticalAlignment="Top"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,0,12,12"
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="Right Eye Camera" />
 
-                <!-- ~1~  Right Panel  @1@ -->
-                <!-- <Grid -->
-                <!--     IsEnabled="{Binding ShouldShowEyeCalibration}" -->
-                <!--     IsVisible="{Binding ShouldShowEyeCalibration}" -->
-                <!--     VerticalAlignment="Top" -->
-                <!--     RowDefinitions="Auto,Auto,Auto,Auto"> -->
-                <!--     <TextBlock -->
-                <!--         Grid.Row="0" -->
-                <!--         Margin="0,0,12,12" -->
-                <!--         FontSize="20" -->
-                <!--         FontWeight="Medium" -->
-                <!--         Text="Right Eye Camera" /> -->
-                <!-- -->
-                <!--     ~1~  Camera address section  @1@ -->
-                <!--     <Border -->
-                <!--         Grid.Row="1" -->
-                <!--         Margin="0,0,0,16" -->
-                <!--         Padding="16,16,16,16" -->
-                <!--         Background="{DynamicResource SystemChromeMediumLowColor}" -->
-                <!--         CornerRadius="8"> -->
-                <!--         <StackPanel> -->
-                <!--             <TextBlock FontSize="14" Text="Right Camera Address" /> -->
-                <!-- -->
-                <!--             <Grid RowDefinitions="Auto,Auto,Auto"> -->
-                <!--                 <AutoCompleteBox -->
-                <!--                     x:Name="RightCameraAddressEntry" -->
-                <!--                     Grid.Row="0" -->
-                <!--                     Height="36" -->
-                <!--                     Margin="0,6" -->
-                <!--                     FilterMode="Contains" -->
-                <!--                     FontSize="13" -->
-                <!--                     Text="{Binding RightCameraDisplayedAddress}" -->
-                <!--                     TextChanged="CameraAddressEntry_TextChanged" -->
-                <!--                     Watermark="Start typing..." /> -->
-                <!-- -->
-                <!--                 <TextBlock -->
-                <!--                     x:Name="RightAddressHint" -->
-                <!--                     Grid.Row="1" -->
-                <!--                     Margin="0,0,0,4" -->
-                <!--                     FontSize="12" -->
-                <!--                     FontStyle="Italic" -->
-                <!--                     Foreground="Orange" -->
-                <!--                     IsVisible="False" -->
-                <!--                     TextWrapping="Wrap" /> -->
-                <!-- -->
-                <!--                 <Grid -->
-                <!--                     Grid.Row="2" -->
-                <!--                     Margin="0,4,0,8" -->
-                <!--                     ColumnDefinitions="*,*"> -->
-                <!-- -->
-                <!--                     <Button -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Margin="0,0,4,0" -->
-                <!--                         Padding="12,8" -->
-                <!--                         HorizontalAlignment="Stretch" -->
-                <!--                         HorizontalContentAlignment="Center" -->
-                <!--                         Click="RightCameraStart" -->
-                <!--                         Content="Start Camera" -->
-                <!--                         FontSize="13" /> -->
-                <!-- -->
-                <!--                     <Button -->
-                <!--                         Grid.Column="1" -->
-                <!--                         Margin="4,0,0,0" -->
-                <!--                         Padding="12,8" -->
-                <!--                         HorizontalAlignment="Stretch" -->
-                <!--                         HorizontalContentAlignment="Center" -->
-                <!--                         Click="RightCameraStop" -->
-                <!--                         Content="Stop Camera" -->
-                <!--                         FontSize="13" /> -->
-                <!--                 </Grid> -->
-                <!--             </Grid> -->
-                <!-- -->
-                <!--             <StackPanel Orientation="Horizontal" Spacing="8"> -->
-                <!--                 <RadioButton -->
-                <!--                     x:Name="RightTrackingModeButton" -->
-                <!--                     Click="RightOnTrackingModeClicked" -->
-                <!--                     Content="Tracking" -->
-                <!--                     GroupName="RightImageControlGroup" -->
-                <!--                     IsChecked="True" /> -->
-                <!--                 <RadioButton -->
-                <!--                     x:Name="RightCroppingModeButton" -->
-                <!--                     Click="RightOnCroppingModeClicked" -->
-                <!--                     Content="Cropping" -->
-                <!--                     GroupName="RightImageControlGroup" /> -->
-                <!--             </StackPanel> -->
-                <!-- -->
-                <!--             <Button -->
-                <!--                 x:Name="RightSelectEntireFrame" -->
-                <!--                 Margin="0,8,0,0" -->
-                <!--                 Padding="0,8" -->
-                <!--                 HorizontalAlignment="Stretch" -->
-                <!--                 HorizontalContentAlignment="Center" -->
-                <!--                 Click="RightSelectEntireFrameClicked" -->
-                <!--                 Content="Select Right Frame" -->
-                <!--                 FontSize="13" /> -->
-                <!--         </StackPanel> -->
-                <!--     </Border> -->
-                <!-- -->
-                <!--     ~1~  Camera view section  @1@ -->
-                <!--     <Viewbox x:Name="RightViewBox" Grid.Row="2"> -->
-                <!--         <Grid> -->
-                <!--             <Image -->
-                <!--                 x:Name="RightMouthWindow" -->
-                <!--                 HorizontalAlignment="Center" -->
-                <!--                 IsHitTestVisible="True" -->
-                <!--                 Source="{Binding RightEyeBitmap}" /> -->
-                <!--             <Canvas -->
-                <!--                 x:Name="RightCanvasWindow" -->
-                <!--                 Background="Transparent" -->
-                <!--                 IsHitTestVisible="False"> -->
-                <!--                 <Rectangle -->
-                <!--                     x:Name="RightRectangleWindow" -->
-                <!--                     Fill="Transparent" -->
-                <!--                     IsHitTestVisible="False" -->
-                <!--                     Stroke="{DynamicResource Accent}" -->
-                <!--                     StrokeThickness="24" /> -->
-                <!--             </Canvas> -->
-                <!--         </Grid> -->
-                <!--     </Viewbox> -->
-                <!-- -->
-                <!--     ~1~  Camera settings section in Expander  @1@ -->
-                <!--     <Expander -->
-                <!--         Grid.Row="3" -->
-                <!--         HorizontalAlignment="Stretch" -->
-                <!--         Header="Right Camera Settings" -->
-                <!--         IsExpanded="False" -->
-                <!--         IsVisible="{Binding IsRightTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}"> -->
-                <!--         <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8"> -->
-                <!--             <StackPanel> -->
-                <!-- -->
-                <!--                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto"> -->
-                <!--                     <StackPanel Grid.Row="0" Grid.Column="0"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Vertical Flip" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Flip the image vertically" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <CheckBox -->
-                <!--                         Grid.Row="0" -->
-                <!--                         Grid.Column="2" -->
-                <!--                         IsChecked="{Binding FlipRightEyeYAxis, Mode=TwoWay}" /> -->
-                <!-- -->
-                <!--                     <StackPanel -->
-                <!--                         Grid.Row="1" -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Margin="0,12"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Horizontal Flip" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Flip the image horizontally" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <CheckBox -->
-                <!--                         Grid.Row="1" -->
-                <!--                         Grid.Column="2" -->
-                <!--                         IsChecked="{Binding FlipRightEyeXAxis, Mode=TwoWay}" /> -->
-                <!-- -->
-                <!--                     <StackPanel Grid.Row="2" Grid.Column="0"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Image Rotation" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Rotates the image in a circle" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <Slider -->
-                <!--                         x:Name="RightRotationSlider" -->
-                <!--                         Grid.Row="3" -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Grid.ColumnSpan="3" -->
-                <!--                         Maximum="6.28" -->
-                <!--                         Minimum="0" -->
-                <!--                         Value="{Binding RightEyeRotation}" /> -->
-                <!--                 </Grid> -->
-                <!--             </StackPanel> -->
-                <!--         </Border> -->
-                <!--     </Expander> -->
-                <!-- </Grid> -->
-                <!-- -->
-                <!-- ~1~  Face Panel  @1@ -->
-                <!-- <Grid -->
-                <!--     VerticalAlignment="Top" -->
-                <!--     RowDefinitions="Auto,Auto,Auto,Auto"> -->
-                <!--     <TextBlock -->
-                <!--         Grid.Row="0" -->
-                <!--         Margin="0,0,12,12" -->
-                <!--         FontSize="20" -->
-                <!--         FontWeight="Medium" -->
-                <!--         Text="Face Camera" /> -->
-                <!-- -->
-                <!--     ~1~  Camera address section  @1@ -->
-                <!--     <Border -->
-                <!--         Grid.Row="1" -->
-                <!--         Margin="0,0,0,16" -->
-                <!--         Padding="16,16,16,16" -->
-                <!--         Background="{DynamicResource SystemChromeMediumLowColor}" -->
-                <!--         CornerRadius="8"> -->
-                <!--         <StackPanel> -->
-                <!--             <TextBlock FontSize="14" Text="Face Camera Address" /> -->
-                <!-- -->
-                <!--             <Grid RowDefinitions="Auto,Auto,Auto"> -->
-                <!--                 <AutoCompleteBox -->
-                <!--                     x:Name="FaceCameraAddressEntry" -->
-                <!--                     Grid.Row="0" -->
-                <!--                     Height="36" -->
-                <!--                     Margin="0,6" -->
-                <!--                     FilterMode="Contains" -->
-                <!--                     FontSize="13" -->
-                <!--                     Text="{Binding FaceCameraDisplayedAddress}" -->
-                <!--                     TextChanged="CameraAddressEntry_TextChanged" -->
-                <!--                     Watermark="Start typing..." /> -->
-                <!-- -->
-                <!--                 <TextBlock -->
-                <!--                     x:Name="FaceAddressHint" -->
-                <!--                     Grid.Row="1" -->
-                <!--                     Margin="0,0,0,4" -->
-                <!--                     FontSize="12" -->
-                <!--                     FontStyle="Italic" -->
-                <!--                     Foreground="Orange" -->
-                <!--                     IsVisible="False" -->
-                <!--                     TextWrapping="Wrap" /> -->
-                <!-- -->
-                <!--                 <Grid -->
-                <!--                     Grid.Row="2" -->
-                <!--                     Margin="0,4,0,8" -->
-                <!--                     ColumnDefinitions="*,*"> -->
-                <!-- -->
-                <!--                     <Button -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Margin="0,0,4,0" -->
-                <!--                         Padding="12,8" -->
-                <!--                         HorizontalAlignment="Stretch" -->
-                <!--                         HorizontalContentAlignment="Center" -->
-                <!--                         Click="FaceCameraStart" -->
-                <!--                         Content="Start Camera" -->
-                <!--                         FontSize="13" /> -->
-                <!-- -->
-                <!--                     <Button -->
-                <!--                         Grid.Column="1" -->
-                <!--                         Margin="4,0,0,0" -->
-                <!--                         Padding="12,8" -->
-                <!--                         HorizontalAlignment="Stretch" -->
-                <!--                         HorizontalContentAlignment="Center" -->
-                <!--                         Click="FaceCameraStop" -->
-                <!--                         Content="Stop Camera" -->
-                <!--                         FontSize="13" /> -->
-                <!--                 </Grid> -->
-                <!--             </Grid> -->
-                <!-- -->
-                <!--             <StackPanel Orientation="Horizontal" Spacing="8"> -->
-                <!--                 <RadioButton -->
-                <!--                     x:Name="FaceTrackingModeButton" -->
-                <!--                     Click="FaceOnTrackingModeClicked" -->
-                <!--                     Content="Tracking" -->
-                <!--                     GroupName="FaceImageControlGroup" -->
-                <!--                     IsChecked="True" /> -->
-                <!--                 <RadioButton -->
-                <!--                     x:Name="FaceCroppingModeButton" -->
-                <!--                     Click="FaceOnCroppingModeClicked" -->
-                <!--                     Content="Cropping" -->
-                <!--                     GroupName="FaceImageControlGroup" /> -->
-                <!--             </StackPanel> -->
-                <!-- -->
-                <!--             <Button -->
-                <!--                 x:Name="FaceSelectEntireFrame" -->
-                <!--                 Margin="0,8,0,0" -->
-                <!--                 Padding="0,8" -->
-                <!--                 HorizontalAlignment="Stretch" -->
-                <!--                 HorizontalContentAlignment="Center" -->
-                <!--                 Click="FaceSelectEntireFrameClicked" -->
-                <!--                 Content="Select Face Frame" -->
-                <!--                 FontSize="13" /> -->
-                <!--         </StackPanel> -->
-                <!--     </Border> -->
-                <!-- -->
-                <!--     ~1~  Camera view section  @1@ -->
-                <!--     <Viewbox x:Name="FaceViewBox" Grid.Row="2"> -->
-                <!--         <Grid> -->
-                <!--             <Image -->
-                <!--                 x:Name="FaceMouthWindow" -->
-                <!--                 HorizontalAlignment="Center" -->
-                <!--                 IsHitTestVisible="True" -->
-                <!--                 Source="{Binding FaceBitmap}" /> -->
-                <!--             <Canvas -->
-                <!--                 x:Name="FaceCanvasWindow" -->
-                <!--                 Background="Transparent" -->
-                <!--                 IsHitTestVisible="False"> -->
-                <!--                 <Rectangle -->
-                <!--                     x:Name="FaceRectangleWindow" -->
-                <!--                     Fill="Transparent" -->
-                <!--                     IsHitTestVisible="False" -->
-                <!--                     Stroke="{DynamicResource Accent}" -->
-                <!--                     StrokeThickness="24" /> -->
-                <!--             </Canvas> -->
-                <!--         </Grid> -->
-                <!--     </Viewbox> -->
-                <!-- -->
-                <!--     ~1~  Camera settings section in Expander  @1@ -->
-                <!--     <Expander -->
-                <!--         Grid.Row="3" -->
-                <!--         HorizontalAlignment="Stretch" -->
-                <!--         Header="Face Camera Settings" -->
-                <!--         IsExpanded="False" -->
-                <!--         IsVisible="{Binding IsFaceTrackingMode, RelativeSource={RelativeSource AncestorType=views:HomePageView}}"> -->
-                <!--         <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8"> -->
-                <!--             <StackPanel> -->
-                <!-- -->
-                <!--                 <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto"> -->
-                <!--                     <StackPanel Grid.Row="0" Grid.Column="0"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Vertical Flip" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Flip the image vertically" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <CheckBox -->
-                <!--                         Grid.Row="0" -->
-                <!--                         Grid.Column="2" -->
-                <!--                         IsChecked="{Binding FlipFaceYAxis, Mode=TwoWay}" /> -->
-                <!-- -->
-                <!--                     <StackPanel -->
-                <!--                         Grid.Row="1" -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Margin="0,12"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Horizontal Flip" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Flip the image horizontally" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <CheckBox -->
-                <!--                         Grid.Row="1" -->
-                <!--                         Grid.Column="2" -->
-                <!--                         IsChecked="{Binding FlipFaceXAxis, Mode=TwoWay}" /> -->
-                <!-- -->
-                <!--                     <StackPanel Grid.Row="2" Grid.Column="0"> -->
-                <!--                         <TextBlock -->
-                <!--                             FontSize="14" -->
-                <!--                             FontWeight="Medium" -->
-                <!--                             Text="Image Rotation" /> -->
-                <!--                         <TextBlock FontSize="12" Text="Rotates the image in a circle" /> -->
-                <!--                     </StackPanel> -->
-                <!--                     <Slider -->
-                <!--                         x:Name="FaceRotationSlider" -->
-                <!--                         Grid.Row="3" -->
-                <!--                         Grid.Column="0" -->
-                <!--                         Grid.ColumnSpan="3" -->
-                <!--                         Maximum="6.28" -->
-                <!--                         Minimum="0" -->
-                <!--                         Value="{Binding FaceRotation}" /> -->
-                <!--                 </Grid> -->
-                <!--             </StackPanel> -->
-                <!--         </Border> -->
-                <!--     </Expander> -->
-                <!-- </Grid> -->
-            </UniformGrid>
+                    <!--  Camera address section  -->
+                    <Border
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Padding="16,16,16,16"
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock FontSize="14" Text="Right Camera Address" />
+
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <AutoCompleteBox
+                                    x:Name="RightCameraAddressEntry"
+                                    Grid.Row="0"
+                                    Height="36"
+                                    Margin="0,6"
+                                    FilterMode="Contains"
+                                    FontSize="13"
+                                    Text="{Binding RightCamera.DisplayAddress}"
+                                    ItemsSource="{Binding RightCamera.Suggestions}"
+                                    Watermark="Start typing..." />
+
+                                <TextBlock
+                                    x:Name="RightAddressHint"
+                                    Grid.Row="1"
+                                    Margin="0,0,0,4"
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    Foreground="Orange"
+                                    Text="{Binding RightCamera.Hint}"
+                                    IsVisible="False"
+                                    TextWrapping="Wrap" />
+
+                                <Grid
+                                    Grid.Row="2"
+                                    Margin="0,4,0,8"
+                                    ColumnDefinitions="*,*">
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Margin="0,0,4,0"
+                                        Padding="12,8"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Command="{Binding CameraStartCommand}"
+                                        CommandParameter="{Binding RightCamera}"
+                                        Content="Start Camera"
+                                        FontSize="13" />
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Margin="4,0,0,0"
+                                        Padding="12,8"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Command="{Binding CameraStopCommand}"
+                                        CommandParameter="{Binding RightCamera}"
+                                        Content="Stop Camera"
+                                        FontSize="13" />
+                                </Grid>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <RadioButton
+                                    x:Name="RightTrackingModeButton"
+                                    Content="Tracking"
+                                    GroupName="RightImageControlGroup"
+                                    IsChecked="{Binding !RightCamera.IsCropMode, Mode=TwoWay}" />
+                                <RadioButton
+                                    x:Name="RightCroppingModeButton"
+                                    Content="Cropping"
+                                    IsChecked="{Binding RightCamera.IsCropMode, Mode=TwoWay}"
+                                    GroupName="RightImageControlGroup" />
+                            </StackPanel>
+
+                            <Button
+                                x:Name="RightSelectEntireFrame"
+                                IsVisible="{Binding RightCamera.IsCropMode}"
+                                Margin="0,8,0,0"
+                                Padding="0,8"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Command="{Binding SelectWholeFrameCommand}"
+                                CommandParameter="{Binding RightCamera}"
+                                Content="Select Right Frame"
+                                FontSize="13" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Camera view section  -->
+                    <Viewbox
+                        IsVisible="{Binding RightCamera.IsCameraRunning}"
+                        x:Name="RightViewBox"
+                        Grid.Row="2"
+                        Margin="0 0 0 16">
+                        <Grid>
+                            <Image
+                                x:Name="RightMouthWindow"
+                                HorizontalAlignment="Center"
+                                IsHitTestVisible="True"
+                                Source="{Binding RightCamera.Bitmap}" />
+                            <Canvas
+                                IsVisible="{Binding RightCamera.IsCropMode}"
+                                x:Name="RightCanvasWindow"
+                                Background="Transparent"
+                                IsHitTestVisible="False">
+                                <Rectangle
+                                    x:Name="RightRectangleWindow"
+                                    Fill="Transparent"
+                                    Canvas.Top="{Binding RightCamera.OverlayRectangle.Top}"
+                                    Canvas.Left="{Binding RightCamera.OverlayRectangle.Left}"
+                                    Width="{Binding RightCamera.OverlayRectangle.Width}"
+                                    Height="{Binding RightCamera.OverlayRectangle.Height}"
+                                    IsHitTestVisible="False"
+                                    Stroke="Red"
+                                    StrokeThickness="2" />
+                            </Canvas>
+                        </Grid>
+                    </Viewbox>
+
+                    <!--  Camera settings section in Expander  -->
+                    <Expander
+                        Grid.Row="3"
+                        HorizontalAlignment="Stretch"
+                        Header="Right Camera Settings"
+                        IsExpanded="False"
+                        IsVisible="{Binding !RightCamera.IsCropMode}">
+                        <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
+                            <StackPanel>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Vertical Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image vertically" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        IsChecked="{Binding RightCamera.FlipVertically, Mode=TwoWay}" />
+
+                                    <StackPanel
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="0,12">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Horizontal Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image horizontally" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        IsChecked="{Binding RightCamera.FlipHorizontally, Mode=TwoWay}" />
+
+                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Image Rotation" />
+                                        <TextBlock FontSize="12" Text="Rotates the image in a circle" />
+                                    </StackPanel>
+                                    <Slider
+                                        x:Name="RightRotationSlider"
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Maximum="6.28"
+                                        Minimum="0"
+                                        Value="{Binding RightCamera.Rotation}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+                </Grid>
+                <!--  Right Panel  -->
+                <Grid
+                    IsEnabled="{Binding ShouldShowEyeCalibration}"
+                    IsVisible="{Binding ShouldShowEyeCalibration}"
+                    VerticalAlignment="Top"
+                    RowDefinitions="Auto,Auto,Auto,Auto">
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,0,12,12"
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="Face Eye Camera" />
+
+                    <!--  Camera address section  -->
+                    <Border
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Padding="16,16,16,16"
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock FontSize="14" Text="Face Camera Address" />
+
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <AutoCompleteBox
+                                    x:Name="FaceCameraAddressEntry"
+                                    Grid.Row="0"
+                                    Height="36"
+                                    Margin="0,6"
+                                    FilterMode="Contains"
+                                    FontSize="13"
+                                    Text="{Binding FaceCamera.DisplayAddress}"
+                                    ItemsSource="{Binding FaceCamera.Suggestions}"
+                                    Watermark="Start typing..." />
+
+                                <TextBlock
+                                    x:Name="FaceAddressHint"
+                                    Grid.Row="1"
+                                    Margin="0,0,0,4"
+                                    FontSize="12"
+                                    FontStyle="Italic"
+                                    Foreground="Orange"
+                                    Text="{Binding FaceCamera.Hint}"
+                                    IsVisible="False"
+                                    TextWrapping="Wrap" />
+
+                                <Grid
+                                    Grid.Row="2"
+                                    Margin="0,4,0,8"
+                                    ColumnDefinitions="*,*">
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Margin="0,0,4,0"
+                                        Padding="12,8"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Command="{Binding CameraStartCommand}"
+                                        CommandParameter="{Binding FaceCamera}"
+                                        Content="Start Camera"
+                                        FontSize="13" />
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Margin="4,0,0,0"
+                                        Padding="12,8"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Command="{Binding CameraStopCommand}"
+                                        CommandParameter="{Binding FaceCamera}"
+                                        Content="Stop Camera"
+                                        FontSize="13" />
+                                </Grid>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <RadioButton
+                                    x:Name="FaceTrackingModeButton"
+                                    Content="Tracking"
+                                    GroupName="FaceImageControlGroup"
+                                    IsChecked="{Binding !FaceCamera.IsCropMode, Mode=TwoWay}" />
+                                <RadioButton
+                                    x:Name="FaceCroppingModeButton"
+                                    Content="Cropping"
+                                    IsChecked="{Binding FaceCamera.IsCropMode, Mode=TwoWay}"
+                                    GroupName="FaceImageControlGroup" />
+                            </StackPanel>
+
+                            <Button
+                                x:Name="FaceSelectEntireFrame"
+                                IsVisible="{Binding FaceCamera.IsCropMode}"
+                                Margin="0,8,0,0"
+                                Padding="0,8"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Command="{Binding SelectWholeFrameCommand}"
+                                CommandParameter="{Binding FaceCamera}"
+                                Content="Select Face Frame"
+                                FontSize="13" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  Camera view section  -->
+                    <Viewbox
+                        IsVisible="{Binding FaceCamera.IsCameraRunning}"
+                        x:Name="FaceViewBox"
+                        Grid.Row="2"
+                        Margin="0 0 0 16">
+                        <Grid>
+                            <Image
+                                x:Name="FaceMouthWindow"
+                                HorizontalAlignment="Center"
+                                IsHitTestVisible="True"
+                                Source="{Binding FaceCamera.Bitmap}" />
+                            <Canvas
+                                IsVisible="{Binding FaceCamera.IsCropMode}"
+                                x:Name="FaceCanvasWindow"
+                                Background="Transparent"
+                                IsHitTestVisible="False">
+                                <Rectangle
+                                    x:Name="FaceRectangleWindow"
+                                    Fill="Transparent"
+                                    Canvas.Top="{Binding FaceCamera.OverlayRectangle.Top}"
+                                    Canvas.Left="{Binding FaceCamera.OverlayRectangle.Left}"
+                                    Width="{Binding FaceCamera.OverlayRectangle.Width}"
+                                    Height="{Binding FaceCamera.OverlayRectangle.Height}"
+                                    IsHitTestVisible="False"
+                                    Stroke="Red"
+                                    StrokeThickness="2" />
+                            </Canvas>
+                        </Grid>
+                    </Viewbox>
+
+                    <!--  Camera settings section in Expander  -->
+                    <Expander
+                        Grid.Row="3"
+                        HorizontalAlignment="Stretch"
+                        Header="Face Camera Settings"
+                        IsExpanded="False"
+                        IsVisible="{Binding !FaceCamera.IsCropMode}">
+                        <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
+                            <StackPanel>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Vertical Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image vertically" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        IsChecked="{Binding FaceCamera.FlipVertically, Mode=TwoWay}" />
+
+                                    <StackPanel
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="0,12">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Horizontal Flip" />
+                                        <TextBlock FontSize="12" Text="Flip the image horizontally" />
+                                    </StackPanel>
+                                    <CheckBox
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        IsChecked="{Binding FaceCamera.FlipHorizontally, Mode=TwoWay}" />
+
+                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Text="Image Rotation" />
+                                        <TextBlock FontSize="12" Text="Rotates the image in a circle" />
+                                    </StackPanel>
+                                    <Slider
+                                        x:Name="FaceRotationSlider"
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Maximum="6.28"
+                                        Minimum="0"
+                                        Value="{Binding FaceCamera.Rotation}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+                </Grid>
+
+            </Grid>
 
         </StackPanel>
     </ScrollViewer>

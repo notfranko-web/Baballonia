@@ -28,14 +28,12 @@ public class CameraController : IDisposable
 
     public float[] ArExpressions = [];
 
-    private readonly ILocalSettingsService _localSettingsService;
     private readonly IInferenceService _inferenceService;
     private readonly Camera _camera;
 
     // State
     private CamViewMode _camViewMode = CamViewMode.Tracking;
     public CamViewMode CamViewMode => _camViewMode;
-    private Rect _overlayRectangle;
     private WriteableBitmap _bitmap;
 
     /// <summary>
@@ -50,45 +48,26 @@ public class CameraController : IDisposable
     public CropManager CropManager { get; } = new();
 
     public CameraController(
-        ILocalSettingsService localSettingsService,
         IInferenceService inferenceService,
         Camera camera,
         CameraSettings cameraSettings)
     {
-        _localSettingsService = localSettingsService;
         _inferenceService = inferenceService;
         _camera = camera;
         CameraSettings = cameraSettings;
-
-        // Configure rectangle
-        // _rectangleWindow.Stroke = Brushes.Red;
-        // _rectangleWindow.StrokeThickness = 2;
+        CropManager.SetCropZone(CameraSettings.Roi);
 
         _mjpegStreamingService = new MjpegStreamingService();
     }
 
-    public async Task UpdateImage(Action<WriteableBitmap> callback)
+    public async Task<WriteableBitmap?> UpdateImage()
     {
         bool valid;
         bool useColor;
         Mat? image;
 
-        _overlayRectangle = CropManager.CropZone;
+        CameraSettings.Roi = CropManager.CropZone;
 
-        if (_overlayRectangle is { X: 0, Y: 0, Width: 0, Height: 0 })
-        {
-            var x = CameraSettings.RoiX;
-            var y = CameraSettings.RoiY;
-            var width = CameraSettings.RoiWidth;
-            var height = CameraSettings.RoiHeight;
-            _overlayRectangle = new Rect(x, y, width, height);
-            CropManager.SetCropZone(_overlayRectangle);
-        }
-
-        CameraSettings.RoiX = (int) _overlayRectangle.X;
-        CameraSettings.RoiY = (int) _overlayRectangle.Y;
-        CameraSettings.RoiWidth = (int) _overlayRectangle.Width;
-        CameraSettings.RoiHeight = (int) _overlayRectangle.Height;
 
         switch (_camViewMode)
         {
@@ -109,20 +88,19 @@ public class CameraController : IDisposable
                 CropManager.CameraSize.Height = image.Height;
                 break;
             default:
-                return;
+                return null;
         }
 
         if (valid)
         {
             if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null)
             {
-                callback(null);
-                return;
+                return null;
             }
 
-            if (CameraSettings.RoiWidth == 0 || CameraSettings.RoiHeight == 0)
+            if (CameraSettings.Roi.Width == 0 || CameraSettings.Roi.Height == 0)
             {
-                CropManager.SelectEntireFrame(_camera);
+                SelectEntireFrame();
             }
 
             // Create or update bitmap if needed
@@ -154,12 +132,20 @@ public class CameraController : IDisposable
 
             // Update MJPEG frame
             UpdateMjpegFrame(image);
-            callback(_bitmap);
-            return;
+            return _bitmap;
         }
+        else
+        {
+            return null;
+        }
+    }
 
-        callback(null);
+    public Rect SelectEntireFrame()
+    {
+        CropManager.SelectEntireFrame(_camera);
+        CameraSettings.Roi = CropManager.CropZone;
 
+        return CropManager.CropZone.GetRect();
     }
 
     public void StartCamera(string cameraAddress)

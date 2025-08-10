@@ -22,20 +22,35 @@ public partial class HomePageViewModel : ViewModelBase
     public partial class CameraControllerModel : ObservableObject
     {
         public string Name;
-        public CameraController Controller { get; set; }
+
+        public CameraController Controller
+        {
+            get => _controller;
+            set
+            {
+                _controller = value;
+                OverlayRectangle = _controller.CameraSettings.Roi.GetRect();
+                FlipHorizontally = _controller.CameraSettings.UseHorizontalFlip;
+                FlipVertically = _controller.CameraSettings.UseVerticalFlip;
+                Rotation = _controller.CameraSettings.RotationRadians;
+                IsCropMode = _controller.CropManager.IsCropping;
+            }
+        }
+
         [ObservableProperty] private WriteableBitmap _bitmap;
 
-        [ObservableProperty] private string _displayAddress;
+        [ObservableProperty] private string? _displayAddress;
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
         [ObservableProperty] private float _rotation = 0;
         [ObservableProperty] private bool _isCropMode = false;
         [ObservableProperty] private string _hint;
-        [ObservableProperty] private bool _isCameraStarted = false;
+        [ObservableProperty] private bool _isCameraRunning = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
 
         private readonly ILocalSettingsService _localSettingsService;
+        private CameraController _controller;
 
         public CameraControllerModel(ILocalSettingsService localSettingsService, string name)
         {
@@ -50,15 +65,21 @@ public partial class HomePageViewModel : ViewModelBase
 
         void SaveCameraConfig()
         {
-            Dispatcher.UIThread.Post(() =>
+            Dispatcher.UIThread.Post(async () =>
             {
-                _localSettingsService.SaveSettingAsync(Name, Controller.CameraSettings);
+                await _localSettingsService.SaveSettingAsync(Name, Controller.CameraSettings);
             });
+        }
+
+
+        partial void OnDisplayAddressChanged(string? oldValue, string? newValue)
+        {
+            SaveCameraConfig();
         }
 
         partial void OnBitmapChanged(WriteableBitmap? value)
         {
-            IsCameraStarted = value != null;
+            IsCameraRunning = value != null;
         }
 
         partial void OnOverlayRectangleChanged(Rect value)
@@ -69,7 +90,6 @@ public partial class HomePageViewModel : ViewModelBase
         partial void OnDisplayAddressChanged(string value)
         {
             _localSettingsService.SaveSettingAsync("LastOpened" + Name, value);
-            SaveCameraConfig();
         }
 
         partial void OnFlipHorizontallyChanged(bool value)
@@ -96,12 +116,13 @@ public partial class HomePageViewModel : ViewModelBase
                 Controller.SetCroppingMode();
             else
                 Controller.SetTrackingMode();
+
+            SaveCameraConfig();
         }
 
         public void SelectWholeFrame()
         {
-            Controller.CropManager.SelectEntireFrame(Controller.CameraSettings.Camera);
-            OverlayRectangle = Controller.CropManager.CropZone;
+            OverlayRectangle = Controller.SelectEntireFrame();
             SaveCameraConfig();
         }
     }
@@ -193,27 +214,24 @@ public partial class HomePageViewModel : ViewModelBase
 
         var left = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
             new CameraSettings { Camera = Camera.Left });
-        var right = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-            new CameraSettings { Camera = Camera.Left });
-        var face = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-            new CameraSettings { Camera = Camera.Left });
+        var right = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
+            new CameraSettings { Camera = Camera.Right });
+        var face = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
+            new CameraSettings { Camera = Camera.Face });
 
         LeftCameraController = new CameraController(
-            _localSettingsService,
             _eyeInferenceService,
             Camera.Left,
             left
         );
 
         RightCameraController = new CameraController(
-            _localSettingsService,
             _eyeInferenceService,
             Camera.Right,
             right
         );
 
         FaceCameraController = new CameraController(
-            _localSettingsService,
             _faceInferenceService,
             Camera.Face,
             face
@@ -226,22 +244,19 @@ public partial class HomePageViewModel : ViewModelBase
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
-            await LeftCameraController.UpdateImage(bitmap =>
-            {
-                // a hack to force the UI refresh
-                LeftCamera.Bitmap = null;
-                LeftCamera.Bitmap = bitmap;
-            });
-            await RightCameraController.UpdateImage(bitmap =>
-            {
-                RightCamera.Bitmap = null;
-                RightCamera.Bitmap = bitmap;
-            });
-            await FaceCameraController.UpdateImage(bitmap =>
-            {
-                FaceCamera.Bitmap = null;
-                FaceCamera.Bitmap = bitmap;
-            });
+            var leftBitmap = await LeftCameraController.UpdateImage();
+            var rightBitmap = await RightCameraController.UpdateImage();
+            var faceBitmap = await FaceCameraController.UpdateImage();
+
+            // a hack to force the UI refresh
+            LeftCamera.Bitmap = null;
+            LeftCamera.Bitmap = leftBitmap!;
+
+            RightCamera.Bitmap = null;
+            RightCamera.Bitmap = rightBitmap;
+
+            FaceCamera.Bitmap = null;
+            FaceCamera.Bitmap = faceBitmap;
         };
         _drawTimer.Start();
 
@@ -261,6 +276,9 @@ public partial class HomePageViewModel : ViewModelBase
     [RelayCommand]
     private void CameraStart(CameraControllerModel model)
     {
+        if(model.DisplayAddress == null)
+            return;
+
         model.Controller.StartCamera(model.DisplayAddress);
         SaveCameraSettings();
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia;
 using Baballonia.Services.Inference.Enums;
+using Baballonia.Services.Inference.Models;
 using SkiaSharp;
 
 namespace Baballonia.Helpers;
@@ -15,9 +16,9 @@ public class CropManager()
     private bool _isCropping;
     private double _startX;
     private double _startY;
-    private Rect _cropZone;
+    private CameraSettings.RegionOfInterest _cropZone;
 
-    public Rect CropZone => _cropZone;
+    public CameraSettings.RegionOfInterest CropZone => _cropZone;
     public bool IsCropping => _isCropping;
     public CameraSize CameraSize { get; set; } = new();
 
@@ -32,36 +33,39 @@ public class CropManager()
     {
         if (!_isCropping) return;
 
+        // Clamp currentPosition to the image boundaries
+        double clampedX = Math.Max(0, Math.Min(currentPosition.X, CameraSize.Width));
+        double clampedY = Math.Max(0, Math.Min(currentPosition.Y, CameraSize.Height));
+
         double x, y, w, h;
 
-        if (currentPosition.X < _startX)
+        if (clampedX < _startX)
         {
-            x = currentPosition.X;
+            x = clampedX;
             w = _startX - x;
         }
         else
         {
             x = _startX;
-            w = currentPosition.X - _startX;
+            w = clampedX - _startX;
         }
 
-        if (currentPosition.Y < _startY)
+        if (clampedY < _startY)
         {
-            y = currentPosition.Y;
+            y = clampedY;
             h = _startY - y;
         }
         else
         {
             y = _startY;
-            h = currentPosition.Y - _startY;
+            h = clampedY - _startY;
         }
 
-        // Limit size to image bounds
-        _cropZone = new Rect(
-            x,
-            y,
-            Math.Min(CameraSize.Width, w),
-            Math.Min(CameraSize.Height, h)
+        _cropZone = new CameraSettings.RegionOfInterest(
+            (int)x,
+            (int)y,
+            (int)w,
+            (int)h
         );
     }
 
@@ -70,7 +74,7 @@ public class CropManager()
         _isCropping = false;
     }
 
-    public void SetCropZone(Rect rectangle)
+    public void SetCropZone(CameraSettings.RegionOfInterest rectangle)
     {
         _cropZone = rectangle;
     }
@@ -117,6 +121,6 @@ public class CropManager()
             height = CameraSize.Height;
         }
 
-        _cropZone = new Rect(x, y, width, height);
+        _cropZone = new CameraSettings.RegionOfInterest(x, y, width, height);
     }
 }
