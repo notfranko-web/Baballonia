@@ -276,11 +276,21 @@ public partial class HomePageViewModel : ViewModelBase
     [RelayCommand]
     private void CameraStart(CameraControllerModel model)
     {
-        if(model.DisplayAddress == null)
-            return;
+        string camera = model.DisplayAddress;
 
-        model.Controller.StartCamera(model.DisplayAddress);
-        SaveCameraSettings();
+        if (App.DeviceEnumerator.Cameras != null)
+        {
+            if (App.DeviceEnumerator.Cameras.TryGetValue(camera, out var mappedAddress))
+            {
+                camera = mappedAddress;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(camera))
+        {
+            model.Controller.StartCamera(camera);
+            SaveCameraSettings();
+        }
     }
 
     [RelayCommand]

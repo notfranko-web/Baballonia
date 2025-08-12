@@ -89,7 +89,7 @@ public class CropManager()
         int width;
         int height;
 
-        if (CameraSize.Width / 2 == CameraSize.Width)
+        if (CameraSize.Width / 2 == CameraSize.Height)
         {
             switch (camera)
             {

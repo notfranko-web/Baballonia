@@ -87,68 +87,18 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
             using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE (PNPClass = 'Image' OR PNPClass = 'Camera')");
             using var collection = searcher.Get();
 
+            int i = 0;
             foreach (var device in collection)
             {
                 string deviceName = device["Name"]?.ToString() ?? "Unknown Camera";
-                string deviceId = device["DeviceID"]?.ToString() ?? Guid.NewGuid().ToString();
-
-                // Try to map WMI device to OpenCV index if possible
-                bool indexed = false;
-                for (int i = 0; i < 10; i++) // Check first 10 indices
-                {
-                    if (TryOpenCameraWithTimeout(i, TimeSpan.FromSeconds(1)))
-                    {
-                        EnsureUniqueKey(cameraDict, $"{deviceName}", i.ToString());
-                        indexed = true;
-                        break;
-                    }
-                }
-
-                // If we couldn't map to an index, just add the WMI info
-                if (!indexed)
-                {
-                    EnsureUniqueKey(cameraDict, deviceName, deviceId);
-                }
+                EnsureUniqueKey(cameraDict, deviceName, i.ToString());
+                i++;
             }
         }
         catch
         {
             // WMI failed, OpenCV cameras should still be available
         }
-    }
-
-    private bool TryOpenCameraWithTimeout(int cameraIndex, TimeSpan timeout)
-    {
-        bool result = false;
-        VideoCapture capture = null!;
-
-        var task = Task.Run(() =>
-        {
-            try
-            {
-                capture = VideoCapture.FromCamera(cameraIndex, VideoCaptureAPIs.DSHOW);
-                return capture.IsOpened();
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
-        try
-        {
-            result = task.Wait(timeout) && task.Result;
-        }
-        catch
-        {
-            result = false;
-        }
-        finally
-        {
-            capture?.Dispose();
-        }
-
-        return result;
     }
 
     [SupportedOSPlatform("windows")]
