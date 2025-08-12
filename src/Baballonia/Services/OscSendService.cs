@@ -47,6 +47,10 @@ public class OscSendService
             {
                 UpdateTarget(new IPEndPoint(IPAddress.Parse(_oscTarget.DestinationAddress), _oscTarget.OutPort));
             }
+            else
+            {
+                _oscTarget.DestinationAddress = IPAddress.Loopback.ToString();
+            }
         };
     }
 

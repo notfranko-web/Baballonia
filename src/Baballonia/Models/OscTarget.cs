@@ -19,9 +19,7 @@ public partial class OscTarget : ObservableValidator, IOscTarget
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InPort))] [NotifyPropertyChangedFor(nameof(OutPort))]
-
     [property: SavedSetting("OSCAddress", "127.0.0.1")]
-    [ValidIpAddress]
     private string _destinationAddress;
 
     public OscTarget(ILocalSettingsService localSettingsService)
