@@ -129,18 +129,27 @@ public class LocalSettingsService : ILocalSettingsService
             var settingName = savedSettingAttribute.GetName();
             var defaultValue = savedSettingAttribute.Default();
 
-            var setting = await ReadSettingAsync(settingName, defaultValue, savedSettingAttribute.ForceLocal());
-            object? convertedSetting;
             try
             {
-                convertedSetting = Convert.ChangeType(setting, property.PropertyType);
+                var setting = await ReadSettingAsync<JsonElement>(settingName, default, savedSettingAttribute.ForceLocal());
+                if (setting.ValueKind != JsonValueKind.Undefined && setting.ValueKind != JsonValueKind.Null)
+                {
+                    var value = setting.Deserialize(property.PropertyType);
+                    property.SetValue(instance, value);
+                }
+                else if (defaultValue != null)
+                {
+                    property.SetValue(instance, defaultValue);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                convertedSetting = defaultValue;
+                _logger.LogError(ex, "Error loading setting {SettingName}", settingName);
+                if (defaultValue != null)
+                {
+                    property.SetValue(instance, defaultValue);
+                }
             }
-
-            property.SetValue(instance, convertedSetting);
         }
     }
 

@@ -87,16 +87,6 @@
 
                     <TextBlock
                         Grid.Column="0"
-                        Grid.Row="0"
-                        Text="Use OSC Query" />
-                    <CheckBox
-                        Grid.Column="2"
-                        Grid.Row="0"
-                        IsChecked="{Binding UseOscQuery, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                        x:Name="UseOscQuery" />
-
-                    <TextBlock
-                        Grid.Column="0"
                         Grid.Row="1"
                         Text="Receive Port" />
                     <TextBox
