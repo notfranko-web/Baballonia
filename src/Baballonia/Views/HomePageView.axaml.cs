@@ -1,69 +1,15 @@
 ﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
-using Baballonia.Models;
-using Baballonia.Services;
-using Baballonia.Services.Inference;
-using Baballonia.Services.Inference.Enums;
 using Baballonia.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.ML.OnnxRuntime;
 
 namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
-    public static readonly StyledProperty<bool> IsLeftTrackingModeProperty =
-        AvaloniaProperty.Register<HomePageView, bool>(nameof(IsLeftTrackingMode));
-
-    public static readonly StyledProperty<bool> IsRightTrackingModeProperty =
-        AvaloniaProperty.Register<HomePageView, bool>(nameof(IsRightTrackingMode));
-
-    public static readonly StyledProperty<bool> IsFaceTrackingModeProperty =
-        AvaloniaProperty.Register<HomePageView, bool>(nameof(IsFaceTrackingMode));
-
-    public bool IsLeftTrackingMode
-    {
-        get => GetValue(IsLeftTrackingModeProperty);
-        set => SetValue(IsLeftTrackingModeProperty, value);
-    }
-
-    public bool IsRightTrackingMode
-    {
-        get => GetValue(IsRightTrackingModeProperty);
-        set => SetValue(IsRightTrackingModeProperty, value);
-    }
-
-    public bool IsFaceTrackingMode
-    {
-        get => GetValue(IsFaceTrackingModeProperty);
-        set => SetValue(IsFaceTrackingModeProperty, value);
-    }
-
-
-    private CameraController LeftCameraController { get; set; }
-    private CameraController RightCameraController { get; set; }
-    private CameraController FaceCameraController { get; set; }
-
-    private readonly IEyeInferenceService _eyeInferenceService;
-    private readonly IFaceInferenceService _faceInferenceService;
-    private readonly HomePageViewModel _viewModel;
-    private readonly ILocalSettingsService _localSettingsService;
-
-    private readonly DispatcherTimer _drawTimer = new()
-    {
-        Interval = TimeSpan.FromMilliseconds(10)
-    };
-
     public HomePageView()
     {
         InitializeComponent();
@@ -75,334 +21,78 @@ public partial class HomePageView : UserControl
                 var window = this.GetVisualRoot() as Window;
                 if (window != null)
                 {
-                    var uniformGrid = this.FindControl<UniformGrid>("UniformGridPanel");
-                    if (window.ClientSize.Width < Utils.MobileWidth)
+                    var grid = this.FindControl<Grid>("CameraControlsGrid");
+                    var isMobile = window.ClientSize.Width < Utils.MobileWidth;
+                    if (isMobile)
                     {
-                        uniformGrid!.Columns = 1; // Vertical layout
-                        uniformGrid.Rows = 3;
+                        grid!.ColumnDefinitions = new ColumnDefinitions("*"); // Vertical layout
+                        grid.RowDefinitions = new RowDefinitions("*,*,*");
                     }
                     else
                     {
-                        uniformGrid!.Columns = 3; // Horizontal layout
-                        uniformGrid.Rows = 1;
+                        grid!.ColumnDefinitions = new ColumnDefinitions("*,*,*"); // Horizontal layout
+                        grid.RowDefinitions = new RowDefinitions("*");
+                    }
+
+                    // there is no default control to have equal width cells with automatic cell assignment
+                    // Uniform grid always has cells of equal width and height
+                    // and Grid requires children rows and cols position to be specified manually
+                    // so we use Grid and assign children here
+                    int columnsCount = isMobile ? 1 : 3;
+                    int row = 0;
+                    int col = 0;
+                    foreach (var child in grid.Children)
+                    {
+                        Grid.SetRow(child, row);
+                        Grid.SetColumn(child, col);
+
+                        col++;
+                        if (col >= columnsCount)
+                        {
+                            col = 0;
+                            row++;
+                        }
                     }
                 }
             };
         }
-
-        Loaded += CamView_OnLoaded;
-
-        _viewModel = Ioc.Default.GetRequiredService<HomePageViewModel>()!;
-        _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
-        _eyeInferenceService = Ioc.Default.GetService<IEyeInferenceService>()!;
-        _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
-        _localSettingsService.Load(this);
-
-        try
+        Loaded += (s, e) =>
         {
-            Task.Run(async () =>
+            if (this.DataContext is HomePageViewModel vm)
             {
-                App.DeviceEnumerator.Cameras = await App.DeviceEnumerator.UpdateCameras();
-
-                var leftCameraAddress = await _localSettingsService.ReadSettingAsync<string>("EyeHome_LeftCameraIndex");
-                var rightCameraAddress = await _localSettingsService.ReadSettingAsync<string>("EyeHome_RightCameraIndex");
-
-                if (leftCameraAddress != rightCameraAddress)
-                {
-                    Dispatcher.UIThread.Invoke(() =>
-                    {
-                        LeftCameraStart(null, null!);
-                        RightCameraStart(null, null!);
-                    });
-                }
-
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    LeftCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
-                    RightCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
-                    FaceCameraAddressEntry.ItemsSource = App.DeviceEnumerator.Cameras.Keys;
-                    FaceCameraStart(null, null!);
-                });
-            });
-
-            // Set MinimumPrefixLength to 0 to show all items even when no text is entered
-            // Set MinimumPopulateDelay to 0 to show the dropdown immediately
-            LeftCameraAddressEntry.MinimumPrefixLength = 0;
-            LeftCameraAddressEntry.MinimumPopulateDelay = TimeSpan.Zero;
-
-            RightCameraAddressEntry.MinimumPrefixLength = 0;
-            RightCameraAddressEntry.MinimumPopulateDelay = TimeSpan.Zero;
-
-            FaceCameraAddressEntry.MinimumPrefixLength = 0;
-            FaceCameraAddressEntry.MinimumPopulateDelay = TimeSpan.Zero;
-        }
-        catch (Exception)
-        {
-            // Insufficient perms, ignore
-        }
-
-        LeftCameraController = new CameraController(
-            this,
-            _localSettingsService,
-            _eyeInferenceService,
-            Camera.Left,
-            LeftRectangleWindow,
-            LeftSelectEntireFrame,
-            LeftViewBox,
-            LeftMouthWindow,
-            LeftCanvasWindow,
-            "EyeHome_LeftCameraIndex",
-            "EyeHome_LeftCameraROIX",
-            "EyeHome_LeftCameraROIY",
-            "EyeHome_LeftCameraROIWidth",
-            "EyeHome_LeftCameraROIHeight",
-            "EyeHome_LeftEyeRotation",
-            "EyeHome_FlipLeftEyeXAxis",
-            "EyeHome_FlipLeftEyeYAxis",
-            IsLeftTrackingModeProperty);
-
-        RightCameraController = new CameraController(
-            this,
-            _localSettingsService,
-            _eyeInferenceService,
-            Camera.Right,
-            RightRectangleWindow,
-            RightSelectEntireFrame,
-            RightViewBox,
-            RightMouthWindow,
-            RightCanvasWindow,
-            "EyeHome_RightCameraIndex",
-            "EyeHome_RightCameraROIX",
-            "EyeHome_RightCameraROIY",
-            "EyeHome_RightCameraROIWidth",
-            "EyeHome_RightCameraROIHeight",
-            "EyeHome_RightEyeRotation",
-            "EyeHome_FlipRightEyeXAxis",
-            "EyeHome_FlipRightEyeYAxis",
-            IsRightTrackingModeProperty);
-
-        FaceCameraController = new CameraController(
-            this,
-            _localSettingsService,
-            _faceInferenceService,
-            Camera.Face,
-            FaceRectangleWindow,
-            FaceSelectEntireFrame,
-            FaceViewBox,
-            FaceMouthWindow,
-            FaceCanvasWindow,
-            "EyeHome_FaceCameraIndex",
-            "Face_CameraROIX",
-            "Face_CameraROIY",
-            "Face_CameraROIWidth",
-            "Face_CameraROIHeight",
-            "Face_Rotation",
-            "Face_FlipXAxis",
-            "Face_FlipYAxis",
-            IsFaceTrackingModeProperty);
-
-        _drawTimer.Stop();
-        _drawTimer.Tick += async (s, e) =>
-        {
-            await LeftCameraController.UpdateImage();
-            await RightCameraController.UpdateImage();
-            await FaceCameraController.UpdateImage();
-
-            _viewModel.LeftEyeBitmap = LeftCameraController.Bitmap;
-            _viewModel.RightEyeBitmap = RightCameraController.Bitmap;
-            _viewModel.FaceBitmap = FaceCameraController.Bitmap;
-        };
-        _drawTimer.Start();
-
-        var parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
-        parameterSenderService.RegisterLeftCameraController(LeftCameraController!);
-        parameterSenderService.RegisterRightCameraController(RightCameraController!);
-        parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
-
-        PropertyChanged += (_, _) => { _localSettingsService.Save(this); };
-    }
-
-    private void CamView_OnLoaded(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is HomePageViewModel viewModel)
-        {
-            viewModel.SelectedCalibrationText = "Full Calibration";
-        }
-
-        UpdateAddressHint(LeftCameraAddressEntry, LeftAddressHint);
-        UpdateAddressHint(RightCameraAddressEntry, RightAddressHint);
-        UpdateAddressHint(FaceCameraAddressEntry, FaceAddressHint);
-    }
-
-    // Event handlers for left camera
-    public void LeftCameraStart(object? sender, RoutedEventArgs e)
-    {
-        if (App.DeviceEnumerator.Cameras == null) return;
-
-        string selectedFriendlyName = LeftCameraAddressEntry.Text!;
-        if (string.IsNullOrWhiteSpace(selectedFriendlyName)) return;
-
-        LeftCameraController.StopCamera();
-
-        // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
-        {
-            selectedFriendlyName = deviceId;
-        }
-
-        LeftCameraController.StartCamera(selectedFriendlyName);
-    }
-
-    public void LeftCameraStop(object? sender, RoutedEventArgs e)
-    {
-        LeftCameraController.StopMjpegStreaming();
-        LeftCameraController.StopCamera();
-    }
-
-    public void LeftOnTrackingModeClicked(object sender, RoutedEventArgs args)
-    {
-        LeftCameraController.SetTrackingMode();
-    }
-
-    public void LeftOnCroppingModeClicked(object sender, RoutedEventArgs args)
-    {
-        LeftCameraController.SetCroppingMode();
-    }
-
-    public async void LeftSelectEntireFrameClicked(object sender, RoutedEventArgs args)
-    {
-        await LeftCameraController.SelectEntireFrame();
-    }
-
-    // Event handlers for right camera
-    public void RightCameraStart(object? sender, RoutedEventArgs e)
-    {
-        if (App.DeviceEnumerator.Cameras == null) return;
-
-        string selectedFriendlyName = RightCameraAddressEntry.Text!;
-        if (string.IsNullOrWhiteSpace(selectedFriendlyName)) return;
-
-        RightCameraController.StopCamera();
-
-        // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
-        {
-            selectedFriendlyName = deviceId;
-        }
-
-        RightCameraController.StartCamera(selectedFriendlyName);
-    }
-
-    public void RightCameraStop(object? sender, RoutedEventArgs e)
-    {
-        RightCameraController.StopMjpegStreaming();
-        RightCameraController.StopCamera();
-    }
-
-    public void RightOnTrackingModeClicked(object sender, RoutedEventArgs args)
-    {
-        RightCameraController.SetTrackingMode();
-    }
-
-    public void RightOnCroppingModeClicked(object sender, RoutedEventArgs args)
-    {
-        RightCameraController.SetCroppingMode();
-    }
-
-    public async void RightSelectEntireFrameClicked(object sender, RoutedEventArgs args)
-    {
-        await RightCameraController.SelectEntireFrame();
-    }
-
-    // Event handlers for face camera
-    public void FaceCameraStart(object? sender, RoutedEventArgs e)
-    {
-        if (App.DeviceEnumerator.Cameras == null) return;
-
-        string selectedFriendlyName = FaceCameraAddressEntry.Text!;
-        if (string.IsNullOrEmpty(selectedFriendlyName)) return;
-
-        FaceCameraController.StopCamera();
-
-        // If the friendly name exists in our dictionary, use the corresponding device ID
-        if (App.DeviceEnumerator.Cameras.TryGetValue(selectedFriendlyName, out var deviceId))
-        {
-            selectedFriendlyName = deviceId;
-        }
-
-        FaceCameraController.StartCamera(selectedFriendlyName);
-    }
-
-    public void FaceCameraStop(object? sender, RoutedEventArgs e)
-    {
-        FaceCameraController.StopMjpegStreaming();
-        FaceCameraController.StopCamera();
-    }
-
-    public void FaceOnTrackingModeClicked(object sender, RoutedEventArgs args)
-    {
-        FaceCameraController.SetTrackingMode();
-    }
-
-    public void FaceOnCroppingModeClicked(object sender, RoutedEventArgs args)
-    {
-        FaceCameraController.SetCroppingMode();
-    }
-
-    public async void FaceSelectEntireFrameClicked(object sender, RoutedEventArgs args)
-    {
-        await FaceCameraController.SelectEntireFrame();
-    }
-
-    private async void OnQuickVRCalibrationRequested(object? sender, RoutedEventArgs e)
-    {
-        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = false; });
-        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
-        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = true; });
-    }
-
-    private async void OnFullVRCalibrationRequested(object? sender, RoutedEventArgs e)
-    {
-        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = false; });
-        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.BasicCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService, _viewModel);
-        Dispatcher.UIThread.Invoke(() => { SplitCalibrationButton.IsEnabled = true; });
-    }
-
-    private void CameraAddressEntry_TextChanged(object? sender, TextChangedEventArgs e)
-    {
-        if (sender is not AutoCompleteBox entry) return;
-
-        // Determine which hint TextBlock corresponds to the sender
-        TextBlock? hintBlock = entry.Name switch
-        {
-            nameof(LeftCameraAddressEntry) => LeftAddressHint,
-            nameof(RightCameraAddressEntry) => RightAddressHint,
-            nameof(FaceCameraAddressEntry) => FaceAddressHint,
-            _ => null
-        };
-
-        if (hintBlock != null)
-        {
-            UpdateAddressHint(entry, hintBlock);
-        }
-    }
-
-    private void UpdateAddressHint(AutoCompleteBox entry, TextBlock hint)
-    {
-        string? address = entry.Text;
-        bool showHint = false;
-
-        if (!string.IsNullOrWhiteSpace(address))
-        {
-            // Basic check: Does it contain ".local" but not "http://"?
-            if (address.EndsWith(".local", StringComparison.OrdinalIgnoreCase) &&
-                !address.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            {
-                showHint = true;
-                hint.Text = "Address might need to start with 'http://' (e.g., http://openiristracker.local/)";
+                SetupCropEvents(vm.LeftCamera, LeftMouthWindow);
+                SetupCropEvents(vm.RightCamera, RightMouthWindow);
+                SetupCropEvents(vm.FaceCamera, FaceMouthWindow);
             }
-        }
-
-        hint.IsVisible = showHint;
+        };
     }
+
+    private void SetupCropEvents(HomePageViewModel.CameraControllerModel model, Image image)
+    {
+        var vm = this.DataContext as HomePageViewModel;
+        // in theory should be cleaned up by the GC so no need to manually unsubscribe
+        image.PointerPressed += (sender, e) =>
+        {
+            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+            var pos = e.GetPosition(image);
+            model.Controller.CropManager.StartCrop(pos);
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+        };
+        image.PointerMoved += (sender, e) =>
+        {
+            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+
+            var pos = e.GetPosition(image);
+            model.Controller.CropManager.UpdateCrop(pos);
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+        };
+        image.PointerReleased += (sender, e) =>
+        {
+            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+
+            model.Controller.CropManager.EndCrop();
+            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+        };
+    }
+
 }

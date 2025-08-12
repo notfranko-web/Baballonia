@@ -1,15 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <AssemblyName>Paradigm Reality Enhancement Labs</AssemblyName>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.10.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.10.0" />
+
+      <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Baballonia\Baballonia.csproj" />
+  </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.IO.Ports" Version="9.0.5" />
+        <Reference Include="OpenCvSharp">
+            <HintPath>..\..\..\opencvsharp\src\OpenCvSharp\bin\Debug\net6.0\OpenCvSharp.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

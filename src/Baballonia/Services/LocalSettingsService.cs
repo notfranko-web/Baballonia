@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
 using Baballonia.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Baballonia.Services;
@@ -14,57 +16,99 @@ public class LocalSettingsService : ILocalSettingsService
     public const string DefaultApplicationDataFolder = "ApplicationData";
     public const string DefaultLocalSettingsFile = "LocalSettings.json";
 
-    private readonly IFileService _fileService;
-    private readonly LocalSettingsOptions _options;
-
     private readonly string _localApplicationData = Utils.PersistentDataDirectory;
-    private readonly string _applicationDataFolder;
     private readonly string _localSettingsFile;
 
-    private IDictionary<string, object> _settings;
+    private Dictionary<string, JsonElement> _settings;
+    private DebounceFunction debouncedSave;
 
-    private bool _isInitialized;
+    private readonly Task _isInitializedTask;
+    private readonly ILogger<LocalSettingsService> _logger;
 
-    public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
+    public LocalSettingsService(IOptions<LocalSettingsOptions> options, ILogger<LocalSettingsService> logger)
     {
-        _fileService = fileService;
-        _options = options.Value;
+        var opt = options.Value;
 
-        _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? DefaultApplicationDataFolder);
-        _localSettingsFile = _options.LocalSettingsFile ?? DefaultLocalSettingsFile;
+        var applicationDataFolder =
+            Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
+        _localSettingsFile = opt.LocalSettingsFile ?? Path.Combine(applicationDataFolder, DefaultLocalSettingsFile);
 
-        _settings = new Dictionary<string, object>();
+        debouncedSave = new DebounceFunction(async () =>
+        {
+            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            await File.WriteAllTextAsync(_localSettingsFile, json);
+            logger.LogInformation("Saving settings");
+        }, 2000);
+
+        _settings = new Dictionary<string, JsonElement>();
+
+        _isInitializedTask = InitializeAsync();
     }
 
     private async Task InitializeAsync()
     {
-        if (!_isInitialized)
+        if (!File.Exists(_localSettingsFile))
         {
-            _settings = await Task.Run(() => _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localSettingsFile)) ?? new Dictionary<string, object>();
+            _settings = new Dictionary<string, JsonElement>();
+            return;
+        }
 
-            _isInitialized = true;
+        try
+        {
+            var json = await File.ReadAllTextAsync(_localSettingsFile);
+            _settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
+                        ?? new Dictionary<string, JsonElement>();
+        }
+        catch (Exception ex)
+        {
+            _settings = new Dictionary<string, JsonElement>();
         }
     }
 
     public async Task<T?> ReadSettingAsync<T>(string key, T? defaultValue = default, bool forceLocal = false)
     {
-        await InitializeAsync();
+        await _isInitializedTask;
 
-        if (_settings != null && _settings.TryGetValue(key, out var obj))
+        try
         {
-            return await Json.ToObjectAsync<T>((string)obj);
+            if (_settings.TryGetValue(key, out var obj))
+            {
+                return obj.Deserialize<T>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Cannot load {} setting key: {}", key, ex.Message);
         }
 
         return defaultValue;
     }
 
+    public void ForceSave()
+    {
+        debouncedSave.Force();
+    }
+
     public async Task SaveSettingAsync<T>(string key, T value, bool forceLocal = false)
     {
-        await InitializeAsync();
+        if (key == null)
+            return;
+        await _isInitializedTask;
 
-        _settings[key] = await Json.StringifyAsync(value!);
+        try
+        {
+            _settings[key] = JsonSerializer.SerializeToElement<T>(value);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Cannot save {} setting key: {}", key, ex.Message);
+            return;
+        }
 
-        await _fileService.Save(_applicationDataFolder, _localSettingsFile, _settings);
+        debouncedSave.Call();
     }
 
     public async Task Load(object instance)

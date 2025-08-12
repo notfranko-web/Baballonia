@@ -24,28 +24,16 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
-    public CameraSettings CameraSettings { get; private set; }
+    public CameraSettings CameraSettings { get; set; }
 
     public float[] ArExpressions = [];
 
-    private readonly HomePageView _view;
-    private readonly ILocalSettingsService _localSettingsService;
     private readonly IInferenceService _inferenceService;
     private readonly Camera _camera;
 
-    // UI Elements
-    private readonly Rectangle _rectangleWindow;
-    private readonly Button _selectEntireFrameButton;
-    private readonly Viewbox _viewBox;
-    private readonly Image _mouthWindow;
-    private readonly Canvas _canvas;
-
     // State
     private CamViewMode _camViewMode = CamViewMode.Tracking;
-    private Rect _overlayRectangle;
-    private bool _isCropping;
-    private double _dragStartX;
-    private double _dragStartY;
+    public CamViewMode CamViewMode => _camViewMode;
     private WriteableBitmap _bitmap;
 
     /// <summary>
@@ -54,119 +42,32 @@ public class CameraController : IDisposable
     /// </summary>
     private bool _edgeCaseFlip;
 
-    // Settings keys
-    private readonly string _cameraKey;
-    private readonly string _roiSettingKeyX;
-    private readonly string _roiSettingKeyY;
-    private readonly string _roiSettingKeyWidth;
-    private readonly string _roiSettingKeyHeight;
-    private readonly string _rotationSettingKey;
-    private readonly string _flipXSettingKey;
-    private readonly string _flipYSettingKey;
-
-    // Tracking mode property
-    private readonly StyledProperty<bool> _isTrackingModeProperty;
-
-    // MJPEG Streaming
-    private HttpListener _httpListener;
-    private bool _isStreaming;
-    private CancellationTokenSource _streamingCancellationTokenSource;
-    private readonly object _streamLock = new();
-    private byte[] _currentJpegFrame;
-    private int _mjpegPort = 8080;
-    private readonly string _mjpegBoundary = "mjpegstream";
-
     private (int, int) CameraSize { get; set; } = (0, 0);
 
+    private MjpegStreamingService _mjpegStreamingService;
+    public CropManager CropManager { get; } = new();
+
     public CameraController(
-        HomePageView view,
-        ILocalSettingsService localSettingsService,
         IInferenceService inferenceService,
         Camera camera,
-        Rectangle rectangleWindow,
-        Button selectEntireFrameButton,
-        Viewbox viewBox,
-        Image mouthWindow,
-        Canvas canvas,
-        string cameraKey,
-        string roiSettingKeyX,
-        string roiSettingKeyY,
-        string roiSettingKeyWidth,
-        string roiSettingKeyHeight,
-        string rotationSettingKey,
-        string flipXSettingKey,
-        string flipYSettingKey,
-        StyledProperty<bool> isTrackingModeProperty)
+        CameraSettings cameraSettings)
     {
-        _view = view;
-        _localSettingsService = localSettingsService;
         _inferenceService = inferenceService;
         _camera = camera;
-        _rectangleWindow = rectangleWindow;
-        _selectEntireFrameButton = selectEntireFrameButton;
-        _viewBox = viewBox;
-        _mouthWindow = mouthWindow;
-        _canvas = canvas;
-        _cameraKey = cameraKey;
-        _roiSettingKeyX = roiSettingKeyX;
-        _roiSettingKeyY = roiSettingKeyY;
-        _roiSettingKeyWidth = roiSettingKeyWidth;
-        _roiSettingKeyHeight = roiSettingKeyHeight;
-        _rotationSettingKey = rotationSettingKey;
-        _flipXSettingKey = flipXSettingKey;
-        _flipYSettingKey = flipYSettingKey;
-        _isTrackingModeProperty = isTrackingModeProperty;
+        CameraSettings = cameraSettings;
+        CropManager.SetCropZone(CameraSettings.Roi);
 
-        // Set up event handlers
-        _mouthWindow.PointerPressed += OnPointerPressed;
-        _mouthWindow.PointerMoved += OnPointerMoved;
-        _mouthWindow.PointerReleased += OnPointerReleased;
-
-        // Configure rectangle
-        _rectangleWindow.Stroke = Brushes.Red;
-        _rectangleWindow.StrokeThickness = 2;
-
-        // Set initial mode
-        _view.SetValue(_isTrackingModeProperty, true);
-
-        // Initialize MJPEG streaming
-        _currentJpegFrame = [];
+        _mjpegStreamingService = new MjpegStreamingService();
     }
 
-    public async Task UpdateImage()
+    public async Task<WriteableBitmap?> UpdateImage()
     {
-        var isCroppingModeUiVisible = _camViewMode == CamViewMode.Cropping;
-        _rectangleWindow.IsVisible = isCroppingModeUiVisible;
-        _selectEntireFrameButton.IsVisible = isCroppingModeUiVisible;
-        _viewBox.MaxHeight = isCroppingModeUiVisible ? double.MaxValue : 192;
-        _viewBox.MaxWidth = isCroppingModeUiVisible ? double.MaxValue : 192;
-
         bool valid;
         bool useColor;
         Mat? image;
-        (int width, int height) dims;
 
-        if (_overlayRectangle is { X: 0, Y: 0, Width: 0, Height: 0 })
-        {
-            var x = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyX);
-            var y = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyY);
-            var width = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyWidth);
-            var height = await _localSettingsService.ReadSettingAsync<double>(_roiSettingKeyHeight);
-            _overlayRectangle = new Rect(x, y, width, height);
-        }
+        CameraSettings.Roi = CropManager.CropZone;
 
-        CameraSettings = new CameraSettings
-        {
-            Camera = _camera,
-            RoiX = (int)_overlayRectangle.X,
-            RoiY = (int)_overlayRectangle.Y,
-            RoiWidth = (int)_overlayRectangle.Width,
-            RoiHeight = (int)_overlayRectangle.Height,
-            RotationRadians = await _localSettingsService.ReadSettingAsync<float>(_rotationSettingKey),
-            UseHorizontalFlip = await _localSettingsService.ReadSettingAsync<bool>(_flipXSettingKey),
-            UseVerticalFlip = await _localSettingsService.ReadSettingAsync<bool>(_flipYSettingKey),
-            Brightness = 1f
-        };
 
         switch (_camViewMode)
         {
@@ -183,25 +84,23 @@ public class CameraController : IDisposable
                 useColor = true;
                 valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image);
                 CameraSize = (image.Width, image.Height);
+                CropManager.CameraSize.Width = image.Width;
+                CropManager.CameraSize.Height = image.Height;
                 break;
             default:
-                return;
+                return null;
         }
 
         if (valid)
         {
-            _viewBox.Margin = new Thickness(0, 0, 0, 16);
-
-            if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null ||
-                double.IsNaN(_mouthWindow.Width) || double.IsNaN(_mouthWindow.Height))
+            if (CameraSize.Item1 == 0 || CameraSize.Item2 == 0 || image is null)
             {
-                ResetViewSizes();
-                return;
+                return null;
             }
 
-            if (CameraSettings.RoiWidth == 0 || CameraSettings.RoiHeight == 0)
+            if (CameraSettings.Roi.Width == 0 || CameraSettings.Roi.Height == 0)
             {
-                await SelectEntireFrame();
+                SelectEntireFrame();
             }
 
             // Create or update bitmap if needed
@@ -215,7 +114,7 @@ public class CameraController : IDisposable
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
-                _mouthWindow.Source = _bitmap;
+                // _imageWindow.Source = _bitmap;
             }
 
             // Allocation-free image-update
@@ -233,52 +132,29 @@ public class CameraController : IDisposable
 
             // Update MJPEG frame
             UpdateMjpegFrame(image);
-
-            if (_mouthWindow.Width != CameraSize.Item1 || _mouthWindow.Height != CameraSize.Item2)
-            {
-                _mouthWindow.Width = CameraSize.Item1;
-                _mouthWindow.Height = CameraSize.Item2;
-                _canvas.Width = CameraSize.Item1;
-                _canvas.Height = CameraSize.Item2;
-            }
-
-            if (_overlayRectangle.Width != -1)
-                _rectangleWindow.Width = _overlayRectangle.Width;
-            if (_overlayRectangle.Height != -1)
-                _rectangleWindow.Height = _overlayRectangle.Height;
-            Canvas.SetLeft(_rectangleWindow, _overlayRectangle.X);
-            Canvas.SetTop(_rectangleWindow, _overlayRectangle.Y);
+            return _bitmap;
         }
         else
         {
-            ResetViewSizes();
+            return null;
         }
-
-        Dispatcher.UIThread.Post(_mouthWindow.InvalidateVisual, DispatcherPriority.Render);
-        Dispatcher.UIThread.Post(_canvas.InvalidateVisual, DispatcherPriority.Render);
-        Dispatcher.UIThread.Post(_rectangleWindow.InvalidateVisual, DispatcherPriority.Render);
     }
 
-    private void ResetViewSizes()
+    public Rect SelectEntireFrame()
     {
-        _viewBox.Margin = new Thickness();
-        _mouthWindow.Width = 0;
-        _mouthWindow.Height = 0;
-        _canvas.Width = 0;
-        _canvas.Height = 0;
-        _rectangleWindow.Width = 0;
-        _rectangleWindow.Height = 0;
-    }
+        CropManager.SelectEntireFrame(_camera);
+        CameraSettings.Roi = CropManager.CropZone;
 
-    public WriteableBitmap Bitmap => _bitmap;
+        return CropManager.CropZone.GetRect();
+    }
 
     public void StartCamera(string cameraAddress)
     {
         if (!string.IsNullOrEmpty(cameraAddress))
         {
             StopCamera();
-            _inferenceService.SetupInference(_camera, cameraAddress);
         }
+        _inferenceService.SetupInference(_camera, cameraAddress);
     }
 
     public void StopCamera()
@@ -290,125 +166,12 @@ public class CameraController : IDisposable
     {
         _camViewMode = CamViewMode.Tracking;
         _edgeCaseFlip = true;
-        _isCropping = false;
-        _view.SetValue(_isTrackingModeProperty, true);
-        OnPointerReleased(null, null!); // Close and save any open crops
     }
 
     public void SetCroppingMode()
     {
         _camViewMode = CamViewMode.Cropping;
         _edgeCaseFlip = true;
-        _view.SetValue(_isTrackingModeProperty, false);
-    }
-
-    public async Task SelectEntireFrame()
-    {
-        if (_bitmap is null) return;
-
-        // Special BSB2E-like stereo camera logic
-        var halfWidth = CameraSize.Item1 / 2;
-
-        int x;
-        int y;
-        int width;
-        int height;
-
-        if (CameraSize.Item1 / 2 == CameraSize.Item2)
-        {
-            switch (_camera)
-            {
-                case Camera.Left:
-                    x = 0;
-                    y = 0;
-                    width = halfWidth - 1;
-                    height = (int)_bitmap.Size.Height - 1;
-                    break;
-                case Camera.Right:
-                    x = halfWidth;
-                    y = 0;
-                    width = halfWidth - 1;
-                    height = (int)_bitmap.Size.Height - 1;
-                    break;
-                default: // Face
-                    x = 0;
-                    y = 0;
-                    width = (int)_bitmap.Size.Width;
-                    height = (int)_bitmap.Size.Height;
-                    break;
-            }
-        }
-        else
-        {
-            x = 0;
-            y = 0;
-            width = (int)_bitmap.Size.Width;
-            height = (int)_bitmap.Size.Height;
-        }
-
-        _overlayRectangle = new Rect(x, y, width, height);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyX, x);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyY, y);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyWidth, width);
-        await _localSettingsService.SaveSettingAsync(_roiSettingKeyHeight, height);
-    }
-
-    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (_camViewMode != CamViewMode.Cropping) return;
-
-        var position = e.GetPosition(_mouthWindow);
-        _dragStartX = position.X;
-        _dragStartY = position.Y;
-
-        _isCropping = true;
-    }
-
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
-    {
-        if (!_isCropping) return;
-
-        Image? image = sender as Image;
-
-        var position = e.GetPosition(_mouthWindow);
-
-        double x, y, w, h;
-
-        if (position.X < _dragStartX)
-        {
-            x = position.X;
-            w = _dragStartX - x;
-        }
-        else
-        {
-            x = _dragStartX;
-            w = position.X - _dragStartX;
-        }
-
-        if (position.Y < _dragStartY)
-        {
-            y = position.Y;
-            h = _dragStartY - y;
-        }
-        else
-        {
-            y = _dragStartY;
-            h = position.Y - _dragStartY;
-        }
-
-        _overlayRectangle = new Rect(x, y, Math.Min(image!.Width, w), Math.Min(image.Height, h));
-    }
-
-    private async void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        if (!_isCropping) return;
-
-        _isCropping = false;
-
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyX, _overlayRectangle.X);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyY, _overlayRectangle.Y);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyWidth, _overlayRectangle.Width);
-        await _localSettingsService.SaveSettingAsync<double>(_roiSettingKeyHeight, _overlayRectangle.Height);
     }
 
     #region MJPEG Streaming
@@ -419,280 +182,26 @@ public class CameraController : IDisposable
     /// <param name="port">Port to listen on (default: 8080)</param>
     public void StartMjpegStreaming(int port = 8080)
     {
-        if (_isStreaming)
-            return;
-
-        _mjpegPort = port;
-        _isStreaming = true;
-        _streamingCancellationTokenSource = new CancellationTokenSource();
-
-        try
-        {
-            _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add($"http://localhost:{_mjpegPort}/");
-            _httpListener.Start();
-
-            Task.Run(() => HandleHttpRequests(_streamingCancellationTokenSource.Token));
-        }
-        catch (Exception)
-        {
-            _isStreaming = false;
-        }
-    }
-
-    /// <summary>
-    /// Stop the MJPEG streaming server
-    /// </summary>
-    public void StopMjpegStreaming()
-    {
-        if (!_isStreaming)
-            return;
-
-        _isStreaming = false;
-        _streamingCancellationTokenSource?.Cancel();
-
-        try
-        {
-            _httpListener?.Stop();
-            _httpListener?.Close();
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-    }
-
-    private async Task HandleHttpRequests(CancellationToken cancellationToken)
-    {
-        while (_isStreaming && !cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                var context = await _httpListener.GetContextAsync();
-
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                string requestPath = context.Request.Url!.AbsolutePath.ToLowerInvariant();
-
-#pragma warning disable CS4014 // Awaiting prevents the calibration app from receiving MJPEG frames
-                if (requestPath == "/mjpeg")
-                {
-                    // Handle MJPEG stream request
-                    Task.Run(() => HandleMjpegRequest(context, cancellationToken));
-                }
-                else if (requestPath == "/snapshot" || requestPath == "/jpeg")
-                {
-                    // Handle single JPEG snapshot request
-                    Task.Run(() => HandleSnapshotRequest(context));
-                }
-                else
-                {
-                    // Handle other requests (like a simple status page)
-                    HandleDefaultRequest(context);
-                }
-#pragma warning restore CS4014 // Awaiting prevents the calibration app from receiving MJPEG frames
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-    }
-
-    private async Task HandleMjpegRequest(HttpListenerContext context, CancellationToken cancellationToken)
-    {
-        // Get the underlying TCP connection
-        var response = context.Response;
-
-        try
-        {
-            // Write the HTTP response headers manually
-            string responseHeaders =
-                "HTTP/1.1 200 OK\r\n" +
-                $"Content-Type: multipart/x-mixed-replace; boundary={_mjpegBoundary}\r\n" +
-                "Cache-Control: no-cache, no-store, must-revalidate\r\n" +
-                "Pragma: no-cache\r\n" +
-                "Expires: 0\r\n" +
-                "Connection: close\r\n\r\n";
-
-            byte[] headerBytes = Encoding.ASCII.GetBytes(responseHeaders);
-
-            // Get the raw output stream
-            using var outputStream = response.OutputStream;
-            await outputStream.WriteAsync(headerBytes, 0, headerBytes.Length, cancellationToken);
-
-            // Initial boundary
-            string initialBoundary = $"--{_mjpegBoundary}\r\n";
-            byte[] boundaryBytes = Encoding.ASCII.GetBytes(initialBoundary);
-            await outputStream.WriteAsync(boundaryBytes, 0, boundaryBytes.Length, cancellationToken);
-
-            // Stream frames
-            while (_isStreaming && !cancellationToken.IsCancellationRequested)
-            {
-                if (_currentJpegFrame == null || _currentJpegFrame.Length == 0)
-                {
-                    await Task.Delay(33, cancellationToken);
-                    continue;
-                }
-
-                // Copy to avoid race conditions
-                byte[] frameData = _currentJpegFrame;
-
-                try
-                {
-                    // Frame headers
-                    string frameHeader = "Content-Type: image/jpeg\r\n" +
-                                         $"Content-Length: {frameData.Length}\r\n" +
-                                         $"X-Timestamp: {DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\r\n\r\n";
-                    byte[] frameHeaderBytes = Encoding.ASCII.GetBytes(frameHeader);
-
-                    await outputStream.WriteAsync(frameHeaderBytes, 0, frameHeaderBytes.Length, cancellationToken);
-                    await outputStream.WriteAsync(frameData, 0, frameData.Length, cancellationToken);
-
-                    // Next boundary
-                    string nextBoundary = $"\r\n--{_mjpegBoundary}\r\n";
-                    byte[] nextBoundaryBytes = Encoding.ASCII.GetBytes(nextBoundary);
-                    await outputStream.WriteAsync(nextBoundaryBytes, 0, nextBoundaryBytes.Length, cancellationToken);
-
-                    await outputStream.FlushAsync(cancellationToken);
-                }
-                catch (IOException)
-                {
-                    break;
-                }
-
-                await Task.Delay(33, cancellationToken);
-            }
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-        finally
-        {
-            try { response.Abort(); }
-            catch
-            {
-                // ignored
-            }
-        }
-    }
-
-    private void HandleSnapshotRequest(HttpListenerContext context)
-    {
-        HttpListenerResponse response = context.Response;
-
-        try
-        {
-            response.ContentType = "image/jpeg";
-            response.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
-            response.Headers.Add("Pragma", "no-cache");
-            response.Headers.Add("Expires", "0");
-
-            // Copy to avoid race conditions
-            byte[] frameData = _currentJpegFrame;
-
-            if (frameData.Length > 0)
-            {
-                //response.ContentLength64 = frameData.Length;
-                response.OutputStream.Write(frameData, 0, frameData.Length);
-            }
-            else
-            {
-                response.StatusCode = 503; // Service Unavailable
-                byte[] errorMsg = Encoding.UTF8.GetBytes("No image available");
-                //response.ContentLength64 = errorMsg.Length;
-                response.OutputStream.Write(errorMsg, 0, errorMsg.Length);
-            }
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-        finally
-        {
-            response.Close();
-        }
-    }
-
-    private void HandleDefaultRequest(HttpListenerContext context)
-    {
-        HttpListenerResponse response = context.Response;
-
-        try
-        {
-            string html = $@"
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Camera Stream</title>
-                    <style>
-                        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                        h1 {{ color: #333; }}
-                        .stream-container {{ margin-top: 20px; }}
-                        img {{ max-width: 100%; border: 1px solid #ccc; }}
-                    </style>
-                </head>
-                <body>
-                    <h1>Camera Stream</h1>
-                    <div class='stream-container'>
-                        <h2>Live Stream</h2>
-                        <img src='/mjpeg' alt='MJPEG Stream'>
-                    </div>
-                    <div class='stream-container'>
-                        <h2>Static Image</h2>
-                        <img src='/snapshot' alt='Snapshot'>
-                    </div>
-                </body>
-                </html>";
-
-            byte[] buffer = Encoding.UTF8.GetBytes(html);
-            response.ContentType = "text/html";
-            //response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-        finally
-        {
-            response.Close();
-        }
+        _mjpegStreamingService.StartStreaming(port);
     }
 
     private void UpdateMjpegFrame(Mat mat)
     {
-        if (_bitmap == null || !_isStreaming)
-            return;
+        _mjpegStreamingService.UpdateMjpegFrame(mat);
+    }
 
-        try
-        {
-            // Update the current frame
-            lock (_streamLock)
-            {
-                _currentJpegFrame = mat.ToBytes(ext: ".jpg"); // Cv2.Imencode
-            }
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
+    public void StopMjpegStreaming()
+    {
+        _mjpegStreamingService.StopStreaming();
     }
 
     #endregion
 
     public void Dispose()
     {
-        StopMjpegStreaming();
+        _mjpegStreamingService.Dispose();
         StopCamera();
 
-        _mouthWindow.PointerPressed -= OnPointerPressed;
-        _mouthWindow.PointerMoved -= OnPointerMoved;
-        _mouthWindow.PointerReleased -= OnPointerReleased;
-
         _bitmap?.Dispose();
-        _streamingCancellationTokenSource?.Dispose();
     }
 }

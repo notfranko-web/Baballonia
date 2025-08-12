@@ -34,7 +34,14 @@ public class ThemeSelectorService(ILocalSettingsService localSettingsService) : 
 
     private async Task<ThemeVariant> LoadThemeFromSettingsAsync()
     {
-        return await localSettingsService.ReadSettingAsync<ThemeVariant>(SettingsKey);
+        var themeName = await localSettingsService.ReadSettingAsync<string>(SettingsKey, "Default");
+        return themeName switch
+        {
+            "Default" => ThemeVariant.Default,
+            "Dark" => ThemeVariant.Dark,
+            "Light" => ThemeVariant.Light,
+            _ => ThemeVariant.Default
+        };
     }
 
     private async Task SaveThemeInSettingsAsync(ThemeVariant theme)
