@@ -35,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.SerialCameraCapt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Baballonia.VFTCapture", "src\Baballonia.VFTCapture\Baballonia.VFTCapture.csproj", "{BA0A656D-FF1D-4E15-B43C-9BE5AE692256}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Overlay-Trainer", "Baballonia.Overlay-Trainer\Baballonia.Overlay-Trainer.csproj", "{42922296-1CEC-4136-9D6B-1396CF84E95A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baballonia.Tests", "src\Baballonia.Tests\Baballonia.Tests.csproj", "{995A2825-3A5C-4567-8AB6-9E9CA78B75A2}"
 EndProject
 Global

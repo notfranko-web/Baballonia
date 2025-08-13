@@ -37,7 +37,7 @@ public partial class AeroOverlayTrainerCombo
         return result!.Result == "ok";
     }
 
-    public async Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IEyeInferenceService eyeInferenceService, HomePageViewModel viewModel)
+    public async Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IInferenceService eyeInferenceService, HomePageViewModel viewModel)
     {
         const int leftPort = 8080;
         const int rightPort = 8081;

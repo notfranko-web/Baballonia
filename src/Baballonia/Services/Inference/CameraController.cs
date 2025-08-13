@@ -159,6 +159,7 @@ public class CameraController : IDisposable
 
     public void StopCamera()
     {
+        ArExpressions = [];
         _inferenceService.Shutdown(_camera);
     }
 

@@ -16,8 +16,6 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     public abstract (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
 
     protected readonly Stopwatch sw = Stopwatch.StartNew();
-    private readonly ILogger<InferenceService> logger = logger;
-    private readonly ILocalSettingsService settingsService = settingsService;
 
     /// <summary>
     /// Loads/reloads the ONNX model for a specified camera

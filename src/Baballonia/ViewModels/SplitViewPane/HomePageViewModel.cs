@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -39,13 +40,14 @@ public partial class HomePageViewModel : ViewModelBase
 
         [ObservableProperty] private WriteableBitmap _bitmap;
 
+        [ObservableProperty] private bool _hintEnabled;
+        [ObservableProperty] private bool _inferEnabled;
         [ObservableProperty] private string? _displayAddress;
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
         [ObservableProperty] private float _rotation = 0;
         [ObservableProperty] private bool _isCropMode = false;
-        [ObservableProperty] private string _hint;
         [ObservableProperty] private bool _isCameraRunning = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
 
@@ -149,9 +151,10 @@ public partial class HomePageViewModel : ViewModelBase
     [ObservableProperty] private CameraControllerModel _faceCamera;
 
     private readonly DispatcherTimer _msgCounterTimer;
-    private readonly IEyeInferenceService _eyeInferenceService;
+    private IInferenceService _eyeInferenceService;
     private readonly IFaceInferenceService _faceInferenceService;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IServiceProvider _serviceProvider;
 
 
     private readonly DispatcherTimer _drawTimer = new()
@@ -166,7 +169,7 @@ public partial class HomePageViewModel : ViewModelBase
         OscSendService = Ioc.Default.GetService<OscSendService>()!;
         LocalSettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
-        _eyeInferenceService = Ioc.Default.GetService<IEyeInferenceService>()!;
+        _serviceProvider = Ioc.Default.GetRequiredService<IServiceProvider>();
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         LocalSettingsService.Load(this);
 
@@ -212,34 +215,7 @@ public partial class HomePageViewModel : ViewModelBase
             });
         });
 
-        var left = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-            new CameraSettings { Camera = Camera.Left });
-        var right = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
-            new CameraSettings { Camera = Camera.Right });
-        var face = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
-            new CameraSettings { Camera = Camera.Face });
-
-        LeftCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Left,
-            left
-        );
-
-        RightCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Right,
-            right
-        );
-
-        FaceCameraController = new CameraController(
-            _faceInferenceService,
-            Camera.Face,
-            face
-        );
-
-        LeftCamera.Controller = LeftCameraController;
-        RightCamera.Controller = RightCameraController;
-        FaceCamera.Controller = FaceCameraController;
+        await SetupCameraSettings();
 
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
@@ -266,6 +242,48 @@ public partial class HomePageViewModel : ViewModelBase
         parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
     }
 
+    private async Task SetupCameraSettings()
+    {
+        var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+            new CameraSettings { Camera = Camera.Left });
+        var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
+            new CameraSettings { Camera = Camera.Right });
+        var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
+            new CameraSettings { Camera = Camera.Face });
+
+        // Create camera URL dictionary for eye inference service
+        var cameraUrls = new Dictionary<Camera, string>();
+        if (!string.IsNullOrEmpty(_leftCamera.DisplayAddress))
+            cameraUrls[Camera.Left] = _leftCamera.DisplayAddress;
+        if (!string.IsNullOrEmpty(_rightCamera.DisplayAddress))
+            cameraUrls[Camera.Right] = _rightCamera.DisplayAddress;
+
+        // Create the appropriate eye inference service based on camera configuration
+        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls);
+
+        LeftCameraController = new CameraController(
+            _eyeInferenceService,
+            Camera.Left,
+            leftSettings
+        );
+
+        RightCameraController = new CameraController(
+            _eyeInferenceService,
+            Camera.Right,
+            rightSettings
+        );
+
+        FaceCameraController = new CameraController(
+            _faceInferenceService,
+            Camera.Face,
+            faceSettings
+        );
+
+        LeftCamera.Controller = LeftCameraController;
+        RightCamera.Controller = RightCameraController;
+        FaceCamera.Controller = FaceCameraController;
+    }
+
     private void SaveCameraSettings()
     {
         _localSettingsService.SaveSettingAsync("LeftCamera", LeftCameraController.CameraSettings);
@@ -288,6 +306,17 @@ public partial class HomePageViewModel : ViewModelBase
 
         if (!string.IsNullOrEmpty(camera))
         {
+            if (model.Controller.CameraSettings.Camera == Camera.Left || model.Controller.CameraSettings.Camera == Camera.Right)
+            {
+                if (LeftCamera.DisplayAddress == RightCamera.DisplayAddress)
+                {
+                    LeftCameraController.StartCamera(camera);
+                    RightCameraController.StartCamera(camera);
+                    SaveCameraSettings();
+                    return;
+                }
+            }
+
             model.Controller.StartCamera(camera);
             SaveCameraSettings();
         }

@@ -76,7 +76,10 @@ public class App : Application
                 services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
-                services.AddSingleton<IEyeInferenceService, EyeInferenceService>();
+                services.AddSingleton<ISingleCameraEyeInferenceService, SingleCameraEyeInferenceService>();
+                services.AddSingleton<IDualCameraEyeInferenceService, DualCameraEyeInferenceService>();
+
+
                 services.AddSingleton<IFaceInferenceService, FaceInferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
@@ -191,7 +194,10 @@ public class App : Application
         var vrcft = Ioc.Default.GetRequiredService<IMainService>();
         Task.Run(vrcft.Teardown);
 
-        var eye = Ioc.Default.GetRequiredService<IEyeInferenceService>();
+        var dualEye = Ioc.Default.GetRequiredService<IDualCameraEyeInferenceService>();
+        dualEye.Shutdown();
+
+        var eye = Ioc.Default.GetRequiredService<ISingleCameraEyeInferenceService>();
         eye.Shutdown();
 
         var face = Ioc.Default.GetRequiredService<IFaceInferenceService>();
@@ -209,3 +215,4 @@ public class App : Application
         }
     }
 }
+

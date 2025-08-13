@@ -8,7 +8,6 @@ namespace Baballonia.Contracts;
 
 public interface IVROverlay
 {
-
-    public Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IEyeInferenceService eyeInferenceService, HomePageViewModel viewModel);
+    public Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IInferenceService eyeInferenceService, HomePageViewModel viewModel);
 
 }

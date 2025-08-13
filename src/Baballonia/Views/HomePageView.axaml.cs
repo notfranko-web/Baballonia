@@ -63,6 +63,8 @@ public partial class HomePageView : UserControl
                 SetupCropEvents(vm.LeftCamera, LeftMouthWindow);
                 SetupCropEvents(vm.RightCamera, RightMouthWindow);
                 SetupCropEvents(vm.FaceCamera, FaceMouthWindow);
+                EyeAddressEntry_OnTextChanged(null, null!);
+                FaceAddressEntry_OnTextChanged(null, null!);
             }
         };
     }
@@ -95,4 +97,42 @@ public partial class HomePageView : UserControl
         };
     }
 
+    private void EyeAddressEntry_OnTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        var vm = this.DataContext as HomePageViewModel;
+        if (vm == null) return;
+        if (vm.LeftCamera.DisplayAddress != null && vm.RightCamera.DisplayAddress != null)
+        {
+            if (vm.LeftCamera.DisplayAddress.Length == 0)
+            {
+                LeftAddressHint.Text = "Please enter addresses for both eyes before starting!";
+                vm.LeftCamera.HintEnabled = true;
+                vm.LeftCamera.InferEnabled = false;
+            }
+
+            if (vm.RightCamera.DisplayAddress.Length == 0)
+            {
+                RightAddressHint.Text = "Please enter addresses for both eyes before starting!";
+                vm.RightCamera.HintEnabled = true;
+                vm.LeftCamera.InferEnabled = false;
+            }
+
+            if (vm.LeftCamera.DisplayAddress.Length > 0 && vm.RightCamera.DisplayAddress.Length > 0)
+            {
+                vm.LeftCamera.InferEnabled = true;
+                vm.LeftCamera.HintEnabled = false;
+                vm.RightCamera.HintEnabled = false;
+            }
+        }
+    }
+
+    private void FaceAddressEntry_OnTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        var vm = this.DataContext as HomePageViewModel;
+        if (vm == null) return;
+        if (vm.FaceCamera.DisplayAddress != null)
+        {
+            vm.FaceCamera.InferEnabled = vm.FaceCamera.DisplayAddress.Length > 0;
+        }
+    }
 }
