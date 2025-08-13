@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
-using Baballonia.Models;
-using Baballonia.Services.Inference;
-using Baballonia.ViewModels.SplitViewPane;
 using Microsoft.Extensions.Hosting;
 using OscCore;
 
@@ -106,8 +101,8 @@ public class ParameterSenderService(
 
                 try
                 {
-                    if (_leftCameraController != null) ProcessEyeExpressionData(_leftCameraController.ArExpressions, prefix);
-                    if (_faceCameraController != null) ProcessFaceExpressionData(_faceCameraController.ArExpressions, prefix);
+                    ProcessEyeExpressionData(EyeExpressions, prefix);
+                    ProcessFaceExpressionData(FaceExpressions, prefix);
 
                     await SendAndClearQueue(cancellationToken);
                     await Task.Delay(10, cancellationToken);

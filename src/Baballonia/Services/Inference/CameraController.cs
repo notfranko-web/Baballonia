@@ -159,8 +159,9 @@ public class CameraController : IDisposable
 
     public void StopCamera()
     {
-        ArExpressions = [];
         _inferenceService.Shutdown(_camera);
+        ParameterSenderService.EyeExpressions = [];
+        ParameterSenderService.FaceExpressions = [];
     }
 
     public void SetTrackingMode()

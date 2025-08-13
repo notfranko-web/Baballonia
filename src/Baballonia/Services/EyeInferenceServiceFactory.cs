@@ -18,11 +18,11 @@ namespace Baballonia.Services
             {
                 if (leftCameraUrl == rightCameraUrl)
                 {
-                    return serviceProvider.GetRequiredService<IDualCameraEyeInferenceService>();
+                    return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
                 }
             }
             
-            return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
+            return serviceProvider.GetRequiredService<IDualCameraEyeInferenceService>();
         }
     }
 }

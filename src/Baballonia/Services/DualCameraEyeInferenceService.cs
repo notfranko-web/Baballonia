@@ -17,7 +17,7 @@ using OpenCvSharp;
 namespace Baballonia.Services;
 
 /// <summary>
-/// Implementation of IEyeInferenceService that uses separate cameras for each eye
+/// Implementation of IEyeInferenceService that uses SEPERATE cameras for each eye
 /// </summary>
 public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService) : BaseEyeInferenceService(logger, settingsService), IDualCameraEyeInferenceService
 {
@@ -92,7 +92,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
     public override bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
-        
+
         // For dual camera, we only process when we have both camera feeds
         if (PlatformConnectors[(int)Camera.Left].Item2?.Capture?.IsReady != true ||
             PlatformConnectors[(int)Camera.Right].Item2?.Capture?.IsReady != true)
@@ -103,7 +103,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         using var leftEyeMat = new Mat<byte>(
             PlatformConnectors[(int)Camera.Left].Item1.InputSize.Height,
             PlatformConnectors[(int)Camera.Left].Item1.InputSize.Width);
-            
+
         using var rightEyeMat = new Mat<byte>(
             PlatformConnectors[(int)Camera.Right].Item1.InputSize.Height,
             PlatformConnectors[(int)Camera.Right].Item1.InputSize.Width);
@@ -137,12 +137,16 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
 
         using var results = PlatformConnectors[(int)Camera.Left].Item1.Session!.Run(inputs);
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
-        
+
         // Apply filter
         arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
 
+        // Hacky
+        var res = ProcessExpressions(ref arKitExpressions);
+        ParameterSenderService.EyeExpressions = arKitExpressions;
+
         // Process and convert the expressions to the expected format
-        return ProcessExpressions(ref arKitExpressions);
+        return res;
     }
 
     private bool ProcessExpressions(ref float[] arKitExpressions)
@@ -186,7 +190,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
 
         PlatformConnectors[(int)Camera.Left].Item1.LastTime = time;
         PlatformConnectors[(int)Camera.Right].Item1.LastTime = time;
-        
+
         return true;
     }
 
@@ -206,8 +210,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         else
         {
             var convertedMat = new Mat();
-            Cv2.CvtColor(platformConnector.Capture.RawMat, convertedMat, 
-                platformConnector.Capture.RawMat.Channels() == 1 
+            Cv2.CvtColor(platformConnector.Capture.RawMat, convertedMat,
+                platformConnector.Capture.RawMat.Channels() == 1
                     ? color switch
                     {
                         ColorType.Bgr24 => ColorConversionCodes.GRAY2BGR,
@@ -233,7 +237,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         image = null;
         var platformSettings = PlatformConnectors[(int)cameraSettings.Camera].Item1;
         var platformConnector = PlatformConnectors[(int)cameraSettings.Camera].Item2;
-        if (platformConnector is null) 
+        if (platformConnector is null)
             return false;
 
         var imageMat = new Mat<byte>(platformSettings.InputSize.Height, platformSettings.InputSize.Width);
