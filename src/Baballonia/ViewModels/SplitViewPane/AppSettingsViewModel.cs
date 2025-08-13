@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -54,6 +55,14 @@ public partial class AppSettingsViewModel : ViewModelBase
         GithubService = Ioc.Default.GetService<GithubService>()!;
         SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         SettingsService.Load(this);
+
+        // Handle edge case where OSC port is used and the system freaks out
+        if (OscTarget.OutPort == 0)
+        {
+            const int Port = 8888;
+            OscTarget.OutPort = Port;
+            Task.Run(async () => await SettingsService.SaveSettingAsync("OSCOutPort", Port));
+        }
 
         // Risky Settings
         ParameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;

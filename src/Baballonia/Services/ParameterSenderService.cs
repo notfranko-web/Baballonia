@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
-using Baballonia.Models;
-using Baballonia.Services.Inference;
-using Baballonia.ViewModels.SplitViewPane;
 using Microsoft.Extensions.Hosting;
 using OscCore;
 
@@ -20,16 +15,9 @@ public class ParameterSenderService(
     ILocalSettingsService localSettingsService,
     ICalibrationService calibrationService) : BackgroundService
 {
-    public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
-    public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
-    public void RegisterFaceCameraController(CameraController controller) => _faceCameraController = controller;
-
     private readonly Queue<OscMessage> _sendQueue = new();
-
-    // Camera controller references
-    private CameraController _leftCameraController;
-    private CameraController _rightCameraController;
-    private CameraController _faceCameraController;
+    public static float[] EyeExpressions = [];
+    public static float[] FaceExpressions = [];
 
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()
@@ -106,8 +94,8 @@ public class ParameterSenderService(
 
                 try
                 {
-                    if (_leftCameraController != null) ProcessEyeExpressionData(_leftCameraController.ArExpressions, prefix);
-                    if (_faceCameraController != null) ProcessFaceExpressionData(_faceCameraController.ArExpressions, prefix);
+                    ProcessEyeExpressionData(EyeExpressions, prefix);
+                    ProcessFaceExpressionData(FaceExpressions, prefix);
 
                     await SendAndClearQueue(cancellationToken);
                     await Task.Delay(10, cancellationToken);

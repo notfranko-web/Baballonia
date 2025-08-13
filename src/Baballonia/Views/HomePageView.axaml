@@ -36,14 +36,12 @@
                     </SplitButton.Content>
                     <SplitButton.Flyout>
                         <MenuFlyout>
-                            <!--  TODO: Handle  -->
-                            <MenuItem Header="5-Point Quick Calibration">
+                            <MenuItem Click="OnCalibrationMenuItemClick" Header="5-Point Quick Calibration">
                                 <MenuItem.Icon>
                                     <PathIcon Data="{StaticResource HeadsetVrRegular}" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="Full Calibration">
-                                <!--  TODO: Handle  -->
+                            <MenuItem Click="OnCalibrationMenuItemClick" Header="Full Calibration">
                                 <MenuItem.Icon>
                                     <PathIcon Data="{StaticResource HeadsetVrRegular}" />
                                 </MenuItem.Icon>
@@ -505,8 +503,8 @@
                                         Command="{Binding CameraStartCommand}"
                                         CommandParameter="{Binding FaceCamera}"
                                         Content="Start Camera"
-                                        IsEnabled="{Binding FaceCamera.InferEnabled}"
-                                        FontSize="13" />
+                                        FontSize="13"
+                                        IsEnabled="{Binding FaceCamera.InferEnabled}" />
 
                                     <Button
                                         Grid.Column="1"
@@ -516,9 +514,9 @@
                                         HorizontalContentAlignment="Center"
                                         Command="{Binding CameraStopCommand}"
                                         CommandParameter="{Binding FaceCamera}"
-                                        IsEnabled="{Binding FaceCamera.InferEnabled}"
                                         Content="Stop Camera"
-                                        FontSize="13" />
+                                        FontSize="13"
+                                        IsEnabled="{Binding FaceCamera.InferEnabled}" />
                                 </Grid>
                             </Grid>
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
@@ -65,6 +66,8 @@ public partial class HomePageView : UserControl
                 SetupCropEvents(vm.FaceCamera, FaceMouthWindow);
                 EyeAddressEntry_OnTextChanged(null, null!);
                 FaceAddressEntry_OnTextChanged(null, null!);
+
+                vm.SelectedCalibrationText = "5-Point Quick Calibration";
             }
         };
     }
@@ -133,6 +136,14 @@ public partial class HomePageView : UserControl
         if (vm.FaceCamera.DisplayAddress != null)
         {
             vm.FaceCamera.InferEnabled = vm.FaceCamera.DisplayAddress.Length > 0;
+        }
+    }
+
+    private void OnCalibrationMenuItemClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && DataContext is HomePageViewModel vm)
+        {
+            vm.SelectedCalibrationText = menuItem.Header?.ToString() ?? "";
         }
     }
 }

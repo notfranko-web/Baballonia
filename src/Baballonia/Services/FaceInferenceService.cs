@@ -108,6 +108,11 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         arKitExpressions = smoothedExpressions;
 
         platformSettings.LastTime = time;
+
+        // Hacky
+        ParameterSenderService.EyeExpressions = arKitExpressions;
+
+        // Process and convert the expressions to the expected format
         return true;
     }
 

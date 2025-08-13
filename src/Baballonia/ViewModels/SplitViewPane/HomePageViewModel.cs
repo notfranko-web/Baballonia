@@ -235,11 +235,6 @@ public partial class HomePageViewModel : ViewModelBase
             FaceCamera.Bitmap = faceBitmap;
         };
         _drawTimer.Start();
-
-        var parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
-        parameterSenderService.RegisterLeftCameraController(LeftCameraController!);
-        parameterSenderService.RegisterRightCameraController(RightCameraController!);
-        parameterSenderService.RegisterFaceCameraController(FaceCameraController!);
     }
 
     private async Task SetupCameraSettings()
@@ -292,8 +287,9 @@ public partial class HomePageViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CameraStart(CameraControllerModel model)
+    private async void CameraStart(CameraControllerModel model)
     {
+        await SetupCameraSettings();
         string camera = model.DisplayAddress;
 
         if (App.DeviceEnumerator.Cameras != null)
@@ -306,18 +302,30 @@ public partial class HomePageViewModel : ViewModelBase
 
         if (!string.IsNullOrEmpty(camera))
         {
-            if (model.Controller.CameraSettings.Camera == Camera.Left || model.Controller.CameraSettings.Camera == Camera.Right)
+            model.Controller.StartCamera(camera);
+
+            if (model.Controller.CameraSettings.Camera == Camera.Left)
             {
-                if (LeftCamera.DisplayAddress == RightCamera.DisplayAddress)
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                 {
-                    LeftCameraController.StartCamera(camera);
-                    RightCameraController.StartCamera(camera);
-                    SaveCameraSettings();
-                    return;
+                    if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                    {
+                        RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                    }
                 }
             }
 
-            model.Controller.StartCamera(camera);
+            if (model.Controller.CameraSettings.Camera == Camera.Right)
+            {
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                {
+                    if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
+                    {
+                        LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                    }
+                }
+            }
+
             SaveCameraSettings();
         }
     }
@@ -326,6 +334,23 @@ public partial class HomePageViewModel : ViewModelBase
     private void CameraStop(CameraControllerModel model)
     {
         model.Controller.StopCamera();
+
+        if (model.Controller.CameraSettings.Camera == Camera.Left)
+        {
+            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            {
+                RightCameraController.StopCamera();
+            }
+        }
+
+
+        if (model.Controller.CameraSettings.Camera == Camera.Right)
+        {
+            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            {
+                LeftCameraController.StopCamera();
+            }
+        }
     }
 
     [RelayCommand]
@@ -334,7 +359,7 @@ public partial class HomePageViewModel : ViewModelBase
         model.SelectWholeFrame();
     }
 
-private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
+    private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
 
     ~HomePageViewModel()
     {
