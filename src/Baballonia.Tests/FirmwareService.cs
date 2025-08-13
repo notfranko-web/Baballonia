@@ -7,7 +7,7 @@ using static Baballonia.Tests.FirmwareResponses;
 namespace Baballonia.Tests
 {
     /// <summary>
-    /// <term>Example usage:</term><br/>
+    /// Example usage:
     /// <description>
     /// firmwareService.StartSession(CommandSenderType.Serial, selectedPort);<br/>
     /// firmwareService.WaitForHeartbeat();<br/>
@@ -47,7 +47,7 @@ namespace Baballonia.Tests
 
         private string[] FindAvalibleComPorts()
         {
-            // GetPortNames() may return single port multiple times 
+            // GetPortNames() may return single port multiple times
             // https://stackoverflow.com/questions/33401217/serialport-getportnames-returns-same-port-multiple-times
             return SerialPort.GetPortNames().Distinct().ToArray();          }
         private List<JsonDocument> FindJsonObjects(string input)
@@ -172,6 +172,28 @@ namespace Baballonia.Tests
             var response = jsonDoc.Deserialize<CommandResponse>();
 
             return response;
+        }
+
+        public JsonDocument SendCommand(CommandRoot command, string responseJsonRootKey)
+        {
+            var jsonDoc = SendCommandReadResponse(command.serialize(), responseJsonRootKey);
+            return jsonDoc;
+        }
+
+        public JsonDocument ReadResponse(string responseJsonRootKey)
+        {
+            JsonExtractor jsonExtractor = new JsonExtractor();
+            while (true)
+            {
+                Thread.Sleep(10); // give it some breathing time
+
+                JsonDocument json = jsonExtractor.ReadUntilValidJson(() => _commandSender.ReadLine());
+                _logger.LogDebug("Recieved json: {}", json.RootElement.GetRawText());
+                if (JsonHasPrefix(json, responseJsonRootKey))
+                {
+                    return json;
+                }
+            }
         }
 
         private JsonDocument? SendCommandReadResponse(string command, string responseJsonRootKey)

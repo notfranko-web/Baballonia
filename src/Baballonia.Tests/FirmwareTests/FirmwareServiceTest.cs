@@ -74,7 +74,7 @@ namespace Baballonia.Tests.FirmwareTests
         {
             List<string> mockLines = new List<string>();
             mockLines.Add("""{"heartbeat":{}}""");
-            mockLines.Add("""{"results":[{"command_name":"pause", "status": "SUCCESS" }]}""");
+            mockLines.Add("""{"results":        ["{\"result\":\"{\\\"status\\\":\\\"connected\\\",\\\"networks_configured\\\":1,\\\"ip_address\\\":\\\"192.168.0.246\\\"}\"}"]} """);
 
             var firmwareService = CreateService(mockLines);
 
@@ -84,15 +84,8 @@ namespace Baballonia.Tests.FirmwareTests
             var builder = FirmwareCommands.Builder();
             var command = builder.GetWifiStatus().build();
             var results = firmwareService.SendCommand(command);
+            var r1 = results.CastResponseType<FirmwareResponses.WifiStatusArgs>();
 
-            foreach (var result in results.Results)
-            {
-                _logger.LogInformation("command response: \ncommand: {0} \nstatus: {1} \nargs: {2}",
-                    result.CommandName,
-                    result.Status,
-                    result.Args == null ? "None" : result.Args.RootElement.GetRawText()
-                );
-            }
         }
 
 
@@ -116,14 +109,18 @@ namespace Baballonia.Tests.FirmwareTests
             var command = builder.GetWifiStatus().build();
             var commandResult = firmwareService.SendCommand(command);
 
-            foreach (var result in commandResult.Results)
-            {
-                _logger.LogInformation("command response: \ncommand: {0} \nstatus: {1} \nargs: {2}",
-                    result.CommandName,
-                    result.Status,
-                    result.Args == null ? "None" : result.Args.RootElement.GetRawText()
-                );
-            }
+        }
+
+        [TestMethod]
+        public void TestTui()
+        {
+            string fakeInput =
+                "1" + Environment.NewLine +
+                "8" + Environment.NewLine +
+                "8" + Environment.NewLine +
+                "a" + Environment.NewLine;
+            Console.SetIn(new StringReader(fakeInput));
+            Program.Main1([]);
         }
 
     }

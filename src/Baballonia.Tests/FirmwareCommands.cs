@@ -4,7 +4,6 @@ namespace Baballonia.Tests
 {
     public class FirmwareCommands
     {
-
         // No string enums, cope :(
         public class Mode
         {

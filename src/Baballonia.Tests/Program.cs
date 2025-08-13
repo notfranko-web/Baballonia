@@ -10,7 +10,7 @@ namespace Baballonia.Tests;
 
 public class Program
 {
-    static void Main(string[] args)
+    public static void Main1(string[] args)
     {
         Console.WriteLine("ESP32-S3 Wi-Fi Tool");
         Console.WriteLine("-------------------------");
@@ -22,7 +22,7 @@ public class Program
             .SetMinimumLevel(LogLevel.Trace));
 
 
-        services.AddSingleton<CommandSenderFactory>();
+        services.AddSingleton<ICommandSenderFactory, CommandSenderFactory>();
         services.AddTransient<FirmwareService>();
 
         var serviceProvider = services.BuildServiceProvider();
@@ -77,17 +77,18 @@ public class Program
                     case 0:
                         while (true)
                         {
-                            var scanres = firmwareService.SendCommand(FirmwareCommands.Builder().ScanWifiNetworks().build());
+                            var scanres = firmwareService.SendCommand(FirmwareCommands.Builder().ScanWifiNetworks().build(), "networks");
                             if (scanres is not null)
                             {
-                                scanResult = scanres.Results.First().CastResponseType<WifiNetworkArgs>().Args.Networks;
+                                var jsonstr = scanres.RootElement.GetRawText();
+                                scanResult = JsonSerializer.Deserialize<WifiNetworkArgs>(jsonstr).Networks;
                                 scanResult = scanResult.OrderByDescending(n => n.Rssi).ToList();
                                 break;
                             }
 
                             _logger.LogWarning("Networks not found, retrying...");
                         }
-                        _logger.LogInformation("Found {} networks}", scanResult.Count);
+                        _logger.LogInformation("Found {} networks", scanResult.Count);
                         break;
                     case 1:
                         if (scanResult is null)
@@ -110,11 +111,11 @@ public class Program
                         break;
                     case 3:
                         var res = firmwareService.SendCommand(FirmwareCommands.Builder().GetWifiStatus().build());
-                        var wifiStatus = res.Results.First().CastResponseType<WifiStatusArgs>();
+                        var wifiStatus = res.CastResponseType<WifiStatusArgs>();
 
-                        Console.WriteLine($"WiFi Status: {wifiStatus.Args.Status}");
-                        Console.WriteLine($"Networks configured: {wifiStatus.Args.NetworksConfigured}");
-                        Console.WriteLine($"IP Address: {wifiStatus.Args.IpAddress}");
+                        Console.WriteLine($"WiFi Status: {wifiStatus.Status}");
+                        Console.WriteLine($"Networks configured: {wifiStatus.NetworksConfigured}");
+                        Console.WriteLine($"IP Address: {wifiStatus.IpAddress}");
 
                         break;
                     case 4:
@@ -150,11 +151,11 @@ public class Program
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error : {}", ex.Message);
+            _logger.LogError("Error : {}", ex);
         }
 
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
+        Console.WriteLine("Press Enter to exit...");
+        Console.ReadLine();
     }
 
     static string AskUser(string message)

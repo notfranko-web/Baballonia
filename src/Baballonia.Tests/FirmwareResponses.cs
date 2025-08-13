@@ -31,7 +31,7 @@ namespace Baballonia.Tests
         public class WifiNetworkArgs : Args
         {
             [JsonPropertyName("networks")]
-            public required List<WifiNetwork> Networks;
+            public required List<WifiNetwork> Networks { get; set; }
         }
 
         public class WifiStatusArgs : Args
@@ -60,27 +60,27 @@ namespace Baballonia.Tests
 
         public class GenericResponse
         {
-            [JsonPropertyName("command_name")]
-            public required string CommandName { get; set; }
-            [JsonPropertyName("status")]
-            public required string Status { get; set; }
+            [JsonPropertyName("result")]
+            public required string Result { get; set; }
 
-            [JsonPropertyName("args")]
-            public JsonDocument? Args { get; }
-
-            public Response<ArgType> CastResponseType<ArgType>() where ArgType : Args
+            public TArgType? CastResponseType<TArgType>() where TArgType : Args
             {
-                if (Args == null) 
-                    throw new ArgumentNullException("Trying to deserialize response without arguments");
-
-                var a = Args.Deserialize<ArgType>();
-                return new Response<ArgType>(CommandName, Status, a);
+                return JsonSerializer.Deserialize<TArgType>(Result);
             }
         }
         public class CommandResponse
         {
             [JsonPropertyName("results")]
-            public required List<GenericResponse> Results { get; set; }
+            public required List<string> Results { get; set; }
+
+            public TArgType? CastResponseType<TArgType>() where TArgType : Args
+            {
+                var resultStr = Results.First();
+                var obj = JsonSerializer.Deserialize<GenericResponse>(resultStr);
+                var result = obj.CastResponseType<TArgType>();
+
+                return result;
+            }
         }
     }
 }
