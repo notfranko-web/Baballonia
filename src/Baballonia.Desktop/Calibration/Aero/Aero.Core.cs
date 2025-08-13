@@ -14,7 +14,6 @@ namespace Baballonia.Desktop.Calibration.Aero;
 public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDisposable
 {
     private static string Overlay { get; } = null!;
-    private static string Trainer { get; } = null!;
     private static string OverlayPath { get; } = null!;
 
     private readonly HttpClient _httpClient;
@@ -28,13 +27,11 @@ public partial class AeroOverlayTrainerCombo : IVROverlay, IVRCalibrator, IDispo
         {
             OverlayPath = Path.Combine(AppContext.BaseDirectory, "Calibration", "Windows");
             Overlay = Path.Combine(OverlayPath, "gaze_overlay.exe");
-            Trainer = Path.Combine(OverlayPath, "calibration_runner.exe");
         }
         else if (OperatingSystem.IsLinux())
         {
             OverlayPath = Path.Combine(AppContext.BaseDirectory, "Calibration", "Linux");
             Overlay = Path.Combine(OverlayPath, "gaze_overlay");
-            Trainer = Path.Combine(OverlayPath, "calibration_runner");
         }
     }
 
