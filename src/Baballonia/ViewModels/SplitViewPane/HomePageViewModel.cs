@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Baballonia.Contracts;
+using Baballonia.Helpers;
 using Baballonia.Services;
 using Baballonia.Services.Inference;
 using Baballonia.Services.Inference.Enums;
@@ -357,6 +358,12 @@ public partial class HomePageViewModel : ViewModelBase
     private void SelectWholeFrame(CameraControllerModel model)
     {
         model.SelectWholeFrame();
+    }
+
+    [RelayCommand]
+    private async Task RequestVRCalibration()
+    {
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;

@@ -17,7 +17,7 @@ using OpenCvSharp;
 namespace Baballonia.Services;
 
 /// <summary>
-/// Implementation of IEyeInferenceService that uses SEPERATE cameras for each eye
+/// Implementation of IEyeInferenceService that uses SEPARATE cameras for each eye
 /// </summary>
 public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService) : BaseEyeInferenceService(logger, settingsService), IDualCameraEyeInferenceService
 {

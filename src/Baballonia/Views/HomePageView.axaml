@@ -26,6 +26,7 @@
                     x:Name="SplitCalibrationButton"
                     Grid.Column="1"
                     Padding="12,8"
+                    Command="{Binding RequestVRCalibrationCommand}"
                     CornerRadius="4"
                     IsEnabled="{Binding ShouldShowEyeCalibration}"
                     IsVisible="{Binding ShouldShowEyeCalibration}">
@@ -37,16 +38,16 @@
                     </SplitButton.Content>
                     <SplitButton.Flyout>
                         <MenuFlyout>
-                            <MenuItem Click="OnCalibrationMenuItemClick" Header="5-Point Quick Calibration">
-                                <MenuItem.Icon>
-                                    <PathIcon Data="{StaticResource HeadsetVrRegular}" />
-                                </MenuItem.Icon>
-                            </MenuItem>
                             <MenuItem Click="OnCalibrationMenuItemClick" Header="Full Calibration">
                                 <MenuItem.Icon>
                                     <PathIcon Data="{StaticResource HeadsetVrRegular}" />
                                 </MenuItem.Icon>
                             </MenuItem>
+                            <!--<MenuItem Click="OnCalibrationMenuItemClick" Header="5-Point Quick Calibration">
+                                <MenuItem.Icon>
+                                    <PathIcon Data="{StaticResource HeadsetVrRegular}" />
+                                </MenuItem.Icon>
+                            </MenuItem>-->
                         </MenuFlyout>
                     </SplitButton.Flyout>
                 </SplitButton>
