@@ -15,16 +15,9 @@ public class ParameterSenderService(
     ILocalSettingsService localSettingsService,
     ICalibrationService calibrationService) : BackgroundService
 {
-    public void RegisterLeftCameraController(CameraController controller) => _leftCameraController = controller;
-    public void RegisterRightCameraController(CameraController controller) => _rightCameraController = controller;
-    public void RegisterFaceCameraController(CameraController controller) => _faceCameraController = controller;
-
     private readonly Queue<OscMessage> _sendQueue = new();
-
-    // Camera controller references
-    private CameraController _leftCameraController;
-    private CameraController _rightCameraController;
-    private CameraController _faceCameraController;
+    public static float[] EyeExpressions = [];
+    public static float[] FaceExpressions = [];
 
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()
