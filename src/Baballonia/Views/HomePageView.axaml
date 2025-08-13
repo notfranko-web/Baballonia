@@ -1,11 +1,12 @@
-﻿<UserControl
+<UserControl
     x:Class="Baballonia.Views.HomePageView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:Baballonia.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
-    xmlns:views="clr-namespace:Baballonia.Views"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="splitViewPane:HomePageViewModel"
@@ -167,12 +168,27 @@
                         Grid.Row="2"
                         Margin="0,0,0,16"
                         IsVisible="{Binding LeftCamera.IsCameraRunning}">
+                        <Viewbox.MaxWidth>
+                            <Binding Path="LeftCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxWidth>
+                        <Viewbox.MaxHeight>
+                            <Binding Path="LeftCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxHeight>
                         <Grid>
                             <Image
                                 x:Name="LeftMouthWindow"
                                 HorizontalAlignment="Center"
                                 IsHitTestVisible="True"
-                                Source="{Binding LeftCamera.Bitmap}" />
+                                Source="{Binding LeftCamera.Bitmap}"
+                                Stretch="Uniform" />
                             <Canvas
                                 x:Name="LeftCanvasWindow"
                                 Background="Transparent"
@@ -311,7 +327,7 @@
                                         CommandParameter="{Binding RightCamera}"
                                         Content="Start Camera"
                                         FontSize="13"
-                                        IsEnabled="{Binding LeftCamera.InferEnabled}" />
+                                        IsEnabled="{Binding RightCamera.InferEnabled}" />
 
                                     <Button
                                         Grid.Column="1"
@@ -323,7 +339,7 @@
                                         CommandParameter="{Binding RightCamera}"
                                         Content="Stop Camera"
                                         FontSize="13"
-                                        IsEnabled="{Binding LeftCamera.InferEnabled}" />
+                                        IsEnabled="{Binding RightCamera.InferEnabled}" />
                                 </Grid>
                             </Grid>
 
@@ -360,12 +376,27 @@
                         Grid.Row="2"
                         Margin="0,0,0,16"
                         IsVisible="{Binding RightCamera.IsCameraRunning}">
+                        <Viewbox.MaxWidth>
+                            <Binding Path="RightCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxWidth>
+                        <Viewbox.MaxHeight>
+                            <Binding Path="RightCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxHeight>
                         <Grid>
                             <Image
                                 x:Name="RightMouthWindow"
                                 HorizontalAlignment="Center"
                                 IsHitTestVisible="True"
-                                Source="{Binding RightCamera.Bitmap}" />
+                                Source="{Binding RightCamera.Bitmap}"
+                                Stretch="Uniform" />
                             <Canvas
                                 x:Name="RightCanvasWindow"
                                 Background="Transparent"
@@ -553,12 +584,35 @@
                         Grid.Row="2"
                         Margin="0,0,0,16"
                         IsVisible="{Binding FaceCamera.IsCameraRunning}">
+                        <Viewbox.MaxWidth>
+                            <Binding Path="FaceCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxWidth>
+                        <Viewbox.MaxHeight>
+                            <Binding Path="FaceCamera.IsCropMode">
+                                <Binding.Converter>
+                                    <converters:BoolToObjectConverter FalseValue="192" TrueValue="{x:Static system:Double.PositiveInfinity}" />
+                                </Binding.Converter>
+                            </Binding>
+                        </Viewbox.MaxHeight>
                         <Grid>
                             <Image
-                                x:Name="FaceMouthWindow"
+                                x:Name="FaceWindow"
                                 HorizontalAlignment="Center"
                                 IsHitTestVisible="True"
-                                Source="{Binding FaceCamera.Bitmap}" />
+                                Source="{Binding FaceCamera.Bitmap}"
+                                Stretch="Uniform">
+                                <Image.Height>
+                                    <Binding Path="FaceCamera.IsCropMode">
+                                        <Binding.Converter>
+                                            <converters:BoolToObjectConverter FalseValue="0" TrueValue="192" />
+                                        </Binding.Converter>
+                                    </Binding>
+                                </Image.Height>
+                            </Image>
                             <Canvas
                                 x:Name="FaceCanvasWindow"
                                 Background="Transparent"

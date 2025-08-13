@@ -225,14 +225,14 @@ public partial class HomePageViewModel : ViewModelBase
             var faceBitmap = await FaceCameraController.UpdateImage();
 
             // a hack to force the UI refresh
-            LeftCamera.Bitmap = null;
+            LeftCamera.Bitmap = null!;
             LeftCamera.Bitmap = leftBitmap!;
 
-            RightCamera.Bitmap = null;
-            RightCamera.Bitmap = rightBitmap;
+            RightCamera.Bitmap = null!;
+            RightCamera.Bitmap = rightBitmap!;
 
-            FaceCamera.Bitmap = null;
-            FaceCamera.Bitmap = faceBitmap;
+            FaceCamera.Bitmap = null!;
+            FaceCamera.Bitmap = faceBitmap!;
         };
         _drawTimer.Start();
     }
