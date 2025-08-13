@@ -15,13 +15,6 @@ namespace Baballonia.Desktop.Calibration.Aero;
 
 public partial class AeroOverlayTrainerCombo
 {
-    // We don't call start ourselves, aero's overlay does
-
-    public bool StopTrainer()
-    {
-        return StopProcess(Trainer);
-    }
-
     private async Task<bool> StartCamerasAsync(VrCalibration calibration)
     {
         var response = await _httpClient.GetStringAsync(new Uri($"{_baseUrl}/start_cameras?left={calibration.LeftEyeMjpegSource}&right={calibration.RightEyeMjpegSource}"));
