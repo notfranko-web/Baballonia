@@ -17,7 +17,9 @@ using Baballonia.Helpers;
 using Baballonia.Services.Inference.Enums;
 using Baballonia.Services.Inference.Models;
 using Baballonia.Views;
+using HarfBuzzSharp;
 using OpenCvSharp;
+using Buffer = System.Buffer;
 using Rect = Avalonia.Rect;
 
 namespace Baballonia.Services.Inference;
@@ -26,7 +28,8 @@ public class CameraController : IDisposable
 {
     public CameraSettings CameraSettings { get; set; }
 
-    public float[] ArExpressions = [];
+    public static float[] EyeExpressions { get; private set; } = [];
+    public static float[] FaceExpressions { get; private set; } = [];
 
     private readonly IInferenceService _inferenceService;
     private readonly Camera _camera;
@@ -77,7 +80,17 @@ public class CameraController : IDisposable
                 if (valid) // Don't run infer on raw images
                 {
                     CameraSize = (image.Width, image.Height);
-                    _inferenceService.GetExpressionData(CameraSettings, out ArExpressions);
+                    float[] output;
+                    if (_camera == Camera.Face)
+                    {
+                        _inferenceService.GetExpressionData(CameraSettings, out output);
+                        FaceExpressions = output;
+                    }
+                    else
+                    {
+                        _inferenceService.GetExpressionData(CameraSettings, out output);
+                        EyeExpressions = output;
+                    }
                 }
                 break;
             case CamViewMode.Cropping:
@@ -160,8 +173,8 @@ public class CameraController : IDisposable
     public void StopCamera()
     {
         _inferenceService.Shutdown(_camera);
-        ParameterSenderService.EyeExpressions = [];
-        ParameterSenderService.FaceExpressions = [];
+        EyeExpressions = [];
+        FaceExpressions = [];
     }
 
     public void SetTrackingMode()

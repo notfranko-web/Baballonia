@@ -169,12 +169,8 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
         // Apply filter
         arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
 
-        // Hacky
-        var res = ProcessExpressions(ref arKitExpressions);
-        ParameterSenderService.EyeExpressions = arKitExpressions;
-
         // Process and convert the expressions to the expected format
-        return res;
+        return ProcessExpressions(ref arKitExpressions);
     }
 
     private bool ProcessExpressions(ref float[] arKitExpressions)

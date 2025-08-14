@@ -302,7 +302,10 @@ public partial class HomePageViewModel : ViewModelBase
         }
 
         if (string.IsNullOrEmpty(camera)) return;
+
         model.Controller.StartCamera(camera);
+
+        if (model.Name == "FaceCamera") return;
 
         if (_eyeInferenceService is DualCameraEyeInferenceService)
         {

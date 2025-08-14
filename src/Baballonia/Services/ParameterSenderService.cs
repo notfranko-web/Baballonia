@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
+using Baballonia.Services.Inference;
 using Microsoft.Extensions.Hosting;
 using OscCore;
 
@@ -16,8 +17,6 @@ public class ParameterSenderService(
     ICalibrationService calibrationService) : BackgroundService
 {
     private readonly Queue<OscMessage> _sendQueue = new();
-    public static float[] EyeExpressions = [];
-    public static float[] FaceExpressions = [];
 
     // Expression parameter names
     private readonly Dictionary<string, string> _eyeExpressionMap = new()
@@ -94,8 +93,8 @@ public class ParameterSenderService(
 
                 try
                 {
-                    ProcessEyeExpressionData(EyeExpressions, prefix);
-                    ProcessFaceExpressionData(FaceExpressions, prefix);
+                    ProcessEyeExpressionData(CameraController.EyeExpressions, prefix);
+                    ProcessFaceExpressionData(CameraController.FaceExpressions, prefix);
 
                     await SendAndClearQueue(cancellationToken);
                     await Task.Delay(10, cancellationToken);
