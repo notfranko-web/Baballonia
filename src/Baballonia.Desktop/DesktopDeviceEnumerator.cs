@@ -247,21 +247,15 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
             }
             else if (OperatingSystem.IsLinux())
             {
-                string[] ports = Directory.GetFiles("/dev/serial/by-id");
+                string[] ports = Directory.GetFiles("/dev", "ttyACM*");
                 foreach (string port in ports)
                 {
-                    // Extract more friendly name from the by-id path
-                    string friendlyName = Path.GetFileName(port)
-                        .Replace("usb-", "")
-                        .Replace("_", " ")
-                        .Replace("-if", " Interface ");
-
-                    EnsureUniqueKey(cameraDict, friendlyName, port);
+                    EnsureUniqueKey(cameraDict, $"Serial Device {Path.GetFileName(port)}", port);
                 }
             }
             else if (OperatingSystem.IsMacOS())
             {
-                string[] ports = Directory.GetFiles("/dev", "ttyACM*");
+                string[] ports = Directory.GetFiles("/dev", "tty.usb*");
                 foreach (string port in ports)
                 {
                     EnsureUniqueKey(cameraDict, $"Serial Device {Path.GetFileName(port)}", port);

@@ -10,8 +10,8 @@ namespace Baballonia.OpenCVCapture;
 public sealed partial class OpenCvCapture(string url) : Capture(url)
 {
     // Numbers only, http or GStreamer pipeline
-    [GeneratedRegex(@"^\d+$|^https?://.*|\s+!\s*appsink$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
-    
+    [GeneratedRegex(@"^\d+$|^https?://.*|^/dev/video\d+$|\s+!\s*appsink$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+
     private static partial Regex MyRegex();
 
     public override HashSet<Regex> Connections { get; set; } = [MyRegex()];

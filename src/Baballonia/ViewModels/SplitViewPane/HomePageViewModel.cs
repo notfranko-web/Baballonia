@@ -14,6 +14,7 @@ using Baballonia.Services.Inference.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using HarfBuzzSharp;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
@@ -212,7 +213,11 @@ public partial class HomePageViewModel : ViewModelBase
             Dispatcher.UIThread.Post(() =>
             {
                 foreach (var camerasKey in App.DeviceEnumerator.Cameras.Keys)
+                {
                     LeftCamera.Suggestions.Add(camerasKey);
+                    RightCamera.Suggestions.Add(camerasKey);
+                    FaceCamera.Suggestions.Add(camerasKey);
+                }
             });
         });
 
