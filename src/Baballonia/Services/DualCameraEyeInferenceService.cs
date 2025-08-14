@@ -17,7 +17,7 @@ using OpenCvSharp;
 namespace Baballonia.Services;
 
 /// <summary>
-/// Implementation of IEyeInferenceService that uses SEPERATE cameras for each eye
+/// Implementation of IEyeInferenceService that uses SEPARATE cameras for each eye
 /// </summary>
 public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService) : BaseEyeInferenceService(logger, settingsService), IDualCameraEyeInferenceService
 {
@@ -44,7 +44,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
             if (_cameraUrls.Count < 2)
                 return;
 
-            await InitializeModel();
+            if (camera == Camera.Left)
+                await InitializeModel();
         });
     }
 
@@ -141,12 +142,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         // Apply filter
         arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
 
-        // Hacky
-        var res = ProcessExpressions(ref arKitExpressions);
-        ParameterSenderService.EyeExpressions = arKitExpressions;
-
         // Process and convert the expressions to the expected format
-        return res;
+        return ProcessExpressions(ref arKitExpressions);;
     }
 
     private bool ProcessExpressions(ref float[] arKitExpressions)

@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Baballonia.Contracts;
+using Baballonia.Helpers;
 using Baballonia.Services;
 using Baballonia.Services.Inference;
 using Baballonia.Services.Inference.Enums;
@@ -225,14 +226,14 @@ public partial class HomePageViewModel : ViewModelBase
             var faceBitmap = await FaceCameraController.UpdateImage();
 
             // a hack to force the UI refresh
-            LeftCamera.Bitmap = null;
+            LeftCamera.Bitmap = null!;
             LeftCamera.Bitmap = leftBitmap!;
 
-            RightCamera.Bitmap = null;
-            RightCamera.Bitmap = rightBitmap;
+            RightCamera.Bitmap = null!;
+            RightCamera.Bitmap = rightBitmap!;
 
-            FaceCamera.Bitmap = null;
-            FaceCamera.Bitmap = faceBitmap;
+            FaceCamera.Bitmap = null!;
+            FaceCamera.Bitmap = faceBitmap!;
         };
         _drawTimer.Start();
     }
@@ -300,34 +301,44 @@ public partial class HomePageViewModel : ViewModelBase
             }
         }
 
-        if (!string.IsNullOrEmpty(camera))
+        if (string.IsNullOrEmpty(camera)) return;
+
+        model.Controller.StartCamera(camera);
+
+        if (model.Name == "FaceCamera") return;
+
+        if (_eyeInferenceService is DualCameraEyeInferenceService)
         {
-            model.Controller.StartCamera(camera);
-
-            if (model.Controller.CameraSettings.Camera == Camera.Left)
+            switch (model.Controller.CameraSettings.Camera)
             {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                case Camera.Left:
                 {
-                    if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                     {
-                        RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                        {
+                            RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                        }
                     }
+
+                    break;
+                }
+                case Camera.Right:
+                {
+                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                    {
+                        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
+                        {
+                            LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                        }
+                    }
+
+                    break;
                 }
             }
-
-            if (model.Controller.CameraSettings.Camera == Camera.Right)
-            {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                {
-                    if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
-                    {
-                        LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
-                    }
-                }
-            }
-
-            SaveCameraSettings();
         }
+
+        SaveCameraSettings();
     }
 
     [RelayCommand]
@@ -335,20 +346,27 @@ public partial class HomePageViewModel : ViewModelBase
     {
         model.Controller.StopCamera();
 
-        if (model.Controller.CameraSettings.Camera == Camera.Left)
+        if (_eyeInferenceService is not DualCameraEyeInferenceService) return;
+
+        switch (model.Controller.CameraSettings.Camera)
         {
-            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            case Camera.Left:
             {
-                RightCameraController.StopCamera();
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                {
+                    RightCameraController.StopCamera();
+                }
+
+                break;
             }
-        }
-
-
-        if (model.Controller.CameraSettings.Camera == Camera.Right)
-        {
-            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            case Camera.Right:
             {
-                LeftCameraController.StopCamera();
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                {
+                    LeftCameraController.StopCamera();
+                }
+
+                break;
             }
         }
     }
@@ -357,6 +375,12 @@ public partial class HomePageViewModel : ViewModelBase
     private void SelectWholeFrame(CameraControllerModel model)
     {
         model.SelectWholeFrame();
+    }
+
+    [RelayCommand]
+    private async Task RequestVRCalibration()
+    {
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;

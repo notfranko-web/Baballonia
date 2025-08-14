@@ -30,7 +30,7 @@ public partial class AeroOverlayTrainerCombo
         return result!.Result == "ok";
     }
 
-    public async Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IInferenceService eyeInferenceService, HomePageViewModel viewModel)
+    public async Task EyeTrackingCalibrationRequested(string calibrationRoutine, CameraController leftCameraController, CameraController rightCameraController, ILocalSettingsService localSettingsService, IInferenceService eyeInferenceService)
     {
         const int leftPort = 8080;
         const int rightPort = 8081;
@@ -80,11 +80,5 @@ public partial class AeroOverlayTrainerCombo
 
         SessionOptions sessionOptions = eyeInferenceService.SetupSessionOptions();
         await eyeInferenceService.ConfigurePlatformSpecificGpu(sessionOptions);
-
-        // Finally, close any open eye cameras. The inference service will spin these up
-        leftCameraController.StopCamera();
-        rightCameraController.StopCamera();
-        // eyeInferenceService.SetupInference(Camera.Left, viewModel.LeftCameraAddress);
-        // eyeInferenceService.SetupInference(Camera.Right, viewModel.RightCameraAddress);
     }
 }
