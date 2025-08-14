@@ -605,15 +605,7 @@
                                 HorizontalAlignment="Center"
                                 IsHitTestVisible="True"
                                 Source="{Binding FaceCamera.Bitmap}"
-                                Stretch="Uniform">
-                                <Image.Height>
-                                    <Binding Path="FaceCamera.IsCropMode">
-                                        <Binding.Converter>
-                                            <converters:BoolToObjectConverter FalseValue="0" TrueValue="192" />
-                                        </Binding.Converter>
-                                    </Binding>
-                                </Image.Height>
-                            </Image>
+                                Stretch="Uniform" />
                             <Canvas
                                 x:Name="FaceCanvasWindow"
                                 Background="Transparent"

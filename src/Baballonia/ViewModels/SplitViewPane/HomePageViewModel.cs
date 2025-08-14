@@ -301,34 +301,41 @@ public partial class HomePageViewModel : ViewModelBase
             }
         }
 
-        if (!string.IsNullOrEmpty(camera))
+        if (string.IsNullOrEmpty(camera)) return;
+        model.Controller.StartCamera(camera);
+
+        if (_eyeInferenceService is DualCameraEyeInferenceService)
         {
-            model.Controller.StartCamera(camera);
-
-            if (model.Controller.CameraSettings.Camera == Camera.Left)
+            switch (model.Controller.CameraSettings.Camera)
             {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                case Camera.Left:
                 {
-                    if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                     {
-                        RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                        {
+                            RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                        }
                     }
+
+                    break;
+                }
+                case Camera.Right:
+                {
+                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                    {
+                        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
+                        {
+                            LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                        }
+                    }
+
+                    break;
                 }
             }
-
-            if (model.Controller.CameraSettings.Camera == Camera.Right)
-            {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                {
-                    if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
-                    {
-                        LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
-                    }
-                }
-            }
-
-            SaveCameraSettings();
         }
+
+        SaveCameraSettings();
     }
 
     [RelayCommand]
@@ -336,20 +343,27 @@ public partial class HomePageViewModel : ViewModelBase
     {
         model.Controller.StopCamera();
 
-        if (model.Controller.CameraSettings.Camera == Camera.Left)
+        if (_eyeInferenceService is not DualCameraEyeInferenceService) return;
+
+        switch (model.Controller.CameraSettings.Camera)
         {
-            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            case Camera.Left:
             {
-                RightCameraController.StopCamera();
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                {
+                    RightCameraController.StopCamera();
+                }
+
+                break;
             }
-        }
-
-
-        if (model.Controller.CameraSettings.Camera == Camera.Right)
-        {
-            if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+            case Camera.Right:
             {
-                LeftCameraController.StopCamera();
+                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                {
+                    LeftCameraController.StopCamera();
+                }
+
+                break;
             }
         }
     }

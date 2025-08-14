@@ -44,7 +44,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
             if (_cameraUrls.Count < 2)
                 return;
 
-            await InitializeModel();
+            if (camera == Camera.Left)
+                await InitializeModel();
         });
     }
 

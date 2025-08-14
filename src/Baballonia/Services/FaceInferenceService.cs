@@ -110,7 +110,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         platformSettings.LastTime = time;
 
         // Hacky
-        ParameterSenderService.EyeExpressions = arKitExpressions;
+        ParameterSenderService.FaceExpressions = arKitExpressions;
 
         // Process and convert the expressions to the expected format
         return true;
