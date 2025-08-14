@@ -38,7 +38,7 @@
                     </SplitButton.Content>
                     <SplitButton.Flyout>
                         <MenuFlyout>
-                            <MenuItem Click="OnCalibrationMenuItemClick" Header="Full Calibration">
+                            <MenuItem Click="OnCalibrationMenuItemClick" Header="Eye Calibration">
                                 <MenuItem.Icon>
                                     <PathIcon Data="{StaticResource HeadsetVrRegular}" />
                                 </MenuItem.Icon>
