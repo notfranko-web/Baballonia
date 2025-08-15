@@ -56,7 +56,14 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
         if (minCutoff == 0f) minCutoff = 1f;
         var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
         if (speedCoeff == 0f) speedCoeff = 1f;
-        var eyeModel = await _settingsService.ReadSettingAsync<string>("EyeHome_EyeModel") ?? "eyeModel.onnx";
+        var eyeModel = await _settingsService.ReadSettingAsync<string>("EyeHome_EyeModel");
+
+        if (!File.Exists(eyeModel))
+        {
+            const string defaultModelName = "eyeModel.onnx";
+            await _settingsService.SaveSettingAsync<string>("EyeHome_EyeModel", defaultModelName);
+            eyeModel = defaultModelName;
+        }
 
         var session = new InferenceSession(Path.Combine(AppContext.BaseDirectory, eyeModel), sessionOptions);
         var inputName = session.InputMetadata.Keys.First();
