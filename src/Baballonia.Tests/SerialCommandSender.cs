@@ -9,7 +9,6 @@ namespace Baballonia.Tests
         private string port;
         private SerialPort serialPort;
         private int timeout = 10000; // 10 seconds maximum wait time
-        private readonly SemaphoreSlim _lock = new(1, 1);
 
         public SerialCommandSender(string port)
         {
@@ -87,61 +86,5 @@ namespace Baballonia.Tests
             serialPort.Write("\n");
 
         }
-
-        //Async stuff currently unused
-        private async Task<T> WithLock<T>(Func<Task<T>> run)
-        {
-            await _lock.WaitAsync();
-            try
-            {
-                return await run();
-            }
-            finally
-            {
-                _lock.Release();
-            }
-        }
-        private async Task WithLock(Func<Task> run)
-        {
-            await _lock.WaitAsync();
-            try
-            {
-                await run();
-            }
-            finally
-            {
-                _lock.Release();
-            }
-        }
-
-        public async Task WriteCommandAsync(string payload)
-        {
-            await WithLock(async () =>
-            {
-                await Task.Run(() => WriteLine(payload));
-            });
-        }
-
-        public async Task<string> ReadResponseAsync()
-        {
-            return await WithLock(async () =>
-            {
-                await _lock.WaitAsync();
-                return await Task.Run(ReadLine);
-            });
-        }
-
-        public async Task<string> WriteCommandAndReadResponseAsync(string payload)
-        {
-            return await WithLock(async () =>
-            {
-                return await Task.Run(() =>
-                {
-                    WriteLine(payload);
-                    return ReadLine();
-                });
-            });
-        }
-
     }
 }

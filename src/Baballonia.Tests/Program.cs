@@ -4,7 +4,6 @@ using System.IO.Ports;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static Baballonia.Tests.FirmwareResponses;
 
 namespace Baballonia.Tests;
 
@@ -39,6 +38,7 @@ public class Program
             {
                 throw new Exception("No suitable ports found");
             }
+
             if (goodPorts.Length == 1)
             {
                 selectedPort = goodPorts[0];
@@ -46,17 +46,19 @@ public class Program
             }
             else
             {
-                _logger.LogInformation("Multiple suitable devices were found: {}", (object)goodPorts); // https://stackoverflow.com/questions/66317482/serilog-only-logs-first-element-of-array
+                _logger.LogInformation("Multiple suitable devices were found: {}",
+                    (object)goodPorts); // https://stackoverflow.com/questions/66317482/serilog-only-logs-first-element-of-array
                 var res = AskUser("Multiple suitable devices were found", goodPorts);
                 selectedPort = res.selectedOption;
             }
 
 
-            firmwareService.StartSession(CommandSenderType.Serial, selectedPort);
-            firmwareService.WaitForHeartbeat();
-            firmwareService.SendCommand(FirmwareCommands.Builder().SetDataPaused(true).build());
+            var session = firmwareService.StartSession(CommandSenderType.Serial, selectedPort);
+            session.WaitForHeartbeat();
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(true));
 
-            string[] menu = {
+            string[] menu =
+            {
                 "Scan for WiFi networks",
                 "Show available networks",
                 "Configure WiFi",
@@ -67,7 +69,7 @@ public class Program
                 "Exit"
             };
 
-            List<WifiNetwork> scanResult = null;
+            List<FirmwareResponses.WifiNetwork> scanResult = null;
             bool shouldRun = true;
             while (shouldRun)
             {
@@ -77,17 +79,17 @@ public class Program
                     case 0:
                         while (true)
                         {
-                            var scanres = firmwareService.SendCommand(FirmwareCommands.Builder().ScanWifiNetworks().build(), "networks");
+                            var scanres = session.SendCommand(new FirmwareRequests.ScanWifiRequest());
                             if (scanres is not null)
                             {
-                                var jsonstr = scanres.RootElement.GetRawText();
-                                scanResult = JsonSerializer.Deserialize<WifiNetworkArgs>(jsonstr).Networks;
+                                scanResult = scanres.Networks;
                                 scanResult = scanResult.OrderByDescending(n => n.Rssi).ToList();
                                 break;
                             }
 
                             _logger.LogWarning("Networks not found, retrying...");
                         }
+
                         _logger.LogInformation("Found {} networks", scanResult.Count);
                         break;
                     case 1:
@@ -96,39 +98,46 @@ public class Program
                             Console.WriteLine("Run scan first");
                             break;
                         }
+
                         PrintWifiScanResult(scanResult);
 
                         break;
                     case 2:
                         var options = GetWifiScanResultLines(scanResult);
-                        Console.WriteLine("{0,-25} {1,7} {2,6} {3,-20} {4,10}", "SSID", "Channel", "RSSI", "MAC Address", "Auth Mode");
+                        Console.WriteLine("{0,-25} {1,7} {2,6} {3,-20} {4,10}", "SSID", "Channel", "RSSI",
+                            "MAC Address", "Auth Mode");
                         Console.WriteLine(new string('-', 75));
                         var selectedRow = AskUser("Enter network number", options);
 
                         var pwd = AskUser("Enter WiFi password");
 
-                        firmwareService.SendCommand(FirmwareCommands.Builder().SetWifi(scanResult[selectedRow.index].Ssid, pwd).build());
+                        session.SendCommand(
+                            new FirmwareRequests.SetWifiRequest(scanResult[selectedRow.index].Ssid, pwd));
                         break;
                     case 3:
-                        var res = firmwareService.SendCommand(FirmwareCommands.Builder().GetWifiStatus().build());
-                        var wifiStatus = res.CastResponseType<WifiStatusArgs>();
+                        var res = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
+                        if (res == null)
+                        {
+                            Console.WriteLine($"WiFi Status: none");
+                            break;
+                        }
 
-                        Console.WriteLine($"WiFi Status: {wifiStatus.Status}");
-                        Console.WriteLine($"Networks configured: {wifiStatus.NetworksConfigured}");
-                        Console.WriteLine($"IP Address: {wifiStatus.IpAddress}");
-
+                        Console.WriteLine($"WiFi Status: {res.Status}");
+                        Console.WriteLine($"Networks configured: {res.NetworksConfigured}");
+                        Console.WriteLine($"IP Address: {res.IpAddress}");
                         break;
                     case 4:
-                        firmwareService.SendCommand(FirmwareCommands.Builder().ConnectWifi().build());
+                        session.SendCommand(new FirmwareRequests.ConnectWifiRequest());
                         break;
                     case 5:
-                        firmwareService.SendCommand(FirmwareCommands.Builder().StartStreaming().build());
+                        session.SendCommand(new FirmwareRequests.StartStreamingRequest());
                         break;
                     case 6:
-                        FirmwareCommands.Mode[] deviceModeOptions = {
-                             FirmwareCommands.Mode.Wifi,
-                             FirmwareCommands.Mode.UVC,
-                             FirmwareCommands.Mode.Auto
+                        FirmwareRequests.Mode[] deviceModeOptions =
+                        {
+                            FirmwareRequests.Mode.Wifi,
+                            FirmwareRequests.Mode.UVC,
+                            FirmwareRequests.Mode.Auto
                         };
                         string[] modeOptions =
                         {
@@ -137,17 +146,16 @@ public class Program
                             "Auto - Automatic mode selection"
                         };
                         var selectedMode = AskUser("Select new device mode", modeOptions);
-                        firmwareService.SendCommand(FirmwareCommands.Builder().SetStreamMode(deviceModeOptions[selectedMode.index]).build());
+                        session.SendCommand(new FirmwareRequests.SetModeRequest(deviceModeOptions[selectedMode.index]));
                         break;
                     case 7:
                         shouldRun = false;
                         break;
-
                 }
             }
 
-            firmwareService.SendCommand(FirmwareCommands.Builder().SetDataPaused(false).build());
-            firmwareService.StopSession();
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(false));
+            session.Dispose();
         }
         catch (Exception ex)
         {
@@ -175,6 +183,7 @@ public class Program
         {
             Console.WriteLine($"{i + 1}. {options[i]}");
         }
+
         int selectedIndex = -1;
         while (true)
         {
@@ -192,11 +201,9 @@ public class Program
         }
 
         return (options[selectedIndex - 1], selectedIndex - 1);
-
-
     }
 
-    public static void PrintWifiScanResult(List<WifiNetwork> result)
+    public static void PrintWifiScanResult(List<FirmwareResponses.WifiNetwork> result)
     {
         // Print header
         Console.WriteLine("{0,-25} {1,7} {2,6} {3,-20} {4,10}", "SSID", "Channel", "RSSI", "MAC Address", "Auth Mode");
@@ -213,7 +220,8 @@ public class Program
                 network.AuthMode);
         }
     }
-    public static string[] GetWifiScanResultLines(List<WifiNetwork> result)
+
+    public static string[] GetWifiScanResultLines(List<FirmwareResponses.WifiNetwork> result)
     {
         var lines = new List<string>();
 
@@ -229,5 +237,4 @@ public class Program
 
         return lines.ToArray();
     }
-
 }

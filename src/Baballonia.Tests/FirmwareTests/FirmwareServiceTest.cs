@@ -78,37 +78,54 @@ namespace Baballonia.Tests.FirmwareTests
 
             var firmwareService = CreateService(mockLines);
 
-            firmwareService.StartSession(CommandSenderType.Serial, "COM4");
-            firmwareService.WaitForHeartbeat();
+            var session = firmwareService.StartSession(CommandSenderType.Serial, "COM4");
+            session.WaitForHeartbeat();
 
-            var builder = FirmwareCommands.Builder();
-            var command = builder.GetWifiStatus().build();
-            var results = firmwareService.SendCommand(command);
-            var r1 = results.CastResponseType<FirmwareResponses.WifiStatusArgs>();
-
+            var results = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
+            Assert.AreEqual("192.169.0.246", results.IpAddress);
         }
 
 
         [TestMethod]
-        public void TestSendChainCommand()
+        public void TestSendBatchCommand()
+        {
+            // List<string> mockLines = new List<string>();
+            // mockLines.Add("""{"heartbeat":{}}""");
+            // mockLines.Add("""
+            //         {"results":[
+            //         {"command_name":"pause", "status": "SUCCESS" },
+            //         {"command_name":"get_wifi_status", "status": "SUCCESS" }
+            //     ]}
+            //     """);
+            //
+            // var firmwareService = CreateService(mockLines);
+            // var session = firmwareService.StartSession(CommandSenderType.Serial, "COM4");
+            // session.WaitForHeartbeat();
+            //
+            // session.SendCommand(new FirmwareRequests.SetPausedRequest(true));
+            // var commandResult = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
+            // Assert.AreEqual("");
+        }
+
+        [TestMethod]
+        public void TestSendGeneric()
         {
             List<string> mockLines = new List<string>();
             mockLines.Add("""{"heartbeat":{}}""");
             mockLines.Add("""
-                    {"results":[
-                    {"command_name":"pause", "status": "SUCCESS" },
-                    {"command_name":"get_wifi_status", "status": "SUCCESS" }
-                ]}
-                """);
+                              {"results":[
+                              "{\"command_name\":\"pause\", \"status\":\"SUCCESS\"}"
+                          ]}
+                          """);
 
             var firmwareService = CreateService(mockLines);
-            firmwareService.StartSession(CommandSenderType.Serial, "COM4");
-            firmwareService.WaitForHeartbeat();
+            var session = firmwareService.StartSession(CommandSenderType.Serial, "COM4");
+            session.WaitForHeartbeat();
 
-            var builder = FirmwareCommands.Builder();
-            var command = builder.GetWifiStatus().build();
-            var commandResult = firmwareService.SendCommand(command);
-
+            var commandResult = session.SendCommand(new FirmwareRequests.SetPausedRequest(true));
+            Assert.AreEqual("""
+                            {"command_name":"pause", "status":"SUCCESS"}
+                            """, commandResult);
         }
 
         [TestMethod]
