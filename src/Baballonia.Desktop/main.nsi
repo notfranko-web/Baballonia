@@ -8,7 +8,7 @@
 ; Custom defines
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
-  !define VERSION "1.0.0.3"
+  !define VERSION "1.0.0.4"
   !define SLUG "${NAME} v${VERSION}"
 
 ;--------------------------------

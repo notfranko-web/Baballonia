@@ -10,10 +10,10 @@
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.10.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.10.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.10.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.10.2" />
 
-      <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+      <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>
