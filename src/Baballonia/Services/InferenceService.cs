@@ -60,8 +60,16 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     public void ConfigurePlatformConnectors(Camera camera, string cameraIndex)
     {
         var platformConnector = Activator.CreateInstance(App.PlatformConnectorType, cameraIndex, logger, settingsService)!;
-        PlatformConnectors[(int)camera].Item2 = (PlatformConnector)platformConnector;
-        PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
+        if (camera == Camera.Face)
+        {
+            PlatformConnectors[0].Item2 = (PlatformConnector)platformConnector;
+            PlatformConnectors[0].Item2.Initialize(cameraIndex);
+        }
+        else
+        {
+            PlatformConnectors[(int)camera].Item2 = (PlatformConnector)platformConnector;
+            PlatformConnectors[(int)camera].Item2.Initialize(cameraIndex);
+        }
     }
 
     /// <summary>
@@ -194,7 +202,10 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// </summary>
     public void Shutdown(Camera camera)
     {
-        var pc = PlatformConnectors[(int)camera];
+        var pc = camera == Camera.Face ?
+            PlatformConnectors[0] :
+            PlatformConnectors[(int)camera];
+
         if (pc.Item2 != null)
         {
             var session = pc.Item1.Session;
