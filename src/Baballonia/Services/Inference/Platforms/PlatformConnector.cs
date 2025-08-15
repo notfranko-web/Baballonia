@@ -152,10 +152,10 @@ public abstract class PlatformConnector
         }
 
         // Adjust brightness and type conversion
-        if (resultMat.Type() != outputMat.Type() || settings.Brightness != 1)
+        if (resultMat.Type() != outputMat.Type())
         {
             var newMat = new Mat();
-            resultMat.ConvertTo(newMat, outputMat.Type(), settings.Brightness);
+            resultMat.ConvertTo(newMat, outputMat.Type(), 1f / 255f);
             resultMat.Dispose();
             resultMat = newMat;
         }

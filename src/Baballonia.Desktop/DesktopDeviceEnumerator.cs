@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
-using System.Runtime.InteropServices;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Baballonia.Contracts;
 using OpenCvSharp;
-using System.Threading.Tasks;
 
-namespace Baballonia.Helpers;
+#if WINDOWS
+using DirectShowLib;
+#endif
+
+namespace Baballonia.Desktop;
 
 public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
 {
@@ -82,22 +86,12 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
     [SupportedOSPlatform("windows")]
     private void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
     {
-        try
-        {
-            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE (PNPClass = 'Image' OR PNPClass = 'Camera')");
-            using var collection = searcher.Get();
+        var videoInputDevices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
 
-            int i = 0;
-            foreach (var device in collection)
-            {
-                string deviceName = device["Name"]?.ToString() ?? "Unknown Camera";
-                EnsureUniqueKey(cameraDict, deviceName, i.ToString());
-                i++;
-            }
-        }
-        catch
+        for (var index = 0; index < videoInputDevices.Length; index++)
         {
-            // WMI failed, OpenCV cameras should still be available
+            var device = videoInputDevices[index];
+            cameraDict.Add(device.Name, index.ToString());
         }
     }
 

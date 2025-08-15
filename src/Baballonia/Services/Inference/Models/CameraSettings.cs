@@ -41,5 +41,4 @@ public class CameraSettings
     public bool UseRedChannel { get; set; } = false;
     public bool UseHorizontalFlip { get; set; } = false;
     public bool UseVerticalFlip { get; set; } = false;
-    public float Brightness { get; set; } = 1f;
 }

@@ -121,6 +121,7 @@ public class ParameterSenderService(
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
                     0,
+                    -1,
                     1));
             _sendQueue.Enqueue(msg);
         }

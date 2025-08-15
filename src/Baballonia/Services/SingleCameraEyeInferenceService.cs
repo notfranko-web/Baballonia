@@ -90,7 +90,7 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
         _logger.LogInformation($"{Type} inference service initialized with single camera");
     }
 
-    public override bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions)
+    public override bool GetExpressionData(CameraSettings leftCamera, CameraSettings rightCamera, out float[] arKitExpressions)
     {
         arKitExpressions = null!;
 
@@ -106,7 +106,7 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
 
         // Get the full frame from the camera
         var platformConnector = PlatformConnectors[(int)Camera.Left].Item2;
-        if (platformConnector.TransformRawImage(frame, cameraSettings) != true)
+        if (platformConnector.TransformRawImage(frame, leftCamera) != true)
         {
             return false;
         }
@@ -137,7 +137,7 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
             PlatformConnectors[(int)Camera.Right].Item1.InputSize.Height));
 
         // Capture frame using the split eye images
-        if (!CaptureFrame(cameraSettings, leftEyeMat, rightEyeMat))
+        if (!CaptureFrame(leftCamera, rightCamera, leftEyeMat, rightEyeMat))
         {
             return false;
         }

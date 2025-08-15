@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 /src/AvaloniaMiaDev.Desktop/.publish
 /src/Baballonia.Desktop/installers
+/src/Baballonia.Desktop/_internal

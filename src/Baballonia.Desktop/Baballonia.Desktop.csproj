@@ -13,9 +13,14 @@
     <PropertyGroup>
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
+	
+	<PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+	  <DefineConstants>WINDOWS</DefineConstants>
+	</PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+        <PackageReference Include="DirectShowLib" Version="1.0.0" />
         <PackageReference Include="Velopack" Version="0.0.1251" />
 
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -41,7 +46,6 @@
         <ProjectReference Include="..\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj" />
         <ProjectReference Include="..\Baballonia.SDK\Baballonia.SDK.csproj" />
         <ProjectReference Include="..\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj" />
-        <ProjectReference Include="..\Baballonia.VFTCapture\Baballonia.VFTCapture.csproj" />
         <ProjectReference Include="..\Baballonia\Baballonia.csproj" />
     </ItemGroup>
 
@@ -77,6 +81,12 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="assets\license.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="baseline_L.pth">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="baseline_R.pth">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Calibration\Linux\gaze_overlay">
@@ -131,6 +141,12 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="onnx_artifacts\temporal_eye_tracking_model.onnx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="trainermin.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="video.bin">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

@@ -226,9 +226,16 @@ public partial class HomePageViewModel : ViewModelBase
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
-            var leftBitmap = await LeftCameraController.UpdateImage();
-            var rightBitmap = await RightCameraController.UpdateImage();
-            var faceBitmap = await FaceCameraController.UpdateImage();
+            var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+                new CameraSettings { Camera = Camera.Left });
+            var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
+                new CameraSettings { Camera = Camera.Right });
+            var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
+                new CameraSettings { Camera = Camera.Face });
+
+            var leftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
+            var rightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
+            var faceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
 
             // a hack to force the UI refresh
             LeftCamera.Bitmap = null!;
@@ -260,7 +267,7 @@ public partial class HomePageViewModel : ViewModelBase
             cameraUrls[Camera.Right] = _rightCamera.DisplayAddress;
 
         // Create the appropriate eye inference service based on camera configuration
-        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls);
+        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls, leftSettings, rightSettings);
 
         LeftCameraController = new CameraController(
             _eyeInferenceService,
