@@ -63,14 +63,13 @@ public class CameraController : IDisposable
         _mjpegStreamingService = new MjpegStreamingService();
     }
 
-    public async Task<WriteableBitmap?> UpdateImage()
+    public async Task<WriteableBitmap?> UpdateImage(CameraSettings leftSettings, CameraSettings rightSettings, CameraSettings faceSettings)
     {
         bool valid;
         bool useColor;
         Mat? image;
 
         CameraSettings.Roi = CropManager.CropZone;
-
 
         switch (_camViewMode)
         {
@@ -83,12 +82,12 @@ public class CameraController : IDisposable
                     float[] output;
                     if (_camera == Camera.Face)
                     {
-                        _inferenceService.GetExpressionData(CameraSettings, out output);
+                        _inferenceService.GetExpressionData(faceSettings, out output);
                         FaceExpressions = output;
                     }
                     else
                     {
-                        _inferenceService.GetExpressionData(CameraSettings, out output);
+                        _inferenceService.GetExpressionData(leftSettings, rightSettings, out output);
                         EyeExpressions = output;
                     }
                 }

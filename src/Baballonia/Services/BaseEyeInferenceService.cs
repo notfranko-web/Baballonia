@@ -24,10 +24,10 @@ namespace Baballonia.Services;
 public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, ILocalSettingsService settingsService) : InferenceService(logger, settingsService)
 {
     protected readonly Stopwatch sw = Stopwatch.StartNew();
-    
+
     protected const int ExpectedRawExpressions = 6;
     protected const int FramesForInference = 4;
-    
+
     protected int[] _combinedDimensions;
     protected DenseTensor<float> _combinedTensor;
     protected byte[] _matBytes = [];
@@ -37,7 +37,7 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
     public abstract IReadOnlyDictionary<Camera, string> CameraUrls { get; }
 
     protected abstract Task InitializeModel();
-    
+
     protected bool CaptureFrame(CameraSettings cameraSettings, Mat leftEyeMat, Mat rightEyeMat)
     {
         if (PlatformConnectors[(int)Camera.Left].Item2?.Capture?.IsReady != true ||
@@ -50,11 +50,17 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
         var platformConnectorLeft = PlatformConnectors[(int)Camera.Left].Item2;
         platformConnectorLeft.TransformRawImage(leftEyeMat, cameraSettings);
         if (leftEyeMat.Empty()) return false;
-        
+
         // Process right eye
         var platformConnectorRight = PlatformConnectors[(int)Camera.Right].Item2;
         platformConnectorRight.TransformRawImage(rightEyeMat, cameraSettings);
         if (rightEyeMat.Empty()) return false;
+
+        /*using var testMat = new Mat<byte>(
+            PlatformConnectors[(int)Camera.Right].Item1.InputSize.Height,
+            PlatformConnectors[(int)Camera.Right].Item1.InputSize.Width);
+        Cv2.Compare(leftEyeMat, rightEyeMat, testMat, CmpType.EQ);
+        Console.WriteLine(Cv2.CountNonZero(testMat));*/
 
         // Combine the eye mats into a single mat
         using var histMatLeft = new Mat();
@@ -67,7 +73,6 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
 
         var frameDataCombined = new FrameData
         {
-            CameraSettings = cameraSettings,
             Timestamp = sw.Elapsed.TotalSeconds,
             Mat = matCombined,
         };
@@ -81,7 +86,56 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
         _frameQueues.Enqueue(frameDataCombined);
         return true;
     }
-    
+
+    protected bool CaptureFrame(CameraSettings leftSetting, CameraSettings rightSettings, Mat leftEyeMat, Mat rightEyeMat)
+    {
+        if (PlatformConnectors[(int)Camera.Left].Item2?.Capture?.IsReady != true ||
+            PlatformConnectors[(int)Camera.Right].Item2?.Capture?.IsReady != true)
+        {
+            return false;
+        }
+
+        // Process left eye
+        var platformConnectorLeft = PlatformConnectors[(int)Camera.Left].Item2;
+        platformConnectorLeft.TransformRawImage(leftEyeMat, leftSetting);
+        if (leftEyeMat.Empty()) return false;
+
+        // Process right eye
+        var platformConnectorRight = PlatformConnectors[(int)Camera.Right].Item2;
+        platformConnectorRight.TransformRawImage(rightEyeMat, rightSettings);
+        if (rightEyeMat.Empty()) return false;
+
+        /*using var testMat = new Mat<byte>(
+            PlatformConnectors[(int)Camera.Right].Item1.InputSize.Height,
+            PlatformConnectors[(int)Camera.Right].Item1.InputSize.Width);
+        Cv2.Compare(leftEyeMat, rightEyeMat, testMat, CmpType.EQ);
+        Console.WriteLine(Cv2.CountNonZero(testMat));*/
+
+        // Combine the eye mats into a single mat
+        using var histMatLeft = new Mat();
+        using var histMatRight = new Mat();
+        Cv2.EqualizeHist(leftEyeMat, histMatLeft);
+        Cv2.EqualizeHist(rightEyeMat, histMatRight);
+
+        var matCombined = new Mat();
+        Cv2.Merge([histMatLeft, histMatRight], matCombined);
+
+        var frameDataCombined = new FrameData
+        {
+            Timestamp = sw.Elapsed.TotalSeconds,
+            Mat = matCombined,
+        };
+
+        // Maintain frame queue size
+        if (_frameQueues.Count > FramesForInference)
+        {
+            _frameQueues.TryDequeue(out _);
+        }
+
+        _frameQueues.Enqueue(frameDataCombined);
+        return true;
+    }
+
     protected void ConvertMatsArrayToDenseTensor(Mat[] mats)
     {
         if (mats.Length != FramesForInference)
@@ -146,7 +200,7 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
                     }
                 }
             }
-            
+
             if (!ReferenceEquals(continuousMat, mats[matIndex]))
                 continuousMat.Dispose();
         }
@@ -154,7 +208,6 @@ public abstract class BaseEyeInferenceService(ILogger<InferenceService> logger, 
 
     protected class FrameData
     {
-        public CameraSettings CameraSettings { get; set; }
         public Mat Mat { get; init; }
         public double Timestamp { get; set; }
     }

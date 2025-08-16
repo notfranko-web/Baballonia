@@ -58,7 +58,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
             DenseTensor<float> tensor = new DenseTensor<float> ([1, 1, dimensions[2], dimensions[3]]);
 
             var platformSettings = new PlatformSettings(inputSize, session, tensor, filter, 0f, inputName, modelName);
-            PlatformConnectors[(int)camera] = (platformSettings, null)!;
+            PlatformConnectors[0] = (platformSettings, null)!;
             ConfigurePlatformConnectors(camera, cameraAddress);
 
             _logger.LogInformation("Face Inference started!");
@@ -76,9 +76,8 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     {
         arKitExpressions = null!;
 
-        var index = (int)cameraSettings.Camera;
-        var platformSettings = PlatformConnectors[index].Item1;
-        var platformConnector = PlatformConnectors[index].Item2;
+        var platformSettings = PlatformConnectors[0].Item1;
+        var platformConnector = PlatformConnectors[0].Item2;
         if (platformConnector is null) return false;
         if (platformConnector.Capture is null) return false;
 
@@ -104,8 +103,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         platformSettings.Ms = delta * 1000;
 
         // Filter ARKit Expressions.
-        var smoothedExpressions = platformSettings.Filter.Filter(arKitExpressions);
-        arKitExpressions = smoothedExpressions;
+        arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
 
         platformSettings.LastTime = time;
 
@@ -124,8 +122,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     /// <returns></returns>
     public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image)
     {
-        var index = (int)cameraSettings.Camera;
-        var platformConnector = PlatformConnectors[index].Item2;
+        var platformConnector = PlatformConnectors[0].Item2;
         image = new Mat();
 
         if (platformConnector is null)

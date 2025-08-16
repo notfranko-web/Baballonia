@@ -76,37 +76,22 @@ public class BabbleOsc
                         switch (oscMessage.Address)
                         {
                             case "/LeftEyeX":
-                                EyeExpressions[(int)ExpressionMapping.LeftEyeX] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeLeftX] = value;
                                 break;
                             case "/LeftEyeY":
-                                EyeExpressions[(int)ExpressionMapping.LeftEyeY] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeLeftY] = value;
                                 break;
                             case "/RightEyeX":
-                                EyeExpressions[(int)ExpressionMapping.RightEyeX] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeRightX] = value;
                                 break;
                             case "/RightEyeY":
-                                EyeExpressions[(int)ExpressionMapping.RightEyeY] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeRightY] = value;
                                 break;
                             case "/LeftEyeLid":
-                                EyeExpressions[(int)ExpressionMapping.LeftEyeLid] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeLeftLid] = value;
                                 break;
                             case "/RightEyeLid":
-                                EyeExpressions[(int)ExpressionMapping.RightEyeLid] = value;
-                                break;
-                            case "/BrowRaise":
-                                EyeExpressions[(int)ExpressionMapping.BrowRaise] = value;
-                                break;
-                            case "/BrowAngry":
-                                EyeExpressions[(int)ExpressionMapping.BrowRaise] = value;
-                                break;
-                            case "/EyeWiden":
-                                EyeExpressions[(int)ExpressionMapping.EyeWiden] = value;
-                                break;
-                            case "/EyeSquint":
-                                EyeExpressions[(int)ExpressionMapping.EyeSquint] = value;
-                                break;
-                            case "/EyeDilate":
-                                EyeExpressions[(int)ExpressionMapping.EyeDilate] = value;
+                                EyeExpressions[(int)ExpressionMapping.EyeRightLid] = value;
                                 break;
                             case "/mouthFunnel":
                             case "/mouthPucker":

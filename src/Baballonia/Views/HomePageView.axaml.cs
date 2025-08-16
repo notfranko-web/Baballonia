@@ -65,7 +65,7 @@ public partial class HomePageView : UserControl
                 EyeAddressEntry_OnTextChanged(null, null!);
                 FaceAddressEntry_OnTextChanged(null, null!);
 
-                vm.SelectedCalibrationText = "Full Calibration";
+                vm.SelectedCalibrationText = "Eye Calibration";
             }
         };
     }

@@ -13,6 +13,7 @@ public interface IInferenceService
 {
     public (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
     public bool GetExpressionData(CameraSettings cameraSettings, out float[] arKitExpressions);
+    public bool GetExpressionData(CameraSettings leftCameraSettings, CameraSettings rightCameraSettings, out float[] arKitExpressions);
 
     public bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image);
 

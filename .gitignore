@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Nix atrifacts
+/.direnv
+**/result
+
 # User-specific files
 .idea/
 *.rsuser
@@ -396,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 /src/AvaloniaMiaDev.Desktop/.publish
 /src/Baballonia.Desktop/installers
+/src/Baballonia.Desktop/_internal
