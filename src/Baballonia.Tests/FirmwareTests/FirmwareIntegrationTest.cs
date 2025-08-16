@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Linq;
+using Baballonia.Helpers;
+using Baballonia.Models;
+using Baballonia.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Baballonia.Tests.FirmwareTests
@@ -7,10 +12,84 @@ namespace Baballonia.Tests.FirmwareTests
     [TestClass]
     public class FirmwareIntegrationTest
     {
-        [TestMethod]
-        public void IntegrationTest()
-        {
+        private static readonly string PORT = "COM4";
+        private static readonly string WIFI_SSID = "ASUS_50";
+        private static readonly string WIFI_PWD = "172839456";
 
+        private ILogger _logger;
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddConsole()
+                    .SetMinimumLevel(LogLevel.Debug);
+            });
+
+            _logger = loggerFactory.CreateLogger("TEST");
+        }
+
+        [TestMethod]
+        public void TestBoard()
+        {
+            var session = new FirmwareSession(new SerialCommandSender(PORT), _logger);
+            Assert.IsNotNull(session.WaitForHeartbeat());
+        }
+
+        [TestMethod]
+        public void FindAndConnectWifiSuccess()
+        {
+            var session = new FirmwareSession(new SerialCommandSender(PORT), _logger);
+
+            session.WaitForHeartbeat();
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(true));
+            var networks = session.SendCommand(new FirmwareRequests.ScanWifiRequest());
+            Assert.IsNotNull(networks);
+
+            var find = networks.Networks.Find(network => network.Ssid == WIFI_SSID);
+            Assert.IsNotNull(find);
+
+            session.SendCommand(new FirmwareRequests.SetWifiRequest(WIFI_SSID, WIFI_PWD));
+
+            var connectionres = session.SendCommand(new FirmwareRequests.ConnectWifiRequest());
+            Assert.IsNotNull(connectionres);
+
+            var wifistatus = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
+            Assert.IsNotNull(wifistatus);
+            Assert.AreEqual("connected", wifistatus.Status);
+
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(false));
+
+            session.Dispose();
+        }
+
+        [TestMethod]
+        public void FindAndConnectWifiFail()
+        {
+            var session = new FirmwareSession(new SerialCommandSender(PORT), _logger);
+
+            session.WaitForHeartbeat();
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(true));
+            var networks = session.SendCommand(new FirmwareRequests.ScanWifiRequest());
+            Assert.IsNotNull(networks);
+
+            var find = networks.Networks.Find(network => network.Ssid == WIFI_SSID);
+            Assert.IsNotNull(find);
+
+            session.SendCommand(new FirmwareRequests.SetWifiRequest("", WIFI_PWD));
+
+            var connectionres = session.SendCommand(new FirmwareRequests.ConnectWifiRequest());
+            Assert.IsNotNull(connectionres);
+
+            var wifistatus = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
+            Assert.IsNotNull(wifistatus);
+            Assert.AreEqual("error", wifistatus.Status);
+
+            session.SendCommand(new FirmwareRequests.SetPausedRequest(false));
+
+            session.Dispose();
         }
     }
 }

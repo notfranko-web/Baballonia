@@ -1,15 +1,21 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using Baballonia.Contracts;
+using Baballonia.Helpers;
 using Microsoft.Extensions.Logging;
 
-namespace Baballonia.Tests;
+namespace Baballonia.Models;
 
 /// <summary>
 /// Thread safe, async supported Session object for sending and receiving commands in json format
 /// </summary>
 public class FirmwareSession
 {
-    private ICommandSender? _commandSender;
+    private ICommandSender _commandSender;
     private ILogger _logger;
 
     private SemaphoreSlim _lock = new(1, 1);
@@ -20,7 +26,7 @@ public class FirmwareSession
         WriteIndented = false
     };
 
-    public FirmwareSession(ICommandSender? commandSender, ILogger logger)
+    public FirmwareSession(ICommandSender commandSender, ILogger logger)
     {
         _commandSender = commandSender;
         _logger = logger;
@@ -46,7 +52,7 @@ public class FirmwareSession
         _commandSender.WriteLine(payload);
     }
 
-    private JsonDocument ReadResponse(string responseJsonRootKey)
+    private JsonDocument? ReadResponse(string responseJsonRootKey)
     {
         JsonExtractor jsonExtractor = new JsonExtractor();
         while (true)
@@ -54,33 +60,36 @@ public class FirmwareSession
             Thread.Sleep(10); // give it some breathing time
 
             JsonDocument json = jsonExtractor.ReadUntilValidJson(() => _commandSender.ReadLine());
-            _logger.LogDebug("Recieved json: {}", json.RootElement.GetRawText());
+            _logger.LogDebug("Received json: {}", json.RootElement.GetRawText());
             if (JsonHasPrefix(json, responseJsonRootKey))
                 return json;
+            if (JsonHasPrefix(json, "error"))
+            {
+                var err = JsonSerializer.Deserialize<FirmwareResponses.Error>(json);
+                _logger.LogError(err.error);
+                return null;
+            }
         }
     }
 
-    public JsonDocument? WaitForHeartbeat()
+    public FirmwareResponses.Heartbeat? WaitForHeartbeat()
     {
         return WaitForHeartbeat(new TimeSpan(5000));
     }
 
-    public JsonDocument? WaitForHeartbeat(TimeSpan timeout)
+    public FirmwareResponses.Heartbeat? WaitForHeartbeat(TimeSpan timeout)
     {
         _lock.Wait();
         try
         {
             var startTime = DateTime.Now;
-            JsonExtractor jsonExtractor = new JsonExtractor();
             while (true)
             {
                 if (DateTime.Now - startTime > timeout)
                     throw new TimeoutException("Timeout reached");
 
-                JsonDocument json = jsonExtractor.ReadUntilValidJson(() => _commandSender.ReadLine());
-                _logger.LogDebug("Received json: {}", json.RootElement.GetRawText());
-                if (JsonHasPrefix(json, "heartbeat"))
-                    return json;
+                var res = ReadResponse("heartbeat");
+                return res?.Deserialize<FirmwareResponses.Heartbeat>();
             }
         }
         catch (TimeoutException ex)
@@ -103,9 +112,13 @@ public class FirmwareSession
             var serialized = JsonSerializer.Serialize(genericReqList, _options);
             SendCommand(serialized);
             var jsonDoc = ReadResponse("results");
-            var response = jsonDoc.Deserialize<FirmwareResponses.GenericResponse>();
+            var response = jsonDoc?.Deserialize<FirmwareResponses.GenericResponse>();
+            if (response == null)
+                return null;
 
-            return response.results.First();
+            var result =  JsonSerializer.Deserialize<FirmwareResponses.GenericResult>(response.results.First());
+
+            return result?.result;
         }
         catch (TimeoutException ex)
         {
@@ -132,13 +145,20 @@ public class FirmwareSession
             if (typeof(T) == typeof(FirmwareResponses.WifiNetworkResponse))
             {
                 var networks = ReadResponse("networks");
+                if (networks == null)
+                    return default;
+
                 ReadResponse("results"); // to discard the actual response
                 return networks.Deserialize<T>();
             }
 
             var jsonDoc = ReadResponse("results");
-            var response = jsonDoc.Deserialize<FirmwareResponses.GenericResponse>();
-            return JsonSerializer.Deserialize<T>(response.results.First());
+            var response = jsonDoc?.Deserialize<FirmwareResponses.GenericResponse>();
+            if (response == null)
+                return default;
+
+            var result =  JsonSerializer.Deserialize<FirmwareResponses.GenericResult>(response.results.First());
+            return result == null ? default : JsonSerializer.Deserialize<T>(result.result);
         }
         catch (TimeoutException ex)
         {
@@ -158,11 +178,11 @@ public class FirmwareSession
         );
     }
 
-    public async Task<JsonDocument?> WaitForHeartbeatAsync()
+    public async Task<FirmwareResponses.Heartbeat?> WaitForHeartbeatAsync()
     {
         return await Task.Run(() => WaitForHeartbeat());
     }
-    public async Task<JsonDocument?> WaitForHeartbeatAsync(TimeSpan timeout)
+    public async Task<FirmwareResponses.Heartbeat?> WaitForHeartbeatAsync(TimeSpan timeout)
     {
         return await Task.Run(() => WaitForHeartbeat(timeout));
     }

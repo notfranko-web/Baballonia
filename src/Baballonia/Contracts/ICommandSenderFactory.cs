@@ -1,4 +1,4 @@
-﻿namespace Baballonia.Tests
+﻿namespace Baballonia.Contracts
 {
     // maybe this shouldn't be here, but i dont like to have a separate file for 5 LOC
     public enum CommandSenderType

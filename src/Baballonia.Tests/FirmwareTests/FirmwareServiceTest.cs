@@ -1,4 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Baballonia.Contracts;
+using Baballonia.Helpers;
+using Baballonia.Models;
+using Baballonia.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -82,7 +90,7 @@ namespace Baballonia.Tests.FirmwareTests
             session.WaitForHeartbeat();
 
             var results = session.SendCommand(new FirmwareRequests.GetWifiStatusRequest());
-            Assert.AreEqual("192.169.0.246", results.IpAddress);
+            Assert.AreEqual("192.168.0.246", results.IpAddress);
         }
 
 
@@ -128,17 +136,6 @@ namespace Baballonia.Tests.FirmwareTests
                             """, commandResult);
         }
 
-        [TestMethod]
-        public void TestTui()
-        {
-            string fakeInput =
-                "1" + Environment.NewLine +
-                "8" + Environment.NewLine +
-                "8" + Environment.NewLine +
-                "a" + Environment.NewLine;
-            Console.SetIn(new StringReader(fakeInput));
-            Program.Main1([]);
-        }
 
     }
 }

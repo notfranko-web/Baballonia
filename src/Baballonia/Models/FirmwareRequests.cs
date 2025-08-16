@@ -1,14 +1,16 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 // ReSharper disable InconsistentNaming
 
-namespace Baballonia.Tests
+namespace Baballonia.Models
 {
     public interface IFirmwareRequest
     {
         string command { get; }
         object? data { get; }
     }
+
 
     public interface IFirmwareRequest<TResponse>
     {
@@ -18,15 +20,18 @@ namespace Baballonia.Tests
 
     public class FirmwareResponses
     {
+
+        public record Error(string error);
+        public record Heartbeat(string heartbeat, string serial);
         public class WifiNetwork
         {
-            [JsonPropertyName("ssid")] public required string Ssid { get; set; }
+            [JsonPropertyName("ssid")] public string Ssid { get; set; }
 
             [JsonPropertyName("channel")] public int Channel { get; set; }
 
             [JsonPropertyName("rssi")] public int Rssi { get; set; }
 
-            [JsonPropertyName("mac_address")] public required string MacAddress { get; set; }
+            [JsonPropertyName("mac_address")] public string MacAddress { get; set; }
 
             [JsonPropertyName("auth_mode")] public int AuthMode { get; set; }
         }
@@ -38,15 +43,17 @@ namespace Baballonia.Tests
 
         public class WifiStatusResponse
         {
-            [JsonPropertyName("status")] public required string Status { get; set; }
+            [JsonPropertyName("status")] public string Status { get; set; }
 
             [JsonPropertyName("networks_configured")]
             public int NetworksConfigured { get; set; }
 
-            [JsonPropertyName("ip_address")] public required string IpAddress { get; set; }
+            [JsonPropertyName("ip_address")] public string? IpAddress { get; set; }
         }
 
         public record GenericResponse(List<string> results);
+
+        public record GenericResult(string result);
     }
 
     public class FirmwareRequests

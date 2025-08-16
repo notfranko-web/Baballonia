@@ -1,4 +1,6 @@
-﻿namespace Baballonia.Tests
+﻿using System;
+
+namespace Baballonia.Contracts
 {
     public interface ICommandSender : IDisposable
     {

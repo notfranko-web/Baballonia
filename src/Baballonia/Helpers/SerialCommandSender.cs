@@ -1,14 +1,16 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
 using System.Text;
+using System.Threading;
+using Baballonia.Contracts;
 
-namespace Baballonia.Tests
+namespace Baballonia.Helpers
 {
     public class SerialCommandSender : ICommandSender
     {
         private const int DefaultBaudRate = 115200; // esptool-rs: Setting baud rate higher than 115,200 can cause issues
         private string port;
         private SerialPort serialPort;
-        private int timeout = 10000; // 10 seconds maximum wait time
 
         public SerialCommandSender(string port)
         {
@@ -42,17 +44,9 @@ namespace Baballonia.Tests
 
         public string ReadLine()
         {
-            DateTime startTime = DateTime.Now;
-
             StringBuilder responseBuilder = new StringBuilder();
             do
             {
-                // Check for timeout
-                if ((DateTime.Now - startTime).TotalMilliseconds > timeout)
-                {
-                    throw new TimeoutException("Reading timeout reached");
-                }
-
                 // Read available data
                 if (serialPort.BytesToRead > 0)
                 {

@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Text.Json;
 
-namespace Baballonia.Tests
+namespace Baballonia.Helpers
 {
     public class JsonExtractor
     {
