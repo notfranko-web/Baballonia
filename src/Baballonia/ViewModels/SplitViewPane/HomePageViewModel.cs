@@ -303,6 +303,7 @@ public partial class HomePageViewModel : ViewModelBase
     {
         await SetupCameraSettings();
         string camera = model.DisplayAddress;
+        if (string.IsNullOrEmpty(camera)) return;
 
         if (App.DeviceEnumerator.Cameras != null)
         {
@@ -311,8 +312,10 @@ public partial class HomePageViewModel : ViewModelBase
                 camera = mappedAddress;
             }
         }
-
-        if (string.IsNullOrEmpty(camera)) return;
+        else
+        {
+            return;
+        }
 
         model.Controller.StartCamera(camera);
 
@@ -328,7 +331,10 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
                         {
-                            RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                RightCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 
@@ -340,7 +346,10 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
                         {
-                            LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                LeftCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 

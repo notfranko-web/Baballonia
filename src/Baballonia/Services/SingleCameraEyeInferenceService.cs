@@ -43,7 +43,12 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
             _cameraUrls[Camera.Right] = cameraAddress;
             _cameraAddress = cameraAddress;
 
-            await InitializeModel();
+            // If we already have both cameras set up, no need to reinitialize
+            if (_cameraUrls.Count < 2)
+                return;
+
+            if (camera == Camera.Left)
+                await InitializeModel();
         });
     }
 
@@ -280,5 +285,17 @@ public class SingleCameraEyeInferenceService(ILogger<InferenceService> logger, I
 
         image = imageMat;
         return true;
+    }
+
+    public override void Shutdown()
+    {
+        base.Shutdown();
+        _cameraUrls.Clear();
+    }
+
+    public override void Shutdown(Camera camera)
+    {
+        base.Shutdown(camera);
+        _cameraUrls.Clear();
     }
 }
