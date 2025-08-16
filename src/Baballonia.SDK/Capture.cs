@@ -6,7 +6,7 @@ namespace Baballonia.SDK;
 /// <summary>
 /// Defines custom camera stream behavior
 /// </summary>
-public abstract class Capture
+public abstract class Capture(string url)
 {
     /// <summary>
     /// What unique strings are used to open this device?
@@ -16,7 +16,7 @@ public abstract class Capture
     /// <summary>
     /// Where this Capture source is currently pulling data from
     /// </summary>
-    public string Url { get; set; }
+    public string Url { get; set; } = url;
 
     /// <summary>
     /// Represents the incoming frame data for this capture source.
@@ -27,7 +27,7 @@ public abstract class Capture
     /// <summary>
     /// Is this Capture source ready to produce data?
     /// </summary>
-    public bool IsReady { get; protected set; }
+    public bool IsReady { get; protected set; } = false;
 
     /// <summary>
     /// Start Capture on this source
@@ -40,10 +40,4 @@ public abstract class Capture
     /// </summary>
     /// <returns></returns>
     public abstract Task<bool> StopCapture();
-
-    protected Capture(string url)
-    {
-        this.Url = url;
-        IsReady = false;
-    }
 }

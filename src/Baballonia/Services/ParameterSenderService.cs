@@ -120,9 +120,8 @@ public class ParameterSenderService(
             var msg = new OscMessage(prefix + _eyeExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
-                    0,
-                    -1,
-                    1));
+                    settings.Min,
+                    settings.Max));
             _sendQueue.Enqueue(msg);
         }
     }
@@ -141,8 +140,8 @@ public class ParameterSenderService(
             var msg = new OscMessage(prefix + _faceExpressionMap.ElementAt(i).Value,
                 Math.Clamp(
                     weight.Remap(settings.Lower, settings.Upper),
-                    0,
-                    1));
+                    settings.Min,
+                    settings.Max));
             _sendQueue.Enqueue(msg);
         }
     }

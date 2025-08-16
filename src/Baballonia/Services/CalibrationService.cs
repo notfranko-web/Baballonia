@@ -17,17 +17,12 @@ public class CalibrationService : ICalibrationService
         { "LeftEyeY", "/LeftEyeY" },
         { "RightEyeX", "/RightEyeX" },
         { "RightEyeY", "/RightEyeY" },
-        { "LeftEyeLid", "/LeftEyeLid" },
-        { "RightEyeLid", "/RightEyeLid" },
-        { "BrowRaise", "/BrowRaise" },
-        { "BrowAngry", "/BrowAngry" },
-        { "EyeWiden", "/EyeWiden" },
-        { "EyeSquint", "/EyeSquint" },
-        { "EyeDilate", "/EyeDilate" },
     };
 
     private readonly Dictionary<string, string> _faceExpressionMap = new()
     {
+        { "LeftEyeLid", "/LeftEyeLid" },
+        { "RightEyeLid", "/RightEyeLid" },
         { "CheekPuffLeft", "/cheekPuffLeft" },
         { "CheekPuffRight", "/cheekPuffRight" },
         { "CheekSuckLeft", "/cheekSuckLeft" },
@@ -89,14 +84,17 @@ public class CalibrationService : ICalibrationService
 
     private class CalibrationParameter
     {
-        public float Lower { get; set; } = 0;
-        public float Upper { get; set; } = 1;
+        public float Lower { get; set; } = 0f;
+        public float Upper { get; set; } = 1f;
+        public float Min { get; set; } = 0f;
+        public float Max { get; set; } = 1f;
 
-        public CalibrationParameter() {}
-        public CalibrationParameter(float lower, float upper)
+        public CalibrationParameter(float lower = 0f, float upper = 1f, float min = 0f, float max = 1f)
         {
             Lower = lower;
             Upper = upper;
+            Min = min;
+            Max = max;
         }
     }
 
@@ -114,17 +112,19 @@ public class CalibrationService : ICalibrationService
 
         _expressionSettings.TryGetValue(parameterName, out var currentSettings);
 
-        var lower = isUpper ? currentSettings.Lower : value;
-        var upper = isUpper ? value : currentSettings.Upper;
+        var lower = isUpper ? currentSettings!.Lower : value;
+        var upper = isUpper ? value : currentSettings!.Upper;
+        var min = currentSettings!.Min;
+        var max = currentSettings.Max;
 
-        var param = new CalibrationParameter(lower, upper);
+        var param = new CalibrationParameter(lower, upper, min, max);
         _expressionSettings[parameterName] = param;
         await SaveAsync();
     }
 
-    public (float Lower, float Upper) GetExpressionSettings(string parameterName)
+    public (float Lower, float Upper, float Min, float Max) GetExpressionSettings(string parameterName)
     {
-        return _expressionSettings.TryGetValue(parameterName, out var settings) ? (settings.Lower, settings.Upper ): (0f, 1f);
+        return _expressionSettings.TryGetValue(parameterName, out var settings) ? (settings.Lower, settings.Upper, settings.Min, settings.Max): (0f, 1f, 0f, 1f);
     }
 
     public async Task<float> GetExpressionSetting(string expression)
@@ -154,18 +154,27 @@ public class CalibrationService : ICalibrationService
     {
         var parameters = await _localSettingsService.ReadSettingAsync<ConcurrentDictionary<string, CalibrationParameter>?>("CalibrationParams");
         _expressionSettings.Clear();
-        var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
-        if(parameters == null)
-            foreach (var parameterName in allParameterNames)
+        if (parameters == null)
+        {
+            foreach (var parameterName in _eyeExpressionMap)
             {
-                _expressionSettings[parameterName] = new CalibrationParameter();
+                _expressionSettings[parameterName.Key] = new CalibrationParameter(-1, 1f, -1f, 1f);
             }
+
+            foreach (var parameterName in _faceExpressionMap)
+            {
+                _expressionSettings[parameterName.Key] = new CalibrationParameter(0, 1f, 0f, 1f);
+            }
+        }
         else
+        {
+            var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
             foreach (var parameterName in allParameterNames)
             {
                 var param = parameters.GetValueOrDefault(parameterName);
-                _expressionSettings[parameterName] = param ?? new CalibrationParameter();
+                _expressionSettings[parameterName] = param ?? new CalibrationParameter(0f, 1f, 0f, 1f);
             }
+        }
     }
 
     public async Task ResetValues()
@@ -174,8 +183,8 @@ public class CalibrationService : ICalibrationService
 
         foreach (var parameter in _expressionSettings.Values)
         {
-            parameter.Lower = 0;
-            parameter.Upper = 1;
+            parameter.Lower = parameter.Min;
+            parameter.Upper = parameter.Max;
         }
         await SaveAsync();
     }
@@ -185,7 +194,7 @@ public class CalibrationService : ICalibrationService
         await _isInitializedTask;
         foreach (var parameter in _expressionSettings.Values)
         {
-            parameter.Lower = 0;
+            parameter.Lower = parameter.Min;
         }
         await SaveAsync();
     }
@@ -195,7 +204,7 @@ public class CalibrationService : ICalibrationService
         await _isInitializedTask;
         foreach (var parameter in _expressionSettings.Values)
         {
-            parameter.Upper = 1;
+            parameter.Upper = parameter.Max;
         }
         await SaveAsync();
     }
