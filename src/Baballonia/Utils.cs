@@ -11,6 +11,8 @@ namespace Baballonia;
 
 public static class Utils
 {
+    public static readonly bool IsSupportedDesktopOS = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+
     public const int MobileWidth = 900;
 
     private const string k_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -43,9 +45,10 @@ public static class Utils
     public static readonly bool HasAdmin = !OperatingSystem.IsWindows() || new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
     public static readonly string UserAccessibleDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ProjectBabble");
-    public static readonly string PersistentDataDirectory = OperatingSystem.IsAndroid() ?
-        AppContext.BaseDirectory :
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProjectBabble");
+
+    public static readonly string PersistentDataDirectory = IsSupportedDesktopOS
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProjectBabble")
+        : AppContext.BaseDirectory;
 
     public static void ExtractEmbeddedResource(Assembly assembly, string resourceName, string file, bool overwrite = false)
     {

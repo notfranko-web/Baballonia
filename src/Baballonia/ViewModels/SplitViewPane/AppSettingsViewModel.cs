@@ -67,7 +67,7 @@ public partial class AppSettingsViewModel : ViewModelBase
         // Risky Settings
         ParameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
 
-        OnboardingEnabled = !(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS());
+        OnboardingEnabled = Utils.IsSupportedDesktopOS;
 
         PropertyChanged += (_, _) =>
         {

@@ -175,7 +175,6 @@ public partial class HomePageViewModel : ViewModelBase
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         LocalSettingsService.Load(this);
 
-        ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         MessagesInPerSecCount = "0";
         MessagesOutPerSecCount = "0";
         OscSendService.OnMessagesDispatched += MessageDispatched;
@@ -395,6 +394,7 @@ public partial class HomePageViewModel : ViewModelBase
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
+        // This will restart the right camera, as well as the left
         CameraStop(LeftCamera);
         CameraStart(LeftCamera);
     }

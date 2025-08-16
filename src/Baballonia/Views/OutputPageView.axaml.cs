@@ -95,6 +95,11 @@ public partial class OutputPageView : UserControl
         };
     }
 
+    private void OpenLogDirectory(object? sender, RoutedEventArgs e)
+    {
+        Utils.OpenUrl(Utils.UserAccessibleDataDirectory);
+    }
+
     ~OutputPageView()
     {
         Loaded -= OnLoaded;
