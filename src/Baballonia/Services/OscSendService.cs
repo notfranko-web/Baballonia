@@ -40,7 +40,7 @@ public class OscSendService
 
             if (_oscTarget.OutPort == default)
             {
-                return;
+                _oscTarget.OutPort = 8888;
             }
 
             if (_oscTarget.DestinationAddress is not null)

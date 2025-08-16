@@ -71,14 +71,7 @@ public partial class AeroOverlayTrainerCombo
         leftCameraController.StopMjpegStreaming();
         rightCameraController.StopMjpegStreaming();
 
-        // Save the location of the model so when we boot up the app it autoloads
-        const string modelName = "tuned_temporal_eye_tracking.onnx";
-        await localSettingsService.SaveSettingAsync("EyeHome_EyeModel", modelName);
-
         // Cleanup any leftover capture.bin files
         DeleteCaptureFiles(modelPath);
-
-        SessionOptions sessionOptions = eyeInferenceService.SetupSessionOptions();
-        await eyeInferenceService.ConfigurePlatformSpecificGpu(sessionOptions);
     }
 }

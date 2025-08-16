@@ -39,7 +39,7 @@ public partial class AppSettingsViewModel : ViewModelBase
     private float _oneEuroSpeedCutoff;
 
     [ObservableProperty]
-    [property: SavedSetting("AppSettings_UseGPU", false)]
+    [property: SavedSetting("AppSettings_UseGPU", true)]
     private bool _useGPU;
 
     [ObservableProperty]

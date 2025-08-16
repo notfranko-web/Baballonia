@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using Baballonia.Contracts;
 using Baballonia.Services.Inference.Enums;
+using Baballonia.Services.Inference.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Baballonia.Services
 {
     public static class EyeInferenceServiceFactory
     {
-        public static IInferenceService Create(IServiceProvider serviceProvider, Dictionary<Camera, string> cameraUrls)
+        public static IInferenceService Create(IServiceProvider serviceProvider, Dictionary<Camera, string> cameraUrls, CameraSettings leftCameraSettings, CameraSettings rightCameraSettings)
         {
             var leftCameraUrl = cameraUrls.GetValueOrDefault(Camera.Left);
             var rightCameraUrl = cameraUrls.GetValueOrDefault(Camera.Right);
@@ -18,10 +19,17 @@ namespace Baballonia.Services
             {
                 if (leftCameraUrl == rightCameraUrl)
                 {
-                    return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
+                    var leftRoi = leftCameraSettings.Roi;
+                    var rightRoi = rightCameraSettings.Roi;
+
+                    if ((leftRoi.X != rightRoi.X || leftRoi.Y != rightRoi.Y ||
+                         leftRoi.Width != rightRoi.Width || leftRoi.Height != rightRoi.Height))
+                    {
+                        return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
+                    }
                 }
             }
-            
+
             return serviceProvider.GetRequiredService<IDualCameraEyeInferenceService>();
         }
     }

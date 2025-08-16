@@ -14,6 +14,7 @@ using Baballonia.Services.Inference.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using HarfBuzzSharp;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
@@ -212,7 +213,11 @@ public partial class HomePageViewModel : ViewModelBase
             Dispatcher.UIThread.Post(() =>
             {
                 foreach (var camerasKey in App.DeviceEnumerator.Cameras.Keys)
+                {
                     LeftCamera.Suggestions.Add(camerasKey);
+                    RightCamera.Suggestions.Add(camerasKey);
+                    FaceCamera.Suggestions.Add(camerasKey);
+                }
             });
         });
 
@@ -221,9 +226,16 @@ public partial class HomePageViewModel : ViewModelBase
         _drawTimer.Stop();
         _drawTimer.Tick += async (s, e) =>
         {
-            var leftBitmap = await LeftCameraController.UpdateImage();
-            var rightBitmap = await RightCameraController.UpdateImage();
-            var faceBitmap = await FaceCameraController.UpdateImage();
+            var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
+                new CameraSettings { Camera = Camera.Left });
+            var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
+                new CameraSettings { Camera = Camera.Right });
+            var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
+                new CameraSettings { Camera = Camera.Face });
+
+            var leftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
+            var rightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
+            var faceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
 
             // a hack to force the UI refresh
             LeftCamera.Bitmap = null!;
@@ -255,7 +267,7 @@ public partial class HomePageViewModel : ViewModelBase
             cameraUrls[Camera.Right] = _rightCamera.DisplayAddress;
 
         // Create the appropriate eye inference service based on camera configuration
-        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls);
+        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls, leftSettings, rightSettings);
 
         LeftCameraController = new CameraController(
             _eyeInferenceService,
@@ -381,6 +393,10 @@ public partial class HomePageViewModel : ViewModelBase
     private async Task RequestVRCalibration()
     {
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
+        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
+
+        CameraStop(LeftCamera);
+        CameraStart(LeftCamera);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
