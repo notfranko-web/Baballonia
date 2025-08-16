@@ -393,6 +393,10 @@ public partial class HomePageViewModel : ViewModelBase
     private async Task RequestVRCalibration()
     {
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
+        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
+
+        CameraStop(LeftCamera);
+        CameraStart(LeftCamera);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
