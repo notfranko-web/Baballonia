@@ -19,14 +19,16 @@ namespace Baballonia.Services
             {
                 if (leftCameraUrl == rightCameraUrl)
                 {
-                    var leftRoi = leftCameraSettings.Roi;
+                    /*var leftRoi = leftCameraSettings.Roi;
                     var rightRoi = rightCameraSettings.Roi;
 
                     if ((leftRoi.X != rightRoi.X || leftRoi.Y != rightRoi.Y ||
                          leftRoi.Width != rightRoi.Width || leftRoi.Height != rightRoi.Height))
                     {
                         return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
-                    }
+                    }*/
+
+                    return serviceProvider.GetRequiredService<ISingleCameraEyeInferenceService>();
                 }
             }
 
