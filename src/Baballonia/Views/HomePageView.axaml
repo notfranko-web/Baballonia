@@ -482,7 +482,7 @@
                         Margin="0,0,12,12"
                         FontSize="20"
                         FontWeight="Medium"
-                        Text="Face Eye Camera" />
+                        Text="Face Camera" />
 
                     <!--  Camera address section  -->
                     <Border
