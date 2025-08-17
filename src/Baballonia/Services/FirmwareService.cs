@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
 using System.IO;
@@ -6,11 +7,14 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Baballonia.Contracts;
+using Baballonia.Models;
 using Baballonia.Services.Firmware;
+using Microsoft.Extensions.Logging;
 
 namespace Baballonia.Services;
 
-public class FirmwareService
+public class FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFactory commandSenderFactory)
 {
     public event Action OnFirmwareUpdateStart;
     public event Action OnFirmwareUpdateComplete;
@@ -171,4 +175,53 @@ public class FirmwareService
             return false;
         }
     }
+
+
+    private string[] FindAvalibleComPorts()
+    {
+        // GetPortNames() may return single port multiple times
+        // https://stackoverflow.com/questions/33401217/serialport-getportnames-returns-same-port-multiple-times
+        return SerialPort.GetPortNames().Distinct().ToArray();
+    }
+
+    public FirmwareSession StartSession(CommandSenderType type, string port)
+    {
+        return new FirmwareSession(commandSenderFactory.Create(type, port), logger);
+    }
+
+    public string[] ProbeComPorts(TimeSpan timeout)
+    {
+        var ports = FindAvalibleComPorts();
+        List<string> goodPorts = [];
+        foreach (var port in ports)
+        {
+            var session = StartSession(CommandSenderType.Serial, port);
+            try
+            {
+                logger.LogInformation("Probing {}", port);
+                var heartbeat = session.WaitForHeartbeat(timeout);
+                if (heartbeat != null)
+                {
+                    goodPorts.Add(port);
+                }
+
+                session.Dispose();
+            }
+            catch (TimeoutException ex)
+            {
+                logger.LogInformation("probing port {}: timeout reached", port);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error probing port {}: {}", port, ex.Message);
+            }
+            finally
+            {
+                session.Dispose();
+            }
+        }
+
+        return [.. goodPorts];
+    }
 }
+

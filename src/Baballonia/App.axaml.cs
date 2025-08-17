@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using Baballonia.Helpers;
 using Baballonia.Activation;
 using Baballonia.Contracts;
+using Baballonia.Factories;
 using Baballonia.Models;
 using Baballonia.Services;
 using Baballonia.Services.Inference.Platforms;
@@ -79,7 +80,6 @@ public class App : Application
                 services.AddSingleton<ISingleCameraEyeInferenceService, SingleCameraEyeInferenceService>();
                 services.AddSingleton<IDualCameraEyeInferenceService, DualCameraEyeInferenceService>();
 
-
                 services.AddSingleton<IFaceInferenceService, FaceInferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
@@ -112,6 +112,8 @@ public class App : Application
 
                 if (Utils.IsSupportedDesktopOS)
                 {
+                    services.AddSingleton<ICommandSenderFactory, CommandSenderFactory>();
+                    services.AddSingleton<ICommandSender, SerialCommandSender>();
                     services.AddTransient<FirmwareViewModel>();
                     services.AddTransient<FirmwareView>();
                     services.AddTransient<OnboardingViewModel>();
