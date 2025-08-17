@@ -199,7 +199,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
-    public void Shutdown()
+    public virtual void Shutdown()
     {
         foreach (var platformConnector in PlatformConnectors)
         {
@@ -217,7 +217,7 @@ public abstract class InferenceService(ILogger<InferenceService> logger, ILocalS
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
-    public void Shutdown(Camera camera)
+    public virtual void Shutdown(Camera camera)
     {
         var pc = camera == Camera.Face ?
             PlatformConnectors[0] :

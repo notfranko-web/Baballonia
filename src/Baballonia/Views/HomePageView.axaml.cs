@@ -1,8 +1,9 @@
-﻿using System;
+using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using Baballonia.Contracts;
 using Baballonia.Helpers;
 using Baballonia.ViewModels.SplitViewPane;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -11,62 +12,72 @@ namespace Baballonia.Views;
 
 public partial class HomePageView : UserControl
 {
+    private bool _isLayoutUpdating;
+
     public HomePageView()
     {
         InitializeComponent();
 
-        if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+        if (Utils.IsSupportedDesktopOS)
         {
             SizeChanged += (_, _) =>
             {
                 if (this.GetVisualRoot() is not Window window) return;
 
                 var grid = this.FindControl<Grid>("CameraControlsGrid");
-                var isMobile = window.ClientSize.Width < Utils.MobileWidth;
-                if (isMobile)
+                var isVertical = window.ClientSize.Width < Utils.MobileWidth;
+
+                // Clear existing row/column definitions
+                grid!.RowDefinitions.Clear();
+                grid.ColumnDefinitions.Clear();
+
+                if (isVertical)
                 {
-                    grid!.ColumnDefinitions = new ColumnDefinitions("*"); // Vertical layout
-                    grid.RowDefinitions = new RowDefinitions("*,*,*");
+                    // Vertical layout - one column, three rows
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+
+                    // Set grid positions for all children
+                    for (var i = 0; i < grid.Children.Count; i++)
+                    {
+                        var child = grid.Children[i];
+                        Grid.SetRow(child, i);
+                        Grid.SetColumn(child, 0);
+                        child.Margin = new Avalonia.Thickness(0, 0, 0, 16);
+                    }
                 }
                 else
                 {
-                    grid!.ColumnDefinitions = new ColumnDefinitions("*,*,*"); // Horizontal layout
-                    grid.RowDefinitions = new RowDefinitions("*");
-                }
+                    // Horizontal layout - three columns, one row
+                    grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                    grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                    grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-                // there is no default control to have equal width cells with automatic cell assignment
-                // Uniform grid always has cells of equal width and height
-                // and Grid requires children rows and cols position to be specified manually
-                // so we use Grid and assign children here
-                int columnsCount = isMobile ? 1 : 3;
-                int row = 0;
-                int col = 0;
-                foreach (var child in grid.Children)
-                {
-                    Grid.SetRow(child, row);
-                    Grid.SetColumn(child, col);
-
-                    col++;
-                    if (col >= columnsCount)
+                    // Set grid positions for all children
+                    for (var i = 0; i < grid.Children.Count; i++)
                     {
-                        col = 0;
-                        row++;
+                        var child = grid.Children[i];
+                        Grid.SetRow(child, 0);
+                        Grid.SetColumn(child, i);
+                        child.Margin = new Avalonia.Thickness(0, 0, i < 2 ? 12 : 0, 0);
                     }
                 }
             };
         }
         Loaded += (_, _) =>
         {
-            if (DataContext is HomePageViewModel vm)
-            {
-                SetupCropEvents(vm.LeftCamera, LeftMouthWindow);
-                SetupCropEvents(vm.RightCamera, RightMouthWindow);
-                SetupCropEvents(vm.FaceCamera, FaceWindow);
-                EyeAddressEntry_OnTextChanged(null, null!);
-                FaceAddressEntry_OnTextChanged(null, null!);
+            if (DataContext is not HomePageViewModel vm) return;
 
-                vm.SelectedCalibrationText = "Eye Calibration";
-            }
+            SetupCropEvents(vm.LeftCamera, LeftMouthWindow);
+            SetupCropEvents(vm.RightCamera, RightMouthWindow);
+            SetupCropEvents(vm.FaceCamera, FaceWindow);
+            EyeAddressEntry_OnTextChanged(null, null!);
+            FaceAddressEntry_OnTextChanged(null, null!);
+
+            vm.SelectedCalibrationText = "Eye Calibration";
         };
     }
 
@@ -143,5 +154,29 @@ public partial class HomePageView : UserControl
         {
             vm.SelectedCalibrationText = menuItem.Header?.ToString() ?? "";
         }
+    }
+
+    private void OnExpanderCollapsed(object? sender, RoutedEventArgs e)
+    {
+        if (_isLayoutUpdating) return;
+        _isLayoutUpdating = true;
+
+        // Force layout update
+        InvalidateArrange();
+        InvalidateMeasure();
+
+        _isLayoutUpdating = false;
+    }
+
+    private void OnExpanderExpanded(object? sender, RoutedEventArgs e)
+    {
+        if (_isLayoutUpdating) return;
+        _isLayoutUpdating = true;
+
+        // Force layout update
+        InvalidateArrange();
+        InvalidateMeasure();
+
+        _isLayoutUpdating = false;
     }
 }

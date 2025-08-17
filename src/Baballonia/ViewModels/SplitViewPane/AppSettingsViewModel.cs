@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Baballonia.Contracts;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -29,6 +30,10 @@ public partial class AppSettingsViewModel : ViewModelBase
     [ObservableProperty]
     [property: SavedSetting("AppSettings_OSCPrefix", "")]
     private string _oscPrefix;
+
+    [ObservableProperty]
+    [property: SavedSetting("AppSettings_OneEuroMinEnabled", false)]
+    private bool _oneEuroMinEnabled;
 
     [ObservableProperty]
     [property: SavedSetting("AppSettings_OneEuroMinFreqCutoff", 1f)]
@@ -67,7 +72,7 @@ public partial class AppSettingsViewModel : ViewModelBase
         // Risky Settings
         ParameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
 
-        OnboardingEnabled = !(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS());
+        OnboardingEnabled = Utils.IsSupportedDesktopOS;
 
         PropertyChanged += (_, _) =>
         {

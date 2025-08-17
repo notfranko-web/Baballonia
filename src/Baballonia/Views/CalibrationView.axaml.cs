@@ -9,30 +9,27 @@ namespace Baballonia.Views;
 
 public partial class CalibrationView : UserControl
 {
-
     public CalibrationView()
     {
         InitializeComponent();
 
-        if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+        if (!Utils.IsSupportedDesktopOS)
         {
             SizeChanged += (_, _) =>
             {
-                var window = this.GetVisualRoot() as Window;
-                if (window != null)
+                if (this.GetVisualRoot() is not Window window) return;
+
+                var desktopLayout = this.FindControl<StackPanel>("ResetDesktopStackPanel");
+                var mobileLayout = this.FindControl<StackPanel>("ResetMobileStackPanel");
+                if (window.ClientSize.Width < Utils.MobileWidth)
                 {
-                    var desktopLayout = this.FindControl<StackPanel>("ResetDesktopStackPanel");
-                    var mobileLayout = this.FindControl<StackPanel>("ResetMobileStackPanel");
-                    if (window.ClientSize.Width < Utils.MobileWidth)
-                    {
-                        desktopLayout!.IsVisible = false;
-                        mobileLayout!.IsVisible = true;
-                    }
-                    else
-                    {
-                        desktopLayout!.IsVisible = true;
-                        mobileLayout!.IsVisible = false;
-                    }
+                    desktopLayout!.IsVisible = false;
+                    mobileLayout!.IsVisible = true;
+                }
+                else
+                {
+                    desktopLayout!.IsVisible = true;
+                    mobileLayout!.IsVisible = false;
                 }
             };
         }

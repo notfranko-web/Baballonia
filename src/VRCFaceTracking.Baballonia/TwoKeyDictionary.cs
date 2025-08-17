@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Text;
 
-namespace VRCFaceTracking.Babble;
+namespace VRCFaceTracking.Baballonia;
 
 //  https://stackoverflow.com/questions/32761880/net-dictionary-with-two-keys-and-one-value
 

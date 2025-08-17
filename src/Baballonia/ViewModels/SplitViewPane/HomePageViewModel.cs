@@ -175,7 +175,6 @@ public partial class HomePageViewModel : ViewModelBase
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         LocalSettingsService.Load(this);
 
-        ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         MessagesInPerSecCount = "0";
         MessagesOutPerSecCount = "0";
         OscSendService.OnMessagesDispatched += MessageDispatched;
@@ -304,6 +303,7 @@ public partial class HomePageViewModel : ViewModelBase
     {
         await SetupCameraSettings();
         string camera = model.DisplayAddress;
+        if (string.IsNullOrEmpty(camera)) return;
 
         if (App.DeviceEnumerator.Cameras != null)
         {
@@ -312,8 +312,10 @@ public partial class HomePageViewModel : ViewModelBase
                 camera = mappedAddress;
             }
         }
-
-        if (string.IsNullOrEmpty(camera)) return;
+        else
+        {
+            return;
+        }
 
         model.Controller.StartCamera(camera);
 
@@ -329,7 +331,10 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
                         {
-                            RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                RightCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 
@@ -341,7 +346,10 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
                         {
-                            LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                LeftCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 
@@ -395,6 +403,7 @@ public partial class HomePageViewModel : ViewModelBase
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
+        // This will restart the right camera, as well as the left
         CameraStop(LeftCamera);
         CameraStart(LeftCamera);
     }

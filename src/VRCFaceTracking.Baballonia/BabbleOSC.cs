@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using VRCFaceTracking.Core.OSC;
 
-namespace VRCFaceTracking.Babble;
+namespace VRCFaceTracking.Baballonia;
 
 public class BabbleOsc
 {

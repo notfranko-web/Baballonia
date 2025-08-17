@@ -110,7 +110,7 @@ public class App : Application
                 services.AddTransient<AppSettingsViewModel>();
                 services.AddTransient<AppSettingsView>();
 
-                if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+                if (Utils.IsSupportedDesktopOS)
                 {
                     services.AddTransient<FirmwareViewModel>();
                     services.AddTransient<FirmwareView>();
@@ -136,7 +136,7 @@ public class App : Application
             File.WriteAllText(path, "{}");
         }
 
-        if (OperatingSystem.IsAndroid())
+        if (!Utils.IsSupportedDesktopOS) // extract default models for mobile
         {
             string[] models = ["eyeModel.onnx", "faceModel.onnx"];
             foreach (var model in models)

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,6 +30,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
     public override IReadOnlyDictionary<Camera, string> CameraUrls => _cameraUrls;
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors => _platformConnectors;
 
+    private bool _useFilter = true;
+
     public override void SetupInference(Camera camera, string cameraAddress)
     {
         Task.Run(async () =>
@@ -54,6 +55,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         SessionOptions sessionOptions = SetupSessionOptions();
         await ConfigurePlatformSpecificGpu(sessionOptions);
 
+        _useFilter = await _settingsService.ReadSettingAsync<bool>("AppSettings_OneEuroMinEnabled");
         var minCutoff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
         if (minCutoff == 0f) minCutoff = 1f;
         var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
@@ -75,9 +77,9 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         // Initialize tensors and filters for both eyes
         for (int i = 0; i < 2; i++)
         {
-            float[] noisy_point = new float[ExpectedRawExpressions];
+            float[] noisyPoint = new float[ExpectedRawExpressions];
             var filter = new OneEuroFilter(
-                x0: noisy_point,
+                x0: noisyPoint,
                 minCutoff: minCutoff,
                 beta: speedCoeff
             );
@@ -147,7 +149,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
 
         // Apply filter
-        arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
+        if (_useFilter)
+            arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
 
         // Process and convert the expressions to the expected format
         return ProcessExpressions(ref arKitExpressions);;

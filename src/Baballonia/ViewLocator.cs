@@ -23,7 +23,7 @@ public class ViewLocator : IDataTemplate
         RegisterViewFactory<OutputPageViewModel, OutputPageView>();
         RegisterViewFactory<AppSettingsViewModel, AppSettingsView>();
 
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) return;
+        if (!Utils.IsSupportedDesktopOS) return;
 
         RegisterViewFactory<FirmwareViewModel, FirmwareView>();
         RegisterViewFactory<OnboardingViewModel, OnboardingView>();

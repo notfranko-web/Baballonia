@@ -33,12 +33,17 @@ public class LocalSettingsService : ILocalSettingsService
             Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
         _localSettingsFile = opt.LocalSettingsFile ?? Path.Combine(applicationDataFolder, DefaultLocalSettingsFile);
 
+        // Make mobile config path
+        if (!Utils.IsSupportedDesktopOS)
+            Directory.CreateDirectory(applicationDataFolder);
+
         debouncedSave = new DebounceFunction(async () =>
         {
             var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions
             {
                 WriteIndented = true
             });
+            // Despite what the docs say, the below does not in fact create a new file if it does not exist
             await File.WriteAllTextAsync(_localSettingsFile, json);
             logger.LogInformation("Saving settings");
         }, 2000);
@@ -62,7 +67,7 @@ public class LocalSettingsService : ILocalSettingsService
             _settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
                         ?? new Dictionary<string, JsonElement>();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _settings = new Dictionary<string, JsonElement>();
         }

@@ -1,16 +1,17 @@
 <UserControl
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    mc:Ignorable="d"
     x:Class="Baballonia.Views.OutputPageView"
-    x:DataType="splitViewPane:OutputPageViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:assets="clr-namespace:Baballonia.Assets"
     xmlns:controls="clr-namespace:Baballonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:utils="clr-namespace:Baballonia"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="splitViewPane:OutputPageViewModel"
+    mc:Ignorable="d">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -23,22 +24,33 @@
             <controls:ContentExample>
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Button
+                        x:Name="CopyButton"
                         Click="CopyRequested"
-                        ToolTip.Tip="Copy the log's output to your clipboard"
-                        x:Name="CopyButton">
+                        ToolTip.Tip="Copy the log's output to your clipboard">
                         <Button.Content>
                             <StackPanel Orientation="Vertical">
-                                <PathIcon Data="{StaticResource DocumentCopyRegular}" Height="24" />
+                                <PathIcon Height="24" Data="{StaticResource DocumentCopyRegular}" />
                             </StackPanel>
                         </Button.Content>
                     </Button>
                     <Button
+                        x:Name="SaveButton"
                         Click="SaveRequested"
-                        ToolTip.Tip="Save the log's output"
-                        x:Name="SaveButton">
+                        ToolTip.Tip="Save the log's output">
                         <Button.Content>
                             <StackPanel Orientation="Vertical">
-                                <PathIcon Data="{StaticResource SaveRegular}" Height="24" />
+                                <PathIcon Height="24" Data="{StaticResource SaveRegular}" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button
+                        x:Name="OpenLoggingDirectoryButton"
+                        Click="OpenLogDirectory"
+                        IsEnabled="{x:Static utils:Utils.IsSupportedDesktopOS}"
+                        ToolTip.Tip="Open the logging directory">
+                        <Button.Content>
+                            <StackPanel Orientation="Vertical">
+                                <PathIcon Height="24" Data="{StaticResource FolderOpenVerticalRegular}" />
                             </StackPanel>
                         </Button.Content>
                     </Button>
@@ -48,18 +60,18 @@
 
         <controls:ContentExample Grid.Row="2">
             <ScrollViewer
+                x:Name="LogScroller"
                 HorizontalScrollBarVisibility="Auto"
                 IsTabStop="False"
-                VerticalScrollBarVisibility="Auto"
-                x:Name="LogScroller">
+                VerticalScrollBarVisibility="Auto">
                 <StackPanel
                     HorizontalAlignment="Stretch"
-                    Orientation="Vertical"
-                    VerticalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    Orientation="Vertical">
                     <ItemsControl
                         HorizontalAlignment="Stretch"
-                        ItemsSource="{Binding View.FilteredLog}"
-                        VerticalAlignment="Stretch">
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{Binding View.FilteredLog}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}" />
