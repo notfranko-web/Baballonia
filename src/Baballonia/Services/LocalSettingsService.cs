@@ -67,7 +67,7 @@ public class LocalSettingsService : ILocalSettingsService
             _settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
                         ?? new Dictionary<string, JsonElement>();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _settings = new Dictionary<string, JsonElement>();
         }

@@ -5,7 +5,6 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Baballonia.Contracts;
-using Baballonia.Assets;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
@@ -18,6 +17,10 @@ public partial class AppSettingsView : UserControl
     private readonly IMainService _mainService;
     private readonly ComboBox _themeComboBox;
     private readonly ComboBox _langComboBox;
+    private readonly ComboBox _selectedMinFreqCutoffComboBox;
+    private readonly ComboBox _selectedSpeedCutoffComboxBox;
+    private readonly NumericUpDown _selectedMinFreqCutoffUpDown;
+    private readonly NumericUpDown _selectedSpeedCutoffUpDown;
 
     public AppSettingsView()
     {
@@ -30,6 +33,11 @@ public partial class AppSettingsView : UserControl
         _languageSelectorService = Ioc.Default.GetService<ILanguageSelectorService>()!;
         _langComboBox = this.Find<ComboBox>("LangCombo")!;
         _langComboBox.SelectionChanged += LangComboBox_SelectionChanged;
+
+        _selectedMinFreqCutoffComboBox = this.Find<ComboBox>("SelectedMinFreqCutoffComboBox")!;
+        _selectedSpeedCutoffComboxBox = this.Find<ComboBox>("SelectedSpeedCutoffComboBox")!;
+        _selectedMinFreqCutoffUpDown = this.Find<NumericUpDown>("SelectedMinFreqCutoffUpDown")!;
+        _selectedSpeedCutoffUpDown = this.Find<NumericUpDown>("SelectedSpeedCutoffUpDown")!;
 
         UpdateThemes();
 
@@ -118,6 +126,32 @@ public partial class AppSettingsView : UserControl
                 OnboardingView.ShowOnboarding(desktop.MainWindow!);
                 break;
         }
+    }
+
+    private void SelectedSpeedCutoffComboBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox comboBox) return;
+
+        _selectedSpeedCutoffUpDown.Value = comboBox.SelectedIndex switch
+        {
+            0 => 0.5m,
+            1 => 1,
+            2 => 2,
+            _ => _selectedSpeedCutoffUpDown.Value
+        };
+    }
+
+    private void SelectedMinFreqCutoffComboBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox comboBox) return;
+
+        _selectedMinFreqCutoffUpDown.Value = comboBox.SelectedIndex switch
+        {
+            0 => 0.5m,
+            1 => 1,
+            2 => 2,
+            _ => _selectedMinFreqCutoffUpDown.Value
+        };
     }
 }
 

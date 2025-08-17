@@ -21,7 +21,7 @@ public class BabbleVrc : ExtTrackingModule
         list.Add(manifestResourceStream);
         ModuleInformation = new ModuleMetadata
         {
-            Name = "Project Babble Eye Tracking Module v1.0.5",
+            Name = "Baballonia Module v1.0.5",
             StaticImages = list
         };
 
