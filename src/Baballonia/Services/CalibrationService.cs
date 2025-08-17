@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
+using Baballonia.Services.Calibration;
 using Discord.Commands.Builders;
 
 namespace Baballonia.Services;
@@ -82,22 +83,6 @@ public class CalibrationService : ICalibrationService
         _isInitializedTask = LoadAsync();
     }
 
-    private class CalibrationParameter
-    {
-        public float Lower { get; set; } = 0f;
-        public float Upper { get; set; } = 1f;
-        public float Min { get; set; } = 0f;
-        public float Max { get; set; } = 1f;
-
-        public CalibrationParameter(float lower = 0f, float upper = 1f, float min = 0f, float max = 1f)
-        {
-            Lower = lower;
-            Upper = upper;
-            Min = min;
-            Max = max;
-        }
-    }
-
     public async Task SetExpression(string expression, float value)
     {
         await _isInitializedTask;
@@ -122,9 +107,11 @@ public class CalibrationService : ICalibrationService
         await SaveAsync();
     }
 
-    public (float Lower, float Upper, float Min, float Max) GetExpressionSettings(string parameterName)
+    public CalibrationParameter GetExpressionSettings(string parameterName)
     {
-        return _expressionSettings.TryGetValue(parameterName, out var settings) ? (settings.Lower, settings.Upper, settings.Min, settings.Max): (0f, 1f, 0f, 1f);
+        return _expressionSettings.TryGetValue(parameterName, out var settings) ?
+            settings :
+            new CalibrationParameter();
     }
 
     public async Task<float> GetExpressionSetting(string expression)
@@ -168,8 +155,14 @@ public class CalibrationService : ICalibrationService
         }
         else
         {
-            var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
-            foreach (var parameterName in allParameterNames)
+            var eyeParameterNames = _eyeExpressionMap.Keys;
+            foreach (var parameterName in eyeParameterNames)
+            {
+                var param = parameters.GetValueOrDefault(parameterName);
+                _expressionSettings[parameterName] = param ?? new CalibrationParameter(-1f, 1f, -1f, 1f);
+            }
+            var faceParameterNames = _faceExpressionMap.Keys;
+            foreach (var parameterName in faceParameterNames)
             {
                 var param = parameters.GetValueOrDefault(parameterName);
                 _expressionSettings[parameterName] = param ?? new CalibrationParameter(0f, 1f, 0f, 1f);

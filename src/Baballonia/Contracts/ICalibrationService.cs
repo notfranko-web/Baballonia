@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Baballonia.Services.Calibration;
 
 namespace Baballonia.Contracts;
 
@@ -6,7 +7,7 @@ public interface ICalibrationService
 {
     Task SetExpression(string expression, float value);
 
-    (float Lower, float Upper, float Min, float Max) GetExpressionSettings(string parameterName);
+    CalibrationParameter GetExpressionSettings(string parameterName);
 
     Task<float> GetExpressionSetting(string expression);
     Task ResetValues();
