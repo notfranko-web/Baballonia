@@ -1,6 +1,6 @@
 ﻿using VRCFaceTracking.Core.Params.Expressions;
 
-namespace VRCFaceTracking.Babble;
+namespace VRCFaceTracking.Baballonia;
 
 public static class BabbleExpressions
 {
