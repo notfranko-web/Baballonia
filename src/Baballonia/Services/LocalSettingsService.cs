@@ -32,6 +32,8 @@ public class LocalSettingsService : ILocalSettingsService
         var applicationDataFolder =
             Path.Combine(_localApplicationData, opt.ApplicationDataFolder ?? DefaultApplicationDataFolder);
         _localSettingsFile = opt.LocalSettingsFile ?? Path.Combine(applicationDataFolder, DefaultLocalSettingsFile);
+        if (!File.Exists(_localSettingsFile))
+            File.Create(_localSettingsFile).Close();
 
         // Make mobile config path
         if (!Utils.IsSupportedDesktopOS)
