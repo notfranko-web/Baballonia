@@ -66,7 +66,11 @@ public partial class MainViewModel : ViewModelBase
 
         if (vm is not ViewModelBase vmb) return;
 
+        var tmp = CurrentPage;
         CurrentPage = vmb;
+
+        if (tmp is IDisposable disposable)
+            disposable.Dispose();
     }
 
     public ObservableCollection<ListItemTemplate> Items { get; }
