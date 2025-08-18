@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using Baballonia.Helpers;
 using Baballonia.Activation;
 using Baballonia.Contracts;
+using Baballonia.Factories;
 using Baballonia.Models;
 using Baballonia.Services;
 using Baballonia.Services.Inference.Platforms;
@@ -84,6 +85,7 @@ public class App : Application
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
+                services.AddSingleton<InferenceLoopService>();
 
                 // Core Services
                 services.AddTransient<IIdentityService, IdentityService>();
@@ -94,6 +96,7 @@ public class App : Application
                 services.AddTransient<OscQueryServiceWrapper>();
                 services.AddSingleton<ParameterSenderService>();
                 services.AddTransient<GithubService>();
+                services.AddTransient<ICommandSenderFactory, CommandSenderFactory>();
                 services.AddTransient<FirmwareService>();
                 services.AddSingleton<IMainService, MainStandalone>();
                 services.AddSingleton<ICalibrationService, CalibrationService>();
