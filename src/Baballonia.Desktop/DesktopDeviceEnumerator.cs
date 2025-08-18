@@ -32,7 +32,8 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
         {
             if (OperatingSystem.IsWindows())
             {
-                AddWindowsWmiCameras(cameraDict);
+                AddWindowsDsCameras(cameraDict);
+                AddRevisionCamera(cameraDict);
             }
             else if (OperatingSystem.IsMacOS())
             {
@@ -41,6 +42,7 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
             else if (OperatingSystem.IsLinux())
             {
                 AddLinuxUvcDevices(cameraDict);
+                AddRevisionCamera(cameraDict);
             }
 
             // Add serial ports as potential camera sources
@@ -52,6 +54,11 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
         }
 
         return cameraDict;
+    }
+
+    private void AddRevisionCamera(Dictionary<string, string> cameraDict)
+    {
+
     }
 
     private void AddOpenCvCameras(Dictionary<string, string> cameraDict)
@@ -85,7 +92,7 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
     }
 
     [SupportedOSPlatform("windows")]
-    private void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
+    private void AddWindowsDsCameras(Dictionary<string, string> cameraDict)
     {
         var videoInputDevices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
 
