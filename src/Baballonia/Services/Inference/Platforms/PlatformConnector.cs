@@ -199,6 +199,22 @@ public abstract class PlatformConnector
             }
         }
 
+        if (settings.Gamma != 1f)
+        {
+            // Create a lookup table for gamma correction
+            byte[] lookupTable = new byte[256];
+
+            for (int i = 0; i < 256; i++)
+            {
+                lookupTable[i] = (byte)(Math.Pow(i / 255.0f, 1.0f / settings.Gamma) * 255.0f);
+            }
+
+            Mat lut = Mat.FromArray(lookupTable);
+            Cv2
+
+            Cv2.LUT(resultMat, lookupTable, outputMat);
+        }
+
         resultMat.Dispose();
         return true;
     }
