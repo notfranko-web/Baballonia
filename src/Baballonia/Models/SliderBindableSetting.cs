@@ -6,6 +6,7 @@ public partial class SliderBindableSetting : ObservableObject
 {
     public string Name { get; set; }
     [ObservableProperty] private float _lower;
+    [ObservableProperty] private float _currentExpression;
 
     [ObservableProperty] private float _upper;
 

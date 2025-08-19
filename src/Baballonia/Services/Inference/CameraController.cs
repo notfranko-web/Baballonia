@@ -28,6 +28,7 @@ public class CameraController : IDisposable
 {
     public CameraSettings CameraSettings { get; set; }
 
+    // TODO: move this somewhere else and not static
     public static float[] EyeExpressions { get; private set; } = [];
     public static float[] FaceExpressions { get; private set; } = [];
 

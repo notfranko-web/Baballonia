@@ -172,10 +172,14 @@ public class CalibrationService : ICalibrationService
     {
         await _isInitializedTask;
 
-        foreach (var parameter in _expressionSettings.Values)
+        foreach (var parameterName in _eyeExpressionMap.Keys)
         {
-            parameter.Lower = 0;
-            parameter.Upper = 1;
+            _expressionSettings[parameterName]= new CalibrationParameter(-1,1);
+        }
+
+        foreach (var parameterName in _faceExpressionMap.Keys)
+        {
+            _expressionSettings[parameterName]= new CalibrationParameter(0,1);
         }
         await SaveAsync();
     }
@@ -183,9 +187,14 @@ public class CalibrationService : ICalibrationService
     public async Task ResetMinimums()
     {
         await _isInitializedTask;
-        foreach (var parameter in _expressionSettings.Values)
+        foreach (var parameterName in _eyeExpressionMap.Keys)
         {
-            parameter.Lower = 0;
+            _expressionSettings[parameterName].Lower = -1;
+        }
+
+        foreach (var parameterName in _faceExpressionMap.Keys)
+        {
+            _expressionSettings[parameterName].Lower = 0;
         }
         await SaveAsync();
     }
@@ -193,9 +202,14 @@ public class CalibrationService : ICalibrationService
     public async Task ResetMaximums()
     {
         await _isInitializedTask;
-        foreach (var parameter in _expressionSettings.Values)
+        foreach (var parameterName in _eyeExpressionMap.Keys)
         {
-            parameter.Upper = 1;
+            _expressionSettings[parameterName].Upper = 1;
+        }
+
+        foreach (var parameterName in _faceExpressionMap.Keys)
+        {
+            _expressionSettings[parameterName].Upper = 1;
         }
         await SaveAsync();
     }

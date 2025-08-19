@@ -85,7 +85,7 @@ public class App : Application
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
-                services.AddSingleton<InferenceLoopService>();
+                services.AddSingleton<ProcessingLoopService>();
 
                 // Core Services
                 services.AddTransient<IIdentityService, IdentityService>();

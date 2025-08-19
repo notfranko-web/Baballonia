@@ -6,7 +6,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
   xmlns:models="clr-namespace:Baballonia.Models"
-  xmlns:twoRangeSlider="https://github.com/DmitryNizhebovsky/Avalonia.RangeSlider"
+  xmlns:twoRangeSlider="clr-namespace:Baballonia.Controls"
   d:DesignHeight="450"
   d:DesignWidth="800"
   x:DataType="splitViewPane:CalibrationViewModel"
@@ -82,6 +82,8 @@
                         Maximum="1"
                         Minimum="-1"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
@@ -117,8 +119,10 @@
                       <twoRangeSlider:RangeSlider
                         LowerSelectedValue="{Binding Lower, Mode=TwoWay}"
                         Maximum="1"
-                        Minimum="-1"
+                        Minimum="0"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
@@ -154,8 +158,10 @@
                       <twoRangeSlider:RangeSlider
                         LowerSelectedValue="{Binding Lower, Mode=TwoWay}"
                         Maximum="1"
-                        Minimum="-1"
+                        Minimum="0"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
@@ -191,8 +197,10 @@
                       <twoRangeSlider:RangeSlider
                         LowerSelectedValue="{Binding Lower, Mode=TwoWay}"
                         Maximum="1"
-                        Minimum="-1"
+                        Minimum="0"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
@@ -228,8 +236,10 @@
                       <twoRangeSlider:RangeSlider
                         LowerSelectedValue="{Binding Lower, Mode=TwoWay}"
                         Maximum="1"
-                        Minimum="-1"
+                        Minimum="0"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>
@@ -265,8 +275,10 @@
                       <twoRangeSlider:RangeSlider
                         LowerSelectedValue="{Binding Lower, Mode=TwoWay}"
                         Maximum="1"
-                        Minimum="-1"
+                        Minimum="0"
                         TickFrequency="0.01"
+                        ShowMiddleThumb="True"
+                        MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>
                   </Grid>

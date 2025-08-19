@@ -18,9 +18,8 @@ using HarfBuzzSharp;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
-public partial class HomePageViewModel : ViewModelBase
+public partial class HomePageViewModel : ViewModelBase, IDisposable
 {
-
     // This feels unorthodox but... i kinda like it?
     public partial class CameraControllerModel : ObservableObject
     {
@@ -131,6 +130,8 @@ public partial class HomePageViewModel : ViewModelBase
         }
     }
 
+    private static int _timerCounter = 0;
+
     [ObservableProperty] public bool _shouldShowEyeCalibration;
     [ObservableProperty] public string _selectedCalibrationText;
 
@@ -157,12 +158,8 @@ public partial class HomePageViewModel : ViewModelBase
     private readonly IFaceInferenceService _faceInferenceService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ProcessingLoopService _processingLoopService;
 
-
-    private readonly DispatcherTimer _drawTimer = new()
-    {
-        Interval = TimeSpan.FromMilliseconds(10)
-    };
 
     public HomePageViewModel()
     {
@@ -173,6 +170,7 @@ public partial class HomePageViewModel : ViewModelBase
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
         _serviceProvider = Ioc.Default.GetRequiredService<IServiceProvider>();
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
+        _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
         LocalSettingsService.Load(this);
 
         ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
@@ -201,10 +199,6 @@ public partial class HomePageViewModel : ViewModelBase
         Dispatcher.UIThread.Post(async () => { await SetupCameraControllers(); });
     }
 
-    private CameraController LeftCameraController { get; set; }
-    private CameraController RightCameraController { get; set; }
-    private CameraController FaceCameraController { get; set; }
-
     private async Task SetupCameraControllers()
     {
         Task.Run(async () =>
@@ -222,43 +216,27 @@ public partial class HomePageViewModel : ViewModelBase
         });
 
         await SetupCameraSettings();
+        _processingLoopService.BitmapUpdateEvent += BitmapUpdateHandler;
+    }
 
-        _drawTimer.Stop();
-        _drawTimer.Tick += async (s, e) =>
+    private void BitmapUpdateHandler(ProcessingLoopService.Bitmaps bitmaps)
+    {
+        Dispatcher.UIThread.Post(() =>
         {
-            var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-                new CameraSettings { Camera = Camera.Left });
-            var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
-                new CameraSettings { Camera = Camera.Right });
-            var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
-                new CameraSettings { Camera = Camera.Face });
-
-            var leftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            var rightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            var faceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-
             // a hack to force the UI refresh
             LeftCamera.Bitmap = null!;
-            LeftCamera.Bitmap = leftBitmap!;
+            LeftCamera.Bitmap = bitmaps.LeftBitmap!;
 
             RightCamera.Bitmap = null!;
-            RightCamera.Bitmap = rightBitmap!;
+            RightCamera.Bitmap = bitmaps.RightBitmap!;
 
             FaceCamera.Bitmap = null!;
-            FaceCamera.Bitmap = faceBitmap!;
-        };
-        _drawTimer.Start();
+            FaceCamera.Bitmap = bitmaps.FaceBitmap!;
+        });
     }
 
     private async Task SetupCameraSettings()
     {
-        var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-            new CameraSettings { Camera = Camera.Left });
-        var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
-            new CameraSettings { Camera = Camera.Right });
-        var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
-            new CameraSettings { Camera = Camera.Face });
-
         // Create camera URL dictionary for eye inference service
         var cameraUrls = new Dictionary<Camera, string>();
         if (!string.IsNullOrEmpty(_leftCamera.DisplayAddress))
@@ -266,37 +244,21 @@ public partial class HomePageViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(_rightCamera.DisplayAddress))
             cameraUrls[Camera.Right] = _rightCamera.DisplayAddress;
 
-        // Create the appropriate eye inference service based on camera configuration
-        _eyeInferenceService = EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls, leftSettings, rightSettings);
+        await _processingLoopService.SetupCameraSettings(cameraUrls);
 
-        LeftCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Left,
-            leftSettings
-        );
-
-        RightCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Right,
-            rightSettings
-        );
-
-        FaceCameraController = new CameraController(
-            _faceInferenceService,
-            Camera.Face,
-            faceSettings
-        );
-
-        LeftCamera.Controller = LeftCameraController;
-        RightCamera.Controller = RightCameraController;
-        FaceCamera.Controller = FaceCameraController;
+        LeftCamera.Controller = _processingLoopService.LeftCameraController;
+        RightCamera.Controller = _processingLoopService.RightCameraController;
+        FaceCamera.Controller = _processingLoopService.FaceCameraController;
     }
 
     private void SaveCameraSettings()
     {
-        _localSettingsService.SaveSettingAsync("LeftCamera", LeftCameraController.CameraSettings);
-        _localSettingsService.SaveSettingAsync("RightCamera", RightCameraController.CameraSettings);
-        _localSettingsService.SaveSettingAsync("FaceCamera", FaceCameraController.CameraSettings);
+        _localSettingsService.SaveSettingAsync("LeftCamera",
+            _processingLoopService.LeftCameraController.CameraSettings);
+        _localSettingsService.SaveSettingAsync("RightCamera",
+            _processingLoopService.RightCameraController.CameraSettings);
+        _localSettingsService.SaveSettingAsync("FaceCamera",
+            _processingLoopService.FaceCameraController.CameraSettings);
     }
 
     [RelayCommand]
@@ -329,7 +291,7 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
                         {
-                            RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                            _processingLoopService.RightCameraController.StartCamera(RightCamera.DisplayAddress);
                         }
                     }
 
@@ -341,7 +303,7 @@ public partial class HomePageViewModel : ViewModelBase
                     {
                         if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
                         {
-                            LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                            _processingLoopService.LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
                         }
                     }
 
@@ -366,7 +328,7 @@ public partial class HomePageViewModel : ViewModelBase
             {
                 if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                 {
-                    RightCameraController.StopCamera();
+                    _processingLoopService.RightCameraController.StopCamera();
                 }
 
                 break;
@@ -375,7 +337,7 @@ public partial class HomePageViewModel : ViewModelBase
             {
                 if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                 {
-                    LeftCameraController.StopCamera();
+                    _processingLoopService.LeftCameraController.StopCamera();
                 }
 
                 break;
@@ -392,7 +354,9 @@ public partial class HomePageViewModel : ViewModelBase
     [RelayCommand]
     private async Task RequestVRCalibration()
     {
-        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration, LeftCameraController, RightCameraController, _localSettingsService, _eyeInferenceService);
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration,
+            _processingLoopService.LeftCameraController, _processingLoopService.RightCameraController,
+            _localSettingsService, _eyeInferenceService);
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
         CameraStop(LeftCamera);
@@ -401,14 +365,20 @@ public partial class HomePageViewModel : ViewModelBase
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
 
-    ~HomePageViewModel()
+    public void Dispose()
     {
         CleanupResources();
     }
 
+    private bool _disposed = false;
+
     private void CleanupResources()
     {
+        if (_disposed) return;
+
         OscSendService.OnMessagesDispatched -= MessageDispatched;
         _msgCounterTimer.Stop();
+
+        _processingLoopService.BitmapUpdateEvent -= BitmapUpdateHandler;
     }
 }
