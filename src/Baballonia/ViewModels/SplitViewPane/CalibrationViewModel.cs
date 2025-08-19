@@ -126,6 +126,11 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             setting.PropertyChanged += OnSettingChanged;
         }
 
+        // Convert dictionary order into index mapping
+        _keyIndexMap = _parameterSenderService.FaceExpressionMap.Keys
+            .Select((key, index) => new { key, index })
+            .ToDictionary(x => x.key, x => x.index);
+
         PropertyChanged += async (o, p) =>
         {
             var propertyInfo = GetType().GetProperty(p.PropertyName!);
@@ -147,16 +152,16 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
         if(expressions.FaceExpression != null)
             Dispatcher.UIThread.Post(() =>
             {
-                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, CheekSettings);
-                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, MouthSettings);
-                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, JawSettings);
-                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, NoseSettings);
-                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, TongueSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, CheekSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, MouthSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, JawSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, NoseSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, TongueSettings);
             });
         if(expressions.EyeExpression != null)
             Dispatcher.UIThread.Post(() =>
             {
-                ApplyCurrentEyeExpressionValues(expressions.EyeExpression, EyeSettings);
+                ApplyCurrentExpressionValues(expressions.EyeExpression, EyeSettings);
             });
     }
     private void OnSettingChanged(object? sender, PropertyChangedEventArgs e)
@@ -176,7 +181,7 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             }
         });
     }
-    public void ApplyCurrentFaceExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
+    public void ApplyCurrentExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
     {
         foreach (var setting in settings)
         {
@@ -185,25 +190,9 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             {
                 var weight = values[index];
                 var val = Math.Clamp(
-                    weight.Remap(setting.Lower, setting.Upper),
-                    0,
-                    1);
-                setting.CurrentExpression = val;
-            }
-        }
-    }
-    public void ApplyCurrentEyeExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
-    {
-        foreach (var setting in settings)
-        {
-            if (_keyIndexMap.TryGetValue(setting.Name, out var index)
-                && index < values.Length)
-            {
-                var weight = values[index];
-                var val = Math.Clamp(
-                    weight.Remap(setting.Lower, setting.Upper),
-                    -1,
-                    1);
+                    weight.Remap(setting.Min, setting.Max, setting.Lower, setting.Upper),
+                    setting.Min,
+                    setting.Max);
                 setting.CurrentExpression = val;
             }
         }

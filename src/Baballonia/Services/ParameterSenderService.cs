@@ -103,10 +103,10 @@ public class ParameterSenderService(
         if (expressions is null) return;
         if (expressions.Length == 0) return;
 
-        for (int i = 0; i < Math.Min(expressions.Length, _eyeExpressionMap.Count); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, EyeExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var eyeElement = _eyeExpressionMap.ElementAt(i);
+            var eyeElement = EyeExpressionMap.ElementAt(i);
             var settings = calibrationService.GetExpressionSettings(eyeElement.Key);
 
             var msg = new OscMessage(prefix + eyeElement.Value,
@@ -123,10 +123,10 @@ public class ParameterSenderService(
         if (expressions == null) return;
         if (expressions.Length == 0) return;
 
-        for (int i = 0; i < Math.Min(expressions.Length, _faceExpressionMap.Count); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, FaceExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var faceElement = _faceExpressionMap.ElementAt(i);
+            var faceElement = FaceExpressionMap.ElementAt(i);
             var settings = calibrationService.GetExpressionSettings(faceElement.Key);
 
             var msg = new OscMessage(prefix + faceElement.Value,
