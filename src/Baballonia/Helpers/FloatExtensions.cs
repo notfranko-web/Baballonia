@@ -2,13 +2,7 @@ namespace Baballonia.Helpers;
 
 public static class FloatExtensions
 {
-    public static float Remap (this float from, float toMin,  float toMax)
-    {
-        var fromAbs  =  from - toMin;
-        var fromMaxAbs = toMax - toMin;
-
-        var normal = fromAbs / fromMaxAbs;
-
-        return normal;
+    public static float Remap (this float value, float from1, float to1, float from2, float to2) {
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 }
