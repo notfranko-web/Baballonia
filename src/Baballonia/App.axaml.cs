@@ -80,7 +80,6 @@ public class App : Application
                 services.AddSingleton<ISingleCameraEyeInferenceService, SingleCameraEyeInferenceService>();
                 services.AddSingleton<IDualCameraEyeInferenceService, DualCameraEyeInferenceService>();
 
-
                 services.AddSingleton<IFaceInferenceService, FaceInferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
@@ -113,8 +112,10 @@ public class App : Application
                 services.AddTransient<AppSettingsViewModel>();
                 services.AddTransient<AppSettingsView>();
 
-                if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()))
+                if (Utils.IsSupportedDesktopOS)
                 {
+                    services.AddSingleton<ICommandSenderFactory, CommandSenderFactory>();
+                    services.AddSingleton<ICommandSender, SerialCommandSender>();
                     services.AddTransient<FirmwareViewModel>();
                     services.AddTransient<FirmwareView>();
                     services.AddTransient<OnboardingViewModel>();
@@ -139,7 +140,7 @@ public class App : Application
             File.WriteAllText(path, "{}");
         }
 
-        if (OperatingSystem.IsAndroid())
+        if (!Utils.IsSupportedDesktopOS) // extract default models for mobile
         {
             string[] models = ["eyeModel.onnx", "faceModel.onnx"];
             foreach (var model in models)

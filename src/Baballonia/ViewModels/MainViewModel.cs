@@ -17,14 +17,9 @@ public partial class MainViewModel : ViewModelBase
 {
     public MainViewModel(IMessenger messenger)
     {
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
-        {
-            Items = new ObservableCollection<ListItemTemplate>(_mobileTemplates);
-        }
-        else
-        {
-            Items = new ObservableCollection<ListItemTemplate>(_desktopTemplates);
-        }
+        Items = Utils.IsSupportedDesktopOS ?
+            new ObservableCollection<ListItemTemplate>(_desktopTemplates) :
+            new ObservableCollection<ListItemTemplate>(_mobileTemplates);
 
         SelectedListItem = Items.First(vm => vm.ModelType == typeof(HomePageViewModel));
     }

@@ -20,6 +20,7 @@ namespace Baballonia.ViewModels.SplitViewPane;
 
 public partial class CalibrationViewModel : ViewModelBase, IDisposable
 {
+    public ObservableCollection<SliderBindableSetting> GazeSettings { get; set; }
     public ObservableCollection<SliderBindableSetting> EyeSettings { get; set; }
     public ObservableCollection<SliderBindableSetting> JawSettings { get; set; }
     public ObservableCollection<SliderBindableSetting> MouthSettings { get; set; }
@@ -40,12 +41,18 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
         _parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
         _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
 
+        GazeSettings =
+        [
+            new("LeftEyeX", -1f, 1f, -1f, 1f),
+            new("LeftEyeY", -1f, 1f, -1f, 1f),
+            new("RightEyeX", -1f, 1f, -1f, 1f),
+            new("RightEyeY", -1f, 1f, -1f, 1f),
+        ];
+
         EyeSettings =
         [
-            new("LeftEyeX", -1f, -1f),
-            new("LeftEyeY", 1f, 1f),
-            new("RightEyeX", -1f, -1f),
-            new("RightEyeY", 1f, 1f)
+            new("LeftEyeLid"),
+            new("RightEyeLid")
         ];
 
         JawSettings =
@@ -58,67 +65,62 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
 
         CheekSettings =
         [
-            new("CheekPuffLeft", 0f, 1f),
-            new("CheekPuffRight", 0f, 1f),
-            new("CheekSuckLeft", 0f, 1f),
-            new("CheekSuckRight", 0f, 1f)
+            new("CheekPuffLeft"),
+            new("CheekPuffRight"),
+            new("CheekSuckLeft"),
+            new("CheekSuckRight")
         ];
 
         NoseSettings =
         [
-            new("NoseSneerLeft", 0f, 1f),
-            new("NoseSneerRight", 0f, 1f)
+            new("NoseSneerLeft"),
+            new("NoseSneerRight")
         ];
 
         MouthSettings =
         [
-            new("MouthFunnel", 0f, 1f),
-            new("MouthPucker", 0f, 1f),
-            new("MouthLeft", 0f, 1f),
-            new("MouthRight", 0f, 1f),
-            new("MouthRollUpper", 0f, 1f),
-            new("MouthRollLower", 0f, 1f),
-            new("MouthShrugUpper", 0f, 1f),
-            new("MouthShrugLower", 0f, 1f),
-            new("MouthClose", 0f, 1f),
-            new("MouthSmileLeft", 0f, 1f),
-            new("MouthSmileRight", 0f, 1f),
-            new("MouthFrownLeft", 0f, 1f),
-            new("MouthFrownRight", 0f, 1f),
-            new("MouthDimpleLeft", 0f, 1f),
-            new("MouthDimpleRight", 0f, 1f),
-            new("MouthUpperUpLeft", 0f, 1f),
-            new("MouthUpperUpRight", 0f, 1f),
-            new("MouthLowerDownLeft", 0f, 1f),
-            new("MouthLowerDownRight", 0f, 1f),
-            new("MouthPressLeft", 0f, 1f),
-            new("MouthPressRight", 0f, 1f),
-            new("MouthStretchLeft", 0f, 1f),
-            new("MouthStretchRight", 0f, 1f)
+            new("MouthFunnel"),
+            new("MouthPucker"),
+            new("MouthLeft"),
+            new("MouthRight"),
+            new("MouthRollUpper"),
+            new("MouthRollLower"),
+            new("MouthShrugUpper"),
+            new("MouthShrugLower"),
+            new("MouthClose"),
+            new("MouthSmileLeft"),
+            new("MouthSmileRight"),
+            new("MouthFrownLeft"),
+            new("MouthFrownRight"),
+            new("MouthDimpleLeft"),
+            new("MouthDimpleRight"),
+            new("MouthUpperUpLeft"),
+            new("MouthUpperUpRight"),
+            new("MouthLowerDownLeft"),
+            new("MouthLowerDownRight"),
+            new("MouthPressLeft"),
+            new("MouthPressRight"),
+            new("MouthStretchLeft"),
+            new("MouthStretchRight")
         ];
 
         TongueSettings =
         [
-            new("TongueOut", 0f, 1f),
-            new("TongueUp", 0f, 1f),
-            new("TongueDown", 0f, 1f),
-            new("TongueLeft", 0f, 1f),
-            new("TongueRight", 0f, 1f),
-            new("TongueRoll", 0f, 1f),
-            new("TongueBendDown", 0f, 1f),
-            new("TongueCurlUp", 0f, 1f),
-            new("TongueSquish", 0f, 1f),
-            new("TongueFlat", 0f, 1f),
-            new("TongueTwistLeft", 0f, 1f),
-            new("TongueTwistRight", 0f, 1f)
+            new("TongueOut"),
+            new("TongueUp"),
+            new("TongueDown"),
+            new("TongueLeft"),
+            new("TongueRight"),
+            new("TongueRoll"),
+            new("TongueBendDown"),
+            new("TongueCurlUp"),
+            new("TongueSquish"),
+            new("TongueFlat"),
+            new("TongueTwistLeft"),
+            new("TongueTwistRight")
         ];
 
-        // Convert dictionary order into index mapping
-        _keyIndexMap = _parameterSenderService.FaceExpressionMap.Keys
-            .Select((key, index) => new { key, index })
-            .ToDictionary(x => x.key, x => x.index);
-
-        foreach (var setting in EyeSettings.Concat(JawSettings).Concat(CheekSettings)
+        foreach (var setting in GazeSettings.Concat(EyeSettings).Concat(JawSettings).Concat(CheekSettings)
                      .Concat(NoseSettings).Concat(MouthSettings).Concat(TongueSettings))
         {
             setting.PropertyChanged += OnSettingChanged;
@@ -229,6 +231,7 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
 
     private void LoadInitialSettings()
     {
+        LoadInitialSettings(GazeSettings);
         LoadInitialSettings(EyeSettings);
         LoadInitialSettings(CheekSettings);
         LoadInitialSettings(JawSettings);
@@ -244,6 +247,8 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             var val = _calibrationService.GetExpressionSettings(setting.Name);
             setting.Lower = val.Lower;
             setting.Upper = val.Upper;
+            setting.Min = val.Min;
+            setting.Max = val.Max;
         }
     }
 

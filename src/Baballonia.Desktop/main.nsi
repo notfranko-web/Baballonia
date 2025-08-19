@@ -8,7 +8,7 @@
 ; Custom defines
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
-  !define VERSION "1.0.0.4"
+  !define VERSION "1.0.0.6"
   !define SLUG "${NAME} v${VERSION}"
 
 ;--------------------------------
@@ -17,9 +17,9 @@
   Name "${NAME}"
   OutFile "${NAME} Setup.exe"
   ; Default install directory in user's AppData folder
-  InstallDir "$PROGRAMFILES\${NAME}"
+  InstallDir "$LOCALAPPDATA\${NAME}"
   InstallDirRegKey HKCU "Software\${NAME}" ""
-  RequestExecutionLevel admin
+  RequestExecutionLevel user
 
 ;--------------------------------
 ; UI

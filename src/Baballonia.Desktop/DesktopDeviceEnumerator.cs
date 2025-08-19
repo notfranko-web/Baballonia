@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -31,7 +32,8 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
         {
             if (OperatingSystem.IsWindows())
             {
-                AddWindowsWmiCameras(cameraDict);
+                AddWindowsDsCameras(cameraDict);
+                AddRevisionCamera(cameraDict);
             }
             else if (OperatingSystem.IsMacOS())
             {
@@ -40,6 +42,7 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
             else if (OperatingSystem.IsLinux())
             {
                 AddLinuxUvcDevices(cameraDict);
+                AddRevisionCamera(cameraDict);
             }
 
             // Add serial ports as potential camera sources
@@ -51,6 +54,11 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
         }
 
         return cameraDict;
+    }
+
+    private void AddRevisionCamera(Dictionary<string, string> cameraDict)
+    {
+
     }
 
     private void AddOpenCvCameras(Dictionary<string, string> cameraDict)
@@ -84,7 +92,7 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
     }
 
     [SupportedOSPlatform("windows")]
-    private void AddWindowsWmiCameras(Dictionary<string, string> cameraDict)
+    private void AddWindowsDsCameras(Dictionary<string, string> cameraDict)
     {
         var videoInputDevices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
 
@@ -93,30 +101,6 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
             var device = videoInputDevices[index];
             cameraDict.Add(device.Name, index.ToString());
         }
-    }
-
-    [SupportedOSPlatform("windows")]
-    private string? GetSerialPortFriendlyName(string portName)
-    {
-        if (!OperatingSystem.IsWindows())
-            return null;
-
-        try
-        {
-            using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%({portName})%'");
-            using var collection = searcher.Get();
-
-            foreach (var device in collection)
-            {
-                return device["Caption"]?.ToString();
-            }
-        }
-        catch
-        {
-            // Fall back to port name if WMI fails
-        }
-
-        return null;
     }
 
     [SupportedOSPlatform("linux")]
@@ -231,12 +215,9 @@ public sealed class DesktopDeviceEnumerator : IDeviceEnumerator
         {
             if (OperatingSystem.IsWindows())
             {
-                string[] portNames = SerialPort.GetPortNames();
-                foreach (string port in portNames)
+                foreach (string port in SerialPort.GetPortNames().Distinct())
                 {
-                    // Try to get friendly name using WMI
-                    string friendlyName = GetSerialPortFriendlyName(port) ?? $"Serial Port {port}";
-                    EnsureUniqueKey(cameraDict, friendlyName, port);
+                    EnsureUniqueKey(cameraDict, port, port);
                 }
             }
             else if (OperatingSystem.IsLinux())

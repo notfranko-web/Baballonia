@@ -25,6 +25,8 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors { get; }
         = new (PlatformSettings settings, PlatformConnector connector)[1];
 
+    private bool _useFilter = true;
+
     /// <summary>
     /// Loads/reloads the ONNX model for a specified camera
     /// </summary>
@@ -37,15 +39,16 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
             SessionOptions sessionOptions = SetupSessionOptions();
             await ConfigurePlatformSpecificGpu(sessionOptions);
 
+            _useFilter = await _settingsService.ReadSettingAsync<bool>("AppSettings_OneEuroMinEnabled");
             var minCutoff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
             if (minCutoff == 0f) minCutoff = 1f;
             var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
             if (speedCoeff == 0f) speedCoeff = 1f;
 
             const string modelName = "faceModel.onnx";
-            float[] noisy_point = new float[45];
+            float[] noisyPoint = new float[45];
             var filter = new OneEuroFilter(
-                x0: noisy_point,
+                x0: noisyPoint,
                 minCutoff: minCutoff,
                 beta: speedCoeff
             );
@@ -68,7 +71,6 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     /// <summary>
     /// Poll expression data, frames
     /// </summary>
-    /// <param name="camera"></param>
     /// <param name="cameraSettings"></param>
     /// <param name="arKitExpressions"></param>
     /// <returns></returns>
@@ -102,8 +104,9 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         var delta = time - platformSettings.LastTime;
         platformSettings.Ms = delta * 1000;
 
-        // Filter ARKit Expressions.
-        arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
+        // Filter ARKit Expressions
+        if (_useFilter)
+            arKitExpressions = platformSettings.Filter.Filter(arKitExpressions);
 
         platformSettings.LastTime = time;
 
@@ -117,7 +120,6 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     /// </summary>
     /// <param name="color"></param>
     /// <param name="image"></param>
-    /// <param name="dimensions"></param>
     /// <param name="cameraSettings"></param>
     /// <returns></returns>
     public override bool GetRawImage(CameraSettings cameraSettings, ColorType color, out Mat image)
@@ -167,7 +169,6 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
     /// </summary>
     /// <param name="cameraSettings"></param>
     /// <param name="image"></param>
-    /// <param name="dimensions"></param>
     /// <returns></returns>
     public override bool GetImage(CameraSettings cameraSettings, out Mat? image)
     {

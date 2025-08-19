@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Baballonia.Services;
 
-public class FirmwareService
+public class FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFactory commandSenderFactory)
 {
     public event Action OnFirmwareUpdateStart;
     public event Action OnFirmwareUpdateComplete;
@@ -177,17 +177,6 @@ public class FirmwareService
     }
 
 
-
-
-    private ICommandSenderFactory _commandSenderFactory;
-    private ILogger<FirmwareService> _logger;
-
-    public FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFactory commandSenderFactory)
-    {
-        _logger = logger;
-        _commandSenderFactory = commandSenderFactory;
-    }
-
     private string[] FindAvalibleComPorts()
     {
         // GetPortNames() may return single port multiple times
@@ -197,7 +186,7 @@ public class FirmwareService
 
     public FirmwareSession StartSession(CommandSenderType type, string port)
     {
-        return new FirmwareSession(_commandSenderFactory.Create(type, port), _logger);
+        return new FirmwareSession(commandSenderFactory.Create(type, port), logger);
     }
 
     public string[] ProbeComPorts(TimeSpan timeout)
@@ -209,7 +198,7 @@ public class FirmwareService
             var session = StartSession(CommandSenderType.Serial, port);
             try
             {
-                _logger.LogInformation("Probing {}", port);
+                logger.LogInformation("Probing {}", port);
                 var heartbeat = session.WaitForHeartbeat(timeout);
                 if (heartbeat != null)
                 {
@@ -220,11 +209,11 @@ public class FirmwareService
             }
             catch (TimeoutException ex)
             {
-                _logger.LogInformation("probing port {}: timeout reached", port);
+                logger.LogInformation("probing port {}: timeout reached", port);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error probing port {}: {}", port, ex.Message);
+                logger.LogError("Error probing port {}: {}", port, ex.Message);
             }
             finally
             {

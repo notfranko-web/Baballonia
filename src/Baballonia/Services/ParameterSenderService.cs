@@ -21,12 +21,12 @@ public class ParameterSenderService(
     // Expression parameter names
     public readonly Dictionary<string, string> EyeExpressionMap = new()
     {
-        { "/LeftEyeX", "/LeftEyeX" },
-        { "/LeftEyeY", "/LeftEyeY" },
-        { "/LeftEyeLid", "/LeftEyeLid" },
-        { "/RightEyeX", "/RightEyeX" },
-        { "/RightEyeY", "/RightEyeY" },
-        { "/RightEyeLid", "/RightEyeLid" },
+        { "LeftEyeX", "/LeftEyeX" },
+        { "LeftEyeY", "/LeftEyeY" },
+        { "LeftEyeLid", "/LeftEyeLid" },
+        { "RightEyeX", "/RightEyeX" },
+        { "RightEyeY", "/RightEyeY" },
+        { "RightEyeLid", "/RightEyeLid" },
     };
 
     public readonly Dictionary<string, string> FaceExpressionMap = new()
@@ -80,29 +80,21 @@ public class ParameterSenderService(
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        try
+        while (!cancellationToken.IsCancellationRequested)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
                 var prefix = await localSettingsService.ReadSettingAsync<string>("AppSettings_OSCPrefix");
+                ProcessEyeExpressionData(CameraController.EyeExpressions, prefix);
+                ProcessFaceExpressionData(CameraController.FaceExpressions, prefix);
 
-                try
-                {
-                    ProcessEyeExpressionData(CameraController.EyeExpressions, prefix);
-                    ProcessFaceExpressionData(CameraController.FaceExpressions, prefix);
-
-                    await SendAndClearQueue(cancellationToken);
-                    await Task.Delay(10, cancellationToken);
-                }
-                catch (Exception)
-                {
-                    // ignore!
-                }
+                await SendAndClearQueue(cancellationToken);
+                await Task.Delay(10, cancellationToken);
             }
-        }
-        finally
-        {
-
+            catch (Exception)
+            {
+                // ignore!
+            }
         }
     }
 
@@ -111,17 +103,17 @@ public class ParameterSenderService(
         if (expressions is null) return;
         if (expressions.Length == 0) return;
 
-        // Process each expression and create OSC messages
-        for (int i = 0; i < Math.Min(expressions.Length, EyeExpressionMap.Count); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, _eyeExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = calibrationService.GetExpressionSettings(EyeExpressionMap.ElementAt(i).Key);
+            var eyeElement = _eyeExpressionMap.ElementAt(i);
+            var settings = calibrationService.GetExpressionSettings(eyeElement.Key);
 
-            var msg = new OscMessage(prefix + EyeExpressionMap.ElementAt(i).Value,
+            var msg = new OscMessage(prefix + eyeElement.Value,
                 Math.Clamp(
-                    weight.Remap(settings.Lower, settings.Upper),
-                    -1,
-                    1));
+                    weight.Remap(settings.Min, settings.Max, settings.Lower, settings.Upper),
+                    settings.Min,
+                    settings.Max));
             _sendQueue.Enqueue(msg);
         }
     }
@@ -131,17 +123,17 @@ public class ParameterSenderService(
         if (expressions == null) return;
         if (expressions.Length == 0) return;
 
-        // Process each expression and create OSC messages
-        for (int i = 0; i < Math.Min(expressions.Length, FaceExpressionMap.Count); i++)
+        for (int i = 0; i < Math.Min(expressions.Length, _faceExpressionMap.Count); i++)
         {
             var weight = expressions[i];
-            var settings = calibrationService.GetExpressionSettings(FaceExpressionMap.ElementAt(i).Key);
+            var faceElement = _faceExpressionMap.ElementAt(i);
+            var settings = calibrationService.GetExpressionSettings(faceElement.Key);
 
-            var msg = new OscMessage(prefix + FaceExpressionMap.ElementAt(i).Value,
+            var msg = new OscMessage(prefix + faceElement.Value,
                 Math.Clamp(
-                    weight.Remap(settings.Lower, settings.Upper),
-                    0,
-                    1));
+                    weight.Remap(settings.Min, settings.Max, settings.Lower, settings.Upper),
+                    settings.Min,
+                    settings.Max));
             _sendQueue.Enqueue(msg);
         }
     }

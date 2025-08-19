@@ -1,10 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Baballonia.Contracts;
-using Discord.Commands.Builders;
+using Baballonia.Services.Calibration;
 
 namespace Baballonia.Services;
 
@@ -17,17 +15,12 @@ public class CalibrationService : ICalibrationService
         { "LeftEyeY", "/LeftEyeY" },
         { "RightEyeX", "/RightEyeX" },
         { "RightEyeY", "/RightEyeY" },
-        { "LeftEyeLid", "/LeftEyeLid" },
-        { "RightEyeLid", "/RightEyeLid" },
-        { "BrowRaise", "/BrowRaise" },
-        { "BrowAngry", "/BrowAngry" },
-        { "EyeWiden", "/EyeWiden" },
-        { "EyeSquint", "/EyeSquint" },
-        { "EyeDilate", "/EyeDilate" },
     };
 
     private readonly Dictionary<string, string> _faceExpressionMap = new()
     {
+        { "LeftEyeLid", "/LeftEyeLid" },
+        { "RightEyeLid", "/RightEyeLid" },
         { "CheekPuffLeft", "/cheekPuffLeft" },
         { "CheekPuffRight", "/cheekPuffRight" },
         { "CheekSuckLeft", "/cheekSuckLeft" },
@@ -87,19 +80,6 @@ public class CalibrationService : ICalibrationService
         _isInitializedTask = LoadAsync();
     }
 
-    private class CalibrationParameter
-    {
-        public float Lower { get; set; } = 0;
-        public float Upper { get; set; } = 1;
-
-        public CalibrationParameter() {}
-        public CalibrationParameter(float lower, float upper)
-        {
-            Lower = lower;
-            Upper = upper;
-        }
-    }
-
     public async Task SetExpression(string expression, float value)
     {
         await _isInitializedTask;
@@ -114,17 +94,21 @@ public class CalibrationService : ICalibrationService
 
         _expressionSettings.TryGetValue(parameterName, out var currentSettings);
 
-        var lower = isUpper ? currentSettings.Lower : value;
-        var upper = isUpper ? value : currentSettings.Upper;
+        var lower = isUpper ? currentSettings!.Lower : value;
+        var upper = isUpper ? value : currentSettings!.Upper;
+        var min = currentSettings!.Min;
+        var max = currentSettings.Max;
 
-        var param = new CalibrationParameter(lower, upper);
+        var param = new CalibrationParameter(lower, upper, min, max);
         _expressionSettings[parameterName] = param;
         await SaveAsync();
     }
 
-    public (float Lower, float Upper) GetExpressionSettings(string parameterName)
+    public CalibrationParameter GetExpressionSettings(string parameterName)
     {
-        return _expressionSettings.TryGetValue(parameterName, out var settings) ? (settings.Lower, settings.Upper ): (0f, 1f);
+        return _expressionSettings.TryGetValue(parameterName, out var settings) ?
+            settings :
+            new CalibrationParameter();
     }
 
     public async Task<float> GetExpressionSetting(string expression)
@@ -154,32 +138,43 @@ public class CalibrationService : ICalibrationService
     {
         var parameters = await _localSettingsService.ReadSettingAsync<ConcurrentDictionary<string, CalibrationParameter>?>("CalibrationParams");
         _expressionSettings.Clear();
-        var allParameterNames = _eyeExpressionMap.Keys.Concat(_faceExpressionMap.Keys);
-        if(parameters == null)
-            foreach (var parameterName in allParameterNames)
+        if (parameters == null)
+        {
+            foreach (var parameterName in _eyeExpressionMap)
             {
-                _expressionSettings[parameterName] = new CalibrationParameter();
+                _expressionSettings[parameterName.Key] = new CalibrationParameter(-1, 1f, -1f, 1f);
             }
+
+            foreach (var parameterName in _faceExpressionMap)
+            {
+                _expressionSettings[parameterName.Key] = new CalibrationParameter(0, 1f, 0f, 1f);
+            }
+        }
         else
-            foreach (var parameterName in allParameterNames)
+        {
+            var eyeParameterNames = _eyeExpressionMap.Keys;
+            foreach (var parameterName in eyeParameterNames)
             {
                 var param = parameters.GetValueOrDefault(parameterName);
-                _expressionSettings[parameterName] = param ?? new CalibrationParameter();
+                _expressionSettings[parameterName] = param ?? new CalibrationParameter(-1f, 1f, -1f, 1f);
             }
+            var faceParameterNames = _faceExpressionMap.Keys;
+            foreach (var parameterName in faceParameterNames)
+            {
+                var param = parameters.GetValueOrDefault(parameterName);
+                _expressionSettings[parameterName] = param ?? new CalibrationParameter(0f, 1f, 0f, 1f);
+            }
+        }
     }
 
     public async Task ResetValues()
     {
         await _isInitializedTask;
 
-        foreach (var parameterName in _eyeExpressionMap.Keys)
+        foreach (var parameter in _expressionSettings.Values)
         {
-            _expressionSettings[parameterName]= new CalibrationParameter(-1,1);
-        }
-
-        foreach (var parameterName in _faceExpressionMap.Keys)
-        {
-            _expressionSettings[parameterName]= new CalibrationParameter(0,1);
+            parameter.Lower = parameter.Min;
+            parameter.Upper = parameter.Max;
         }
         await SaveAsync();
     }
@@ -187,14 +182,9 @@ public class CalibrationService : ICalibrationService
     public async Task ResetMinimums()
     {
         await _isInitializedTask;
-        foreach (var parameterName in _eyeExpressionMap.Keys)
+        foreach (var parameter in _expressionSettings.Values)
         {
-            _expressionSettings[parameterName].Lower = -1;
-        }
-
-        foreach (var parameterName in _faceExpressionMap.Keys)
-        {
-            _expressionSettings[parameterName].Lower = 0;
+            parameter.Lower = parameter.Min;
         }
         await SaveAsync();
     }
@@ -202,14 +192,9 @@ public class CalibrationService : ICalibrationService
     public async Task ResetMaximums()
     {
         await _isInitializedTask;
-        foreach (var parameterName in _eyeExpressionMap.Keys)
+        foreach (var parameter in _expressionSettings.Values)
         {
-            _expressionSettings[parameterName].Upper = 1;
-        }
-
-        foreach (var parameterName in _faceExpressionMap.Keys)
-        {
-            _expressionSettings[parameterName].Upper = 1;
+            parameter.Upper = parameter.Max;
         }
         await SaveAsync();
     }

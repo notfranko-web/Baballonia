@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,6 +30,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
     public override IReadOnlyDictionary<Camera, string> CameraUrls => _cameraUrls;
     public override (PlatformSettings, PlatformConnector)[] PlatformConnectors => _platformConnectors;
 
+    private bool _useFilter = true;
+
     public override void SetupInference(Camera camera, string cameraAddress)
     {
         Task.Run(async () =>
@@ -54,6 +55,7 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         SessionOptions sessionOptions = SetupSessionOptions();
         await ConfigurePlatformSpecificGpu(sessionOptions);
 
+        _useFilter = await _settingsService.ReadSettingAsync<bool>("AppSettings_OneEuroMinEnabled");
         var minCutoff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
         if (minCutoff == 0f) minCutoff = 1f;
         var speedCoeff = await _settingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
@@ -75,9 +77,9 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         // Initialize tensors and filters for both eyes
         for (int i = 0; i < 2; i++)
         {
-            float[] noisy_point = new float[ExpectedRawExpressions];
+            float[] noisyPoint = new float[ExpectedRawExpressions];
             var filter = new OneEuroFilter(
-                x0: noisy_point,
+                x0: noisyPoint,
                 minCutoff: minCutoff,
                 beta: speedCoeff
             );
@@ -147,7 +149,8 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         arKitExpressions = results[0].AsEnumerable<float>().ToArray();
 
         // Apply filter
-        arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
+        if (_useFilter)
+            arKitExpressions = PlatformConnectors[(int)Camera.Left].Item1.Filter.Filter(arKitExpressions);
 
         // Process and convert the expressions to the expected format
         return ProcessExpressions(ref arKitExpressions);;
@@ -158,32 +161,32 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
         if (arKitExpressions.Length < ExpectedRawExpressions)
             return false;
 
-        const float MUL_V = 2.0f;
-        const float MUL_Y = 2.0f;
+        const float mulV = 2.0f;
+        const float mulY = 2.0f;
 
-        var left_pitch = arKitExpressions[0] * MUL_Y - MUL_Y / 2;
-        var left_yaw = arKitExpressions[1] * MUL_V - MUL_V / 2;
-        var left_lid = 1 - arKitExpressions[2];
+        var leftPitch = arKitExpressions[0] * mulY - mulY / 2;
+        var leftYaw = arKitExpressions[1] * mulV - mulV / 2;
+        var leftLid = 1 - arKitExpressions[2];
 
-        var right_pitch = arKitExpressions[3] * MUL_Y - MUL_Y / 2;
-        var right_yaw = arKitExpressions[4] * MUL_V - MUL_V / 2;
-        var right_lid = 1 - arKitExpressions[5];
+        var rightPitch = arKitExpressions[3] * mulY - mulY / 2;
+        var rightYaw = arKitExpressions[4] * mulV - mulV / 2;
+        var rightLid = 1 - arKitExpressions[5];
 
-        var eye_Y = (left_pitch * left_lid + right_pitch * right_lid) / (left_lid + right_lid);
+        var eyeY = (leftPitch * leftLid + rightPitch * rightLid) / (leftLid + rightLid);
 
-        var left_eye_yaw_corrected = right_yaw * (1 - left_lid) + left_yaw * left_lid;
-        var right_eye_yaw_corrected = left_yaw * (1 - right_lid) + right_yaw * right_lid;
+        var leftEyeYawCorrected = rightYaw * (1 - leftLid) + leftYaw * leftLid;
+        var rightEyeYawCorrected = leftYaw * (1 - rightLid) + rightYaw * rightLid;
 
         // [left pitch, left yaw, left lid...
         float[] convertedExpressions = new float[ExpectedRawExpressions];
 
         // swap eyes at this point
-        convertedExpressions[0] = right_eye_yaw_corrected; // left pitch
-        convertedExpressions[1] = eye_Y;                   // left yaw
-        convertedExpressions[2] = right_lid;               // left lid
-        convertedExpressions[3] = left_eye_yaw_corrected;  // right pitch
-        convertedExpressions[4] = eye_Y;                   // right yaw
-        convertedExpressions[5] = left_lid;                // right lid
+        convertedExpressions[0] = rightEyeYawCorrected; // left pitch
+        convertedExpressions[1] = eyeY;                   // left yaw
+        convertedExpressions[2] = rightLid;               // left lid
+        convertedExpressions[3] = leftEyeYawCorrected;  // right pitch
+        convertedExpressions[4] = eyeY;                   // right yaw
+        convertedExpressions[5] = leftLid;                // right lid
 
         arKitExpressions = convertedExpressions;
 

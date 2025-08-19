@@ -1,78 +1,78 @@
 <UserControl
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    mc:Ignorable="d"
     x:Class="Baballonia.Views.AppSettingsView"
-    x:DataType="splitViewPane:AppSettingsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:assets="clr-namespace:Baballonia.Assets"
     xmlns:controls="clr-namespace:Baballonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="splitViewPane:AppSettingsViewModel"
+    mc:Ignorable="d">
     <ScrollViewer>
         <StackPanel Classes="Page">
             <TextBlock Classes="Header" Text="App Settings" />
 
             <controls:SettingsBlock
+                Title="{x:Static assets:Resources.ThemeSettings_Header}"
                 Description="{x:Static assets:Resources.ThemeSettings_Description}"
-                IconPath="DarkLightTheme"
-                Title="{x:Static assets:Resources.ThemeSettings_Header}">
+                IconPath="DarkLightTheme">
                 <controls:SettingsBlock.SettingsContent>
-                    <ComboBox VerticalAlignment="Center" x:Name="ThemeCombo" />
+                    <ComboBox x:Name="ThemeCombo" VerticalAlignment="Center" />
                 </controls:SettingsBlock.SettingsContent>
             </controls:SettingsBlock>
 
             <controls:SettingsBlock
+                Title="Language"
                 Description="Set the app's language. It will update when you leave this page."
-                IconPath="LanguageRegular"
-                Title="Language">
+                IconPath="LanguageRegular">
                 <controls:SettingsBlock.SettingsContent>
-                    <ComboBox VerticalAlignment="Center" x:Name="LangCombo">
-                        <ComboBoxItem Content="Default" x:Name="DefaultLanguage" />
-                        <ComboBoxItem Content="English" x:Name="en" />
-                        <ComboBoxItem Content="Español" x:Name="es" />
-                        <ComboBoxItem Content="日本語" x:Name="ja" />
-                        <ComboBoxItem Content="Polski" x:Name="pl" />
-                        <ComboBoxItem Content="中文" x:Name="zh" />
+                    <ComboBox x:Name="LangCombo" VerticalAlignment="Center">
+                        <ComboBoxItem x:Name="DefaultLanguage" Content="Default" />
+                        <ComboBoxItem x:Name="en" Content="English" />
+                        <ComboBoxItem x:Name="es" Content="Español" />
+                        <ComboBoxItem x:Name="ja" Content="日本語" />
+                        <ComboBoxItem x:Name="pl" Content="Polski" />
+                        <ComboBoxItem x:Name="zh" Content="中文" />
                     </ComboBox>
                 </controls:SettingsBlock.SettingsContent>
             </controls:SettingsBlock>
 
             <Expander
                 HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
-                IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
-                VerticalAlignment="Stretch">
+                IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="Auto,Auto,*">
                         <PathIcon
-                            Data="{StaticResource WirelessRegular}"
                             Grid.Column="0"
+                            Width="32"
                             Margin="10,10,20,10"
                             VerticalAlignment="Center"
-                            Width="32" />
+                            Data="{StaticResource WirelessRegular}" />
                         <StackPanel
                             Grid.Column="1"
-                            HorizontalAlignment="Stretch"
-                            Margin="0,10,0,10">
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Stretch">
                             <TextBlock
+                                Margin="5"
                                 FontSize="16"
                                 FontWeight="SemiBold"
-                                Margin="5"
                                 Text="{x:Static assets:Resources.OscSettings_Description}" />
                             <TextBlock
+                                Margin="5"
                                 FontSize="14"
                                 Foreground="{DynamicResource SystemChromeGrayColor}"
-                                Margin="5"
                                 Text="{x:Static assets:Resources.OscSettings_Header}" />
                         </StackPanel>
                     </Grid>
                 </Expander.Header>
                 <Grid
-                    ColumnDefinitions="Auto,*,Auto"
                     Margin="0,4"
+                    ColumnDefinitions="Auto,*,Auto"
                     RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                     <Grid.Styles>
                         <Style Selector="TextBlock">
@@ -86,173 +86,220 @@
                     </Grid.Styles>
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="1"
+                        Grid.Column="0"
                         Text="Receive Port" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="OscTargetInPort"
                         Grid.Row="1"
-                        Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}"
-                        x:Name="OscTargetInPort" />
+                        Grid.Column="2"
+                        Text="{Binding OscTarget.InPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9001'}" />
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="2"
+                        Grid.Column="0"
                         Text="IP Address" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="OscTargetIpAddress"
                         Grid.Row="2"
-                        Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}"
-                        x:Name="OscTargetIpAddress" />
+                        Grid.Column="2"
+                        Text="{Binding OscTarget.DestinationAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='127.0.0.1'}" />
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="3"
+                        Grid.Column="0"
                         Text="Send Port" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="OscTargetOutPort"
                         Grid.Row="3"
-                        Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}"
-                        x:Name="OscTargetOutPort" />
+                        Grid.Column="2"
+                        Text="{Binding OscTarget.OutPort, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='9000'}" />
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="4"
+                        Grid.Column="0"
                         Text="OSC Prefix" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="OscPrefix"
                         Grid.Row="4"
-                        Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}"
-                        x:Name="OscPrefix" />
+                        Grid.Column="2"
+                        Text="{Binding OscPrefix, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue=''}" />
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="5"
+                        Grid.Column="0"
                         Text="Recalibrate Address" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="RecalibrateAddress"
                         Grid.Row="5"
-                        Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}"
-                        x:Name="RecalibrateAddress" />
+                        Grid.Column="2"
+                        Text="{Binding RecalibrateAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recalibrate'}" />
 
                     <TextBlock
-                        Grid.Column="0"
                         Grid.Row="6"
+                        Grid.Column="0"
                         Text="Recenter Address" />
                     <TextBox
-                        Grid.Column="2"
+                        x:Name="RecenterAddress"
                         Grid.Row="6"
-                        Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}"
-                        x:Name="RecenterAddress" />
+                        Grid.Column="2"
+                        Text="{Binding RecenterAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus, FallbackValue='/avatar/parameters/etvr_recenter'}" />
                 </Grid>
             </Expander>
 
             <Expander
                 HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
-                IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}"
-                VerticalAlignment="Stretch">
+                IsExpanded="{Binding IsExpandedByDefault, RelativeSource={RelativeSource AncestorType=controls:SettingsExpander}}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="Auto,Auto,*">
                         <PathIcon
-                            Data="{StaticResource DataFunnelRegular}"
                             Grid.Column="0"
+                            Width="32"
                             Margin="10,10,20,10"
                             VerticalAlignment="Center"
-                            Width="32" />
+                            Data="{StaticResource DataFunnelRegular}" />
                         <StackPanel
                             Grid.Column="1"
-                            HorizontalAlignment="Stretch"
-                            Margin="0,10,0,10">
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Stretch">
                             <TextBlock
+                                Margin="5"
                                 FontSize="16"
                                 FontWeight="SemiBold"
-                                Margin="5"
                                 Text="One-Euro filter settings" />
                             <TextBlock
+                                Margin="5"
                                 FontSize="14"
                                 Foreground="{DynamicResource SystemChromeGrayColor}"
-                                Margin="5"
-                                Text="Filter Settings" />
+                                Text="Filter Settings. Changing these requires a restart!" />
                         </StackPanel>
                     </Grid>
                 </Expander.Header>
-                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
                     <StackPanel
+                        Grid.Row="0"
                         Grid.Column="0"
-                        Grid.Row="0"
                         Margin="0,8">
-                        <TextBlock FontWeight="Bold" Text="Minimum frequency cutoff" />
-                        <TextBlock Text="Minimum frequency cutoff" />
+                        <TextBlock FontWeight="Bold" Text="Enabled" />
+                        <TextBlock Text="Turn filtering on or off." />
                     </StackPanel>
-                    <NumericUpDown
-                        Grid.Column="2"
+                    <CheckBox
                         Grid.Row="0"
+                        Grid.Column="2"
                         Margin="0,8"
-                        TextAlignment="Center"
-                        Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}" />
+                        IsChecked="{Binding OneEuroMinEnabled, Mode=TwoWay}" />
 
                     <StackPanel
-                        Grid.Column="0"
                         Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="0,8">
+                        <TextBlock FontWeight="Bold" Text="Minimum frequency cutoff" />
+                        <TextBlock Text="Controls how much smoothing is applied to slow movements" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <ComboBox
+                            x:Name="SelectedMinFreqCutoffComboBox"
+                            Margin="0,8"
+                            PlaceholderText="Select from a template"
+                            SelectionChanged="SelectedMinFreqCutoffComboBox_OnSelectionChanged">
+                            <ComboBoxItem Tag="0.5">Low (0.5)</ComboBoxItem>
+                            <ComboBoxItem Tag="1.0">Medium (1.0)</ComboBoxItem>
+                            <ComboBoxItem Tag="2.0">High (2.0)</ComboBoxItem>
+                        </ComboBox>
+                        <NumericUpDown
+                            x:Name="SelectedMinFreqCutoffUpDown"
+                            Margin="0,8"
+                            FormatString="F1"
+                            Increment="0.1"
+                            Maximum="10"
+                            Minimum="0.1"
+                            Value="{Binding OneEuroMinFreqCutoff, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Grid.Row="2"
+                        Grid.Column="0"
                         Margin="0,8">
                         <TextBlock FontWeight="Bold" Text="Speed coefficient" />
-                        <TextBlock Text="Speed coefficient" />
+                        <TextBlock Text="Determines how the filter adapts when you move faster" />
                     </StackPanel>
-                    <NumericUpDown
+                    <StackPanel
+                        Grid.Row="2"
                         Grid.Column="2"
-                        Grid.Row="1"
-                        Margin="0,8"
-                        TextAlignment="Center"
-                        Value="{Binding OneEuroSpeedCutoff}" />
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <ComboBox
+                            x:Name="SelectedSpeedCutoffComboBox"
+                            Margin="0,8"
+                            PlaceholderText="Select from a template"
+                            SelectionChanged="SelectedSpeedCutoffComboBox_OnSelectionChanged">
+                            <ComboBoxItem Tag="0.5">Low (0.5)</ComboBoxItem>
+                            <ComboBoxItem Tag="1.0">Medium (1.0)</ComboBoxItem>
+                            <ComboBoxItem Tag="2.0">High (2.0)</ComboBoxItem>
+                        </ComboBox>
+                        <NumericUpDown
+                            x:Name="SelectedSpeedCutoffUpDown"
+                            Margin="0,8"
+                            FormatString="F1"
+                            Increment="0.1"
+                            Maximum="10"
+                            Minimum="0.1"
+                            Value="{Binding OneEuroSpeedCutoff, Mode=TwoWay}" />
+                    </StackPanel>
                 </Grid>
             </Expander>
 
             <controls:SettingsToggle
-                Description="Use your GPU to make things run faster!"
+                Title="Use GPU acceleration"
+                Description="Use your GPU to make things run faster! Requires a restart"
                 IconPath="TopSpeedRegular"
-                SettingToggled="{Binding UseGPU, Mode=TwoWay}"
-                Title="Use GPU acceleration" />
+                SettingToggled="{Binding UseGPU, Mode=TwoWay}" />
 
             <controls:SettingsToggle
+                Title="Check For Updates"
                 Description="Should the app check for updates on start?"
                 IconPath="ArrowSyncRegular"
-                SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}"
-                Title="Check For Updates" />
+                SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}" />
 
             <Border
+                Padding="15,5,15,5"
                 Background="{DynamicResource SystemChromeMediumLowColor}"
                 CornerRadius="6"
                 IsEnabled="{Binding OnboardingEnabled}"
-                IsVisible="{Binding OnboardingEnabled}"
-                Padding="15,5,15,5">
-                <Grid ColumnDefinitions="Auto, Auto,*,Auto" VerticalAlignment="Center">
+                IsVisible="{Binding OnboardingEnabled}">
+                <Grid VerticalAlignment="Center" ColumnDefinitions="Auto, Auto,*,Auto">
                     <PathIcon
-                        Data="{StaticResource QuestionCircleRegular}"
                         Grid.Column="0"
+                        Width="32"
                         Margin="10,10,20,10"
                         VerticalAlignment="Center"
-                        Width="32" />
+                        Data="{StaticResource QuestionCircleRegular}" />
                     <StackPanel
                         Grid.Column="1"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,10,0,10">
+                        Margin="0,10,0,10"
+                        HorizontalAlignment="Stretch">
                         <TextBlock
+                            Margin="5"
                             FontSize="16"
                             FontWeight="SemiBold"
-                            Margin="5"
                             Text="Launch first time setup" />
                         <TextBlock
+                            Margin="5"
                             FontSize="14"
                             Foreground="{DynamicResource SystemChromeGrayColor}"
-                            Margin="5"
                             Text="Relaunches the first time setup" />
                     </StackPanel>
                     <Button
-                        Click="LaunchFirstTimeSetUp"
-                        Content="Launch"
                         Grid.Column="3"
-                        x:DataType="controls:SettingsToggle" />
+                        x:DataType="controls:SettingsToggle"
+                        Click="LaunchFirstTimeSetUp"
+                        Content="Launch" />
                 </Grid>
             </Border>
 

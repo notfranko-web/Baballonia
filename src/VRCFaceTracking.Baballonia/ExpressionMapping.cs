@@ -1,4 +1,4 @@
-﻿namespace VRCFaceTracking.Babble;
+﻿namespace VRCFaceTracking.Baballonia;
 
 public enum ExpressionMapping
 {

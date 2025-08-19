@@ -130,8 +130,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private static int _timerCounter = 0;
-
     [ObservableProperty] public bool _shouldShowEyeCalibration;
     [ObservableProperty] public string _selectedCalibrationText;
 
@@ -173,7 +171,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
         LocalSettingsService.Load(this);
 
-        ShouldShowEyeCalibration = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         MessagesInPerSecCount = "0";
         MessagesOutPerSecCount = "0";
         OscSendService.OnMessagesDispatched += MessageDispatched;
@@ -266,6 +263,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     {
         await SetupCameraSettings();
         string camera = model.DisplayAddress;
+        if (string.IsNullOrEmpty(camera)) return;
 
         if (App.DeviceEnumerator.Cameras != null)
         {
@@ -274,8 +272,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 camera = mappedAddress;
             }
         }
-
-        if (string.IsNullOrEmpty(camera)) return;
+        else
+        {
+            return;
+        }
 
         model.Controller.StartCamera(camera);
 
@@ -291,7 +291,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                     {
                         if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
                         {
-                            _processingLoopService.RightCameraController.StartCamera(RightCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                _processingLoopService.RightCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 
@@ -303,7 +306,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                     {
                         if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
                         {
-                            _processingLoopService.LeftCameraController.StartCamera(LeftCamera.DisplayAddress);
+                            if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+                            {
+                                _processingLoopService.LeftCameraController.StartCamera(mappedAddress);
+                            }
                         }
                     }
 
@@ -359,6 +365,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             _localSettingsService, _eyeInferenceService);
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
+        // This will restart the right camera, as well as the left
         CameraStop(LeftCamera);
         CameraStart(LeftCamera);
     }

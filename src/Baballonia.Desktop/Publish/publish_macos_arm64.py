@@ -9,6 +9,7 @@ def check_vpk():
         sys.exit(1)
 
 def run_dotnet_publish():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     cmd = [
         'dotnet', 'publish',
         '-r', 'osx-arm64',
@@ -16,8 +17,8 @@ def run_dotnet_publish():
         '--self-contained',
         '-f', 'net8.0'
     ]
-    print(f"Running: {' '.join(cmd)}")
-    subprocess.run(cmd, check=True)
+    print(f"Running: {' '.join(cmd)} in {base_dir}")
+    subprocess.run(cmd, check=True, cwd=base_dir)
 
 def create_zip(output_dir, zip_name):
     if os.path.exists(zip_name):
