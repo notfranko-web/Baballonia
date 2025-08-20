@@ -142,6 +142,7 @@ public class App : Application
             {
                 // Create the settings file if it doesn't exist and copy the default settings file
                 var defaultSettings = Path.Combine(AppContext.BaseDirectory, LocalSettingsService.DefaultLocalSettingsFile);
+                Directory.CreateDirectory(Path.GetDirectoryName(settingsLocation)!);
                 File.Copy(defaultSettings, settingsLocation);
             }
         }

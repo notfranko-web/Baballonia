@@ -33,7 +33,8 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
     private readonly ParameterSenderService _parameterSenderService;
     private readonly ProcessingLoopService _processingLoopService;
 
-    private readonly Dictionary<string, int> _keyIndexMap;
+    private readonly Dictionary<string, int> _eyeKeyIndexMap;
+    private readonly Dictionary<string, int> _faceKeyIndexMap;
     public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
@@ -127,7 +128,17 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
         }
 
         // Convert dictionary order into index mapping
-        _keyIndexMap = _parameterSenderService.FaceExpressionMap.Keys
+        _eyeKeyIndexMap = new Dictionary<string, int>()
+        {
+            { "LeftEyeX", 0 },
+            { "LeftEyeY", 1 },
+            { "RightEyeX", 2 },
+            { "RightEyeY", 3 },
+            { "LeftEyeLid", 4 },
+            { "RightEyeLid", 5 }
+        };
+
+        _faceKeyIndexMap = _parameterSenderService.FaceExpressionMap.Keys
             .Select((key, index) => new { key, index })
             .ToDictionary(x => x.key, x => x.index);
 
@@ -152,16 +163,17 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
         if(expressions.FaceExpression != null)
             Dispatcher.UIThread.Post(() =>
             {
-                ApplyCurrentExpressionValues(expressions.FaceExpression, CheekSettings);
-                ApplyCurrentExpressionValues(expressions.FaceExpression, MouthSettings);
-                ApplyCurrentExpressionValues(expressions.FaceExpression, JawSettings);
-                ApplyCurrentExpressionValues(expressions.FaceExpression, NoseSettings);
-                ApplyCurrentExpressionValues(expressions.FaceExpression, TongueSettings);
+                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, CheekSettings);
+                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, MouthSettings);
+                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, JawSettings);
+                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, NoseSettings);
+                ApplyCurrentFaceExpressionValues(expressions.FaceExpression, TongueSettings);
             });
         if(expressions.EyeExpression != null)
             Dispatcher.UIThread.Post(() =>
             {
-                ApplyCurrentExpressionValues(expressions.EyeExpression, EyeSettings);
+                ApplyCurrentEyeExpressionValues(expressions.EyeExpression, GazeSettings);
+                ApplyCurrentEyeExpressionValues(expressions.EyeExpression, EyeSettings);
             });
     }
     private void OnSettingChanged(object? sender, PropertyChangedEventArgs e)
@@ -181,11 +193,29 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             }
         });
     }
-    public void ApplyCurrentExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
+
+    private void ApplyCurrentEyeExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
     {
         foreach (var setting in settings)
         {
-            if (_keyIndexMap.TryGetValue(setting.Name, out var index)
+            if (_eyeKeyIndexMap.TryGetValue(setting.Name, out var index)
+                && index < values.Length)
+            {
+                var weight = values[index];
+                var val = Math.Clamp(
+                    weight.Remap(setting.Lower, setting.Upper, setting.Min, setting.Max),
+                    setting.Min,
+                    setting.Max);
+                setting.CurrentExpression = val;
+            }
+        }
+    }
+
+    private void ApplyCurrentFaceExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
+    {
+        foreach (var setting in settings)
+        {
+            if (_faceKeyIndexMap.TryGetValue(setting.Name, out var index)
                 && index < values.Length)
             {
                 var weight = values[index];
