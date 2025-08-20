@@ -49,8 +49,8 @@ public partial class HomePageViewModel : ViewModelBase
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
-        [ObservableProperty] private float _rotation = 0;
-        [ObservableProperty] private float _gamma = 1f;
+        [ObservableProperty] private float _rotation = 0f;
+        [ObservableProperty] private float _gamma = 0.5f;
         [ObservableProperty] private bool _isCropMode = false;
         [ObservableProperty] private bool _isCameraRunning = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
