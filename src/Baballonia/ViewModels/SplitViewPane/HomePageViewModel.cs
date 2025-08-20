@@ -35,6 +35,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 FlipHorizontally = _controller.CameraSettings.UseHorizontalFlip;
                 FlipVertically = _controller.CameraSettings.UseVerticalFlip;
                 Rotation = _controller.CameraSettings.RotationRadians;
+                Gamma = _controller.CameraSettings.Gamma;
                 IsCropMode = _controller.CropManager.IsCropping;
             }
         }
@@ -47,7 +48,8 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
-        [ObservableProperty] private float _rotation = 0;
+        [ObservableProperty] private float _rotation = 0f;
+        [ObservableProperty] private float _gamma = 0.5f;
         [ObservableProperty] private bool _isCropMode = false;
         [ObservableProperty] private bool _isCameraRunning = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
@@ -110,6 +112,12 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         partial void OnRotationChanged(float value)
         {
             Controller.CameraSettings.RotationRadians = value;
+            SaveCameraConfig();
+        }
+
+        partial void OnGammaChanged(float value)
+        {
+            Controller.CameraSettings.Gamma = value;
             SaveCameraConfig();
         }
 
