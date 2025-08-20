@@ -160,10 +160,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private CameraControllerModel _faceCamera;
 
     private readonly DispatcherTimer _msgCounterTimer;
-    private IInferenceService _eyeInferenceService;
-    private readonly IFaceInferenceService _faceInferenceService;
     private readonly ILocalSettingsService _localSettingsService;
-    private readonly IServiceProvider _serviceProvider;
     private readonly ProcessingLoopService _processingLoopService;
 
 
@@ -174,8 +171,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         OscSendService = Ioc.Default.GetService<OscSendService>()!;
         LocalSettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         _localSettingsService = Ioc.Default.GetRequiredService<ILocalSettingsService>()!;
-        _serviceProvider = Ioc.Default.GetRequiredService<IServiceProvider>();
-        _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
         LocalSettingsService.Load(this);
 
@@ -289,7 +284,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         if (model.Name == "FaceCamera") return;
 
-        if (_eyeInferenceService is DualCameraEyeInferenceService)
+        if (_processingLoopService.EyeInferenceService is DualCameraEyeInferenceService)
         {
             switch (model.Controller.CameraSettings.Camera)
             {
@@ -334,7 +329,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     {
         model.Controller.StopCamera();
 
-        if (_eyeInferenceService is not DualCameraEyeInferenceService) return;
+        if (_processingLoopService.EyeInferenceService is not DualCameraEyeInferenceService) return;
 
         switch (model.Controller.CameraSettings.Camera)
         {
@@ -370,7 +365,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     {
         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration,
             _processingLoopService.LeftCameraController, _processingLoopService.RightCameraController,
-            _localSettingsService, _eyeInferenceService);
+            _localSettingsService, _processingLoopService.EyeInferenceService);
         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
         // This will restart the right camera, as well as the left

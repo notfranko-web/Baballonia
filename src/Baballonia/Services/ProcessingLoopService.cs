@@ -22,8 +22,9 @@ public class ProcessingLoopService : IDisposable
     public CameraController RightCameraController { get; set; }
     public CameraController FaceCameraController { get; set; }
 
+    public IInferenceService EyeInferenceService { get; private set; }
+
     private readonly ILocalSettingsService _localSettingsService;
-    private IInferenceService _eyeInferenceService;
     private readonly IFaceInferenceService _faceInferenceService;
     private IServiceProvider _serviceProvider;
 
@@ -54,17 +55,17 @@ public class ProcessingLoopService : IDisposable
             new CameraSettings { Camera = Camera.Face });
 
         // Create the appropriate eye inference service based on camera configuration
-        _eyeInferenceService =
+        EyeInferenceService =
             EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls, leftSettings, rightSettings);
 
         LeftCameraController = new CameraController(
-            _eyeInferenceService,
+            EyeInferenceService,
             Camera.Left,
             leftSettings
         );
 
         RightCameraController = new CameraController(
-            _eyeInferenceService,
+            EyeInferenceService,
             Camera.Right,
             rightSettings
         );
@@ -92,9 +93,10 @@ public class ProcessingLoopService : IDisposable
             var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
                 new CameraSettings { Camera = Camera.Face });
 
-            bitmaps.LeftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            bitmaps.RightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            bitmaps.FaceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
+            var isDualCamera = EyeInferenceService is DualCameraEyeInferenceService;
+            bitmaps.LeftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings, isDualCamera);
+            bitmaps.RightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings, isDualCamera);
+            bitmaps.FaceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings, false);
 
             expressions.FaceExpression = CameraController.FaceExpressions;
             expressions.EyeExpression = CameraController.EyeExpressions;

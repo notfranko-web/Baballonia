@@ -64,7 +64,7 @@ public class CameraController : IDisposable
         _mjpegStreamingService = new MjpegStreamingService();
     }
 
-    public async Task<WriteableBitmap?> UpdateImage(CameraSettings leftSettings, CameraSettings rightSettings, CameraSettings faceSettings)
+    public async Task<WriteableBitmap?> UpdateImage(CameraSettings leftSettings, CameraSettings rightSettings, CameraSettings faceSettings, bool isDualCamera)
     {
         bool valid;
         bool useColor;
@@ -85,6 +85,11 @@ public class CameraController : IDisposable
                     {
                         _inferenceService.GetExpressionData(faceSettings, out output);
                         FaceExpressions = output;
+                    }
+                    else if (isDualCamera)
+                    {
+                        _inferenceService.GetExpressionData(leftSettings, out output);
+                        EyeExpressions = output;
                     }
                     else
                     {
