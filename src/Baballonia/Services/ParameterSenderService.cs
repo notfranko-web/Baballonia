@@ -111,7 +111,7 @@ public class ParameterSenderService(
 
             var msg = new OscMessage(prefix + eyeElement.Value,
                 Math.Clamp(
-                    weight.Remap(settings.Min, settings.Max, settings.Lower, settings.Upper),
+                    weight.Remap(settings.Lower, settings.Upper, settings.Min, settings.Max),
                     settings.Min,
                     settings.Max));
             _sendQueue.Enqueue(msg);
@@ -131,7 +131,7 @@ public class ParameterSenderService(
 
             var msg = new OscMessage(prefix + faceElement.Value,
                 Math.Clamp(
-                    weight.Remap(settings.Min, settings.Max, settings.Lower, settings.Upper),
+                    weight.Remap(settings.Lower, settings.Upper, settings.Min, settings.Max),
                     settings.Min,
                     settings.Max));
             _sendQueue.Enqueue(msg);

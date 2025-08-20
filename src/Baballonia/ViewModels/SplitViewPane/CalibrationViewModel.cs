@@ -190,7 +190,7 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             {
                 var weight = values[index];
                 var val = Math.Clamp(
-                    weight.Remap(setting.Min, setting.Max, setting.Lower, setting.Upper),
+                    weight.Remap(setting.Lower, setting.Upper, setting.Min, setting.Max),
                     setting.Min,
                     setting.Max);
                 setting.CurrentExpression = val;
