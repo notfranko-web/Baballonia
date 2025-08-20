@@ -11,13 +11,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Baballonia.Helpers;
 using Baballonia.Services;
 using CommunityToolkit.Mvvm.Input;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
-public partial class CalibrationViewModel : ViewModelBase
+public partial class CalibrationViewModel : ViewModelBase, IDisposable
 {
     public ObservableCollection<SliderBindableSetting> GazeSettings { get; set; }
     public ObservableCollection<SliderBindableSetting> EyeSettings { get; set; }
@@ -29,11 +30,16 @@ public partial class CalibrationViewModel : ViewModelBase
 
     private ILocalSettingsService _settingsService { get; }
     private readonly ICalibrationService _calibrationService;
+    private readonly ParameterSenderService _parameterSenderService;
+    private readonly ProcessingLoopService _processingLoopService;
 
+    private readonly Dictionary<string, int> _keyIndexMap;
     public CalibrationViewModel()
     {
         _settingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
         _calibrationService = Ioc.Default.GetService<ICalibrationService>()!;
+        _parameterSenderService = Ioc.Default.GetService<ParameterSenderService>()!;
+        _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
 
         GazeSettings =
         [
@@ -119,7 +125,11 @@ public partial class CalibrationViewModel : ViewModelBase
         {
             setting.PropertyChanged += OnSettingChanged;
         }
-        // _settingsService.Load(this);
+
+        // Convert dictionary order into index mapping
+        _keyIndexMap = _parameterSenderService.FaceExpressionMap.Keys
+            .Select((key, index) => new { key, index })
+            .ToDictionary(x => x.key, x => x.index);
 
         PropertyChanged += async (o, p) =>
         {
@@ -132,7 +142,27 @@ public partial class CalibrationViewModel : ViewModelBase
             }
         };
 
+        _processingLoopService.ExpressionUpdateEvent += ExpressionUpdateHandler;
+
         LoadInitialSettings();
+    }
+
+    private void ExpressionUpdateHandler(ProcessingLoopService.Expressions expressions)
+    {
+        if(expressions.FaceExpression != null)
+            Dispatcher.UIThread.Post(() =>
+            {
+                ApplyCurrentExpressionValues(expressions.FaceExpression, CheekSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, MouthSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, JawSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, NoseSettings);
+                ApplyCurrentExpressionValues(expressions.FaceExpression, TongueSettings);
+            });
+        if(expressions.EyeExpression != null)
+            Dispatcher.UIThread.Post(() =>
+            {
+                ApplyCurrentExpressionValues(expressions.EyeExpression, EyeSettings);
+            });
     }
     private void OnSettingChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -150,6 +180,22 @@ public partial class CalibrationViewModel : ViewModelBase
                 await _calibrationService.SetExpression(setting.Name + "Upper", setting.Upper);
             }
         });
+    }
+    public void ApplyCurrentExpressionValues(float[] values, IEnumerable<SliderBindableSetting> settings)
+    {
+        foreach (var setting in settings)
+        {
+            if (_keyIndexMap.TryGetValue(setting.Name, out var index)
+                && index < values.Length)
+            {
+                var weight = values[index];
+                var val = Math.Clamp(
+                    weight.Remap(setting.Min, setting.Max, setting.Lower, setting.Upper),
+                    setting.Min,
+                    setting.Max);
+                setting.CurrentExpression = val;
+            }
+        }
     }
 
     [RelayCommand]
@@ -175,6 +221,7 @@ public partial class CalibrationViewModel : ViewModelBase
     private void LoadInitialSettings()
     {
         LoadInitialSettings(GazeSettings);
+        LoadInitialSettings(EyeSettings);
         LoadInitialSettings(CheekSettings);
         LoadInitialSettings(JawSettings);
         LoadInitialSettings(MouthSettings);
@@ -192,5 +239,10 @@ public partial class CalibrationViewModel : ViewModelBase
             setting.Min = val.Min;
             setting.Max = val.Max;
         }
+    }
+
+    public void Dispose()
+    {
+        _processingLoopService.ExpressionUpdateEvent -= ExpressionUpdateHandler;
     }
 }

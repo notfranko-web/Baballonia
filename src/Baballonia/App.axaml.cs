@@ -84,6 +84,7 @@ public class App : Application
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
+                services.AddSingleton<ProcessingLoopService>();
 
                 // Core Services
                 services.AddTransient<IIdentityService, IdentityService>();
@@ -94,6 +95,7 @@ public class App : Application
                 services.AddTransient<OscQueryServiceWrapper>();
                 services.AddSingleton<ParameterSenderService>();
                 services.AddTransient<GithubService>();
+                services.AddTransient<ICommandSenderFactory, CommandSenderFactory>();
                 services.AddTransient<FirmwareService>();
                 services.AddSingleton<IMainService, MainStandalone>();
                 services.AddSingleton<ICalibrationService, CalibrationService>();
