@@ -79,7 +79,7 @@ public class CameraController : IDisposable
                 valid = _inferenceService.GetImage(CameraSettings, out image);
                 if (valid) // Don't run infer on raw images
                 {
-                    CameraSize = (image.Width, image.Height);
+                    CameraSize = (image!.Width, image.Height);
                     float[] output;
                     if (_camera == Camera.Face)
                     {

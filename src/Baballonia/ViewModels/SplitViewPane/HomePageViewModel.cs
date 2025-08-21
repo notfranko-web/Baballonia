@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
@@ -70,6 +71,8 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         void SaveCameraConfig()
         {
+            if (Controller is null) return;
+
             Dispatcher.UIThread.Post(async () =>
             {
                 await _localSettingsService.SaveSettingAsync(Name, Controller.CameraSettings);
@@ -138,11 +141,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         }
     }
 
-    [ObservableProperty] public bool _shouldShowEyeCalibration;
-    [ObservableProperty] public string _selectedCalibrationText;
-
-    [ObservableProperty] [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
-    private string _eyeModel;
+    private static bool _hasPerformedFirstTimeSetup = false;
 
     public IOscTarget OscTarget { get; }
     private OscRecvService OscRecvService { get; }
@@ -155,6 +154,13 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     private int _messagesSent;
     [ObservableProperty] private string _messagesOutPerSecCount;
 
+    [ObservableProperty]
+    [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
+    private string _eyeModel;
+
+    [ObservableProperty] private bool _shouldShowEyeCalibration;
+    [ObservableProperty] private string _selectedCalibrationText;
+
     [ObservableProperty] private CameraControllerModel _leftCamera;
     [ObservableProperty] private CameraControllerModel _rightCamera;
     [ObservableProperty] private CameraControllerModel _faceCamera;
@@ -162,7 +168,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     private readonly DispatcherTimer _msgCounterTimer;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly ProcessingLoopService _processingLoopService;
-
 
     public HomePageViewModel()
     {
@@ -196,7 +201,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         RightCamera = new CameraControllerModel(_localSettingsService, "RightCamera");
         FaceCamera = new CameraControllerModel(_localSettingsService, "FaceCamera");
 
-        Dispatcher.UIThread.Post(async () => { await SetupCameraControllers(); });
+        Dispatcher.UIThread.Post(async () =>
+        {
+            await SetupCameraControllers();
+        });
     }
 
     private async Task SetupCameraControllers()
@@ -215,8 +223,26 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             });
         });
 
-        await SetupCameraSettings();
         _processingLoopService.BitmapUpdateEvent += BitmapUpdateHandler;
+
+        if (!_hasPerformedFirstTimeSetup)
+        {
+            if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress) && !string.IsNullOrEmpty(RightCamera.DisplayAddress))
+            {
+                // This will start the left and right cameras
+                await CameraStart(LeftCamera);
+            }
+
+            if (!string.IsNullOrEmpty(FaceCamera.DisplayAddress))
+            {
+                await CameraStart(FaceCamera);
+            }
+
+            _hasPerformedFirstTimeSetup = true;
+            return;
+        }
+
+        await SetupCameraSettings();
     }
 
     private void BitmapUpdateHandler(ProcessingLoopService.Bitmaps bitmaps)
@@ -262,7 +288,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     }
 
     [RelayCommand]
-    private async void CameraStart(CameraControllerModel model)
+    private async Task CameraStart(CameraControllerModel model)
     {
         await SetupCameraSettings();
         string camera = model.DisplayAddress;
@@ -282,44 +308,46 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         model.Controller.StartCamera(camera);
 
-        if (model.Name == "FaceCamera") return;
-
-        if (_processingLoopService.EyeInferenceService is DualCameraEyeInferenceService)
+        if (model.Name != "FaceCamera")
         {
-            switch (model.Controller.CameraSettings.Camera)
+            if (_processingLoopService.EyeInferenceService is DualCameraEyeInferenceService)
             {
-                case Camera.Left:
+                switch (model.Controller.CameraSettings.Camera)
                 {
-                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                    case Camera.Left:
                     {
-                        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+                        if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                         {
-                            if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+                            if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
                             {
-                                _processingLoopService.RightCameraController.StartCamera(mappedAddress);
+                                if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+                                {
+                                    _processingLoopService.RightCameraController.StartCamera(mappedAddress);
+                                }
                             }
                         }
-                    }
 
-                    break;
-                }
-                case Camera.Right:
-                {
-                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+                        break;
+                    }
+                    case Camera.Right:
                     {
-                        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
+                        if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
                         {
-                            if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+                            if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
                             {
-                                _processingLoopService.LeftCameraController.StartCamera(mappedAddress);
+                                if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+                                {
+                                    _processingLoopService.LeftCameraController.StartCamera(mappedAddress);
+                                }
                             }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
                 }
             }
         }
+
 
         SaveCameraSettings();
     }

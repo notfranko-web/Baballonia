@@ -36,24 +36,13 @@ public class DualCameraEyeInferenceService(ILogger<InferenceService> logger, ILo
     {
         Task.Run(async () =>
         {
-            _logger.LogInformation($"Setting up {Type} inference for {camera} camera at {cameraAddress}");
-
             _cameraUrls[camera] = cameraAddress;
-
-            // In DualCamera, this method is called twice from the Left/Right camera controllers
-            // So, for a first time set up, when there is only 1 camera (either left or right)
-            // Start it unconditionally
-            if (_cameraUrls.Count == 1)
-            {
-                // This introduces a problem - clicking the right start button doesn't work for the first time but will for
-                // Subsequent runs. Oh well, maybe it's time for some different UI
-                await InitializeModel();
-            }
 
             if (_cameraUrls.Count >= 2)
             {
                 if (camera == Camera.Left)
                 {
+                    _logger.LogInformation($"Setting up DualCamera inference for camera {cameraAddress}");
                     await InitializeModel();
                 }
             }

@@ -81,6 +81,7 @@ public sealed partial class OpenCvCapture(string url) : Capture(url)
             try
             {
                 IsReady = capture.Read(RawMat);
+                Task.Delay(20, ct).Wait(ct);
             }
             catch (Exception)
             {
