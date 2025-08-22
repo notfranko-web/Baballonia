@@ -1,8 +1,9 @@
-﻿using OpenCvSharp;
+﻿using Microsoft.ML.OnnxRuntime.Tensors;
+using OpenCvSharp;
 
 namespace Baballonia.Services.Inference;
 
 public interface IImageConverter
 {
-    Mat? Convert(Mat input);
+    void Convert(Mat input, DenseTensor<float> outTensor);
 }

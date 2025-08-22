@@ -40,7 +40,7 @@ public class DefaultInferenceRunner : IInferenceRunner
         var dimensions = _session.InputMetadata.Values.First().Dimensions;
         InputSize = new Size(dimensions[2], dimensions[3]);
 
-        InputTensor = new DenseTensor<float>([1, 1, dimensions[2], dimensions[3]]);
+        InputTensor = new DenseTensor<float>([1, dimensions[1], dimensions[2], dimensions[3]]);
 
         _logger.LogInformation("{} initialization finished", modelName);
     }
@@ -149,7 +149,7 @@ public class DefaultInferenceRunner : IInferenceRunner
     /// Runs inference on current InputTensor
     /// </summary>
     /// <returns></returns>
-    public float[] RunInference()
+    public float[] Run()
     {
         var inputs = new List<NamedOnnxValue>
         {
@@ -162,29 +162,8 @@ public class DefaultInferenceRunner : IInferenceRunner
         return arKitExpressions;
     }
 
-
-    public float[]? Run(Mat image)
+    public DenseTensor<float> GetInputTensor()
     {
-        if (image.Width != InputSize.Width || image.Height != InputSize.Height)
-        {
-            _logger.LogError("Wrong dimentions for inference input, Expected: {} {}, Got: {} {}", InputSize.Width,
-                InputSize.Height, image.Width, image.Height);
-            return null;
-        }
-
-        float[] result;
-        unsafe
-        {
-            fixed (float* array = InputTensor.Buffer.Span)
-            {
-                using var finalMat =
-                    Mat.FromPixelData(InputSize.Height, InputSize.Width, MatType.CV_32F, new IntPtr(array));
-
-                Cv2.Resize(image, finalMat, InputSize);
-                result = RunInference();
-            }
-        }
-
-        return result;
+        return InputTensor;
     }
 }

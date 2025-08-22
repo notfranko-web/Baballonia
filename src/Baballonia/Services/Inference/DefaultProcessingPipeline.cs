@@ -33,11 +33,12 @@ public class DefaultProcessingPipeline : IProcessingPipeline
 
         TransformedFrameEvent?.Invoke(transformed);
 
-        var converted = ImageConverter?.Convert(transformed);
-        if(converted == null)
+        if (InferenceService == null)
             return null;
 
-        var inferenceResult = InferenceService?.Run(converted);
+        ImageConverter?.Convert(transformed, InferenceService.GetInputTensor());
+
+        var inferenceResult = InferenceService?.Run();
         if(inferenceResult == null)
             return null;
 

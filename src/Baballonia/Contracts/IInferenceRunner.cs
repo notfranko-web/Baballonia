@@ -1,8 +1,10 @@
-﻿using OpenCvSharp;
+﻿using Microsoft.ML.OnnxRuntime.Tensors;
+using OpenCvSharp;
 
 namespace Baballonia.Contracts;
 
 public interface IInferenceRunner
 {
-    public float[]? Run(Mat image);
+    public float[]? Run();
+    public DenseTensor<float> GetInputTensor();
 }

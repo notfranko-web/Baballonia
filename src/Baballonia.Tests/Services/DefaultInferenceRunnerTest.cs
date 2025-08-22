@@ -1,5 +1,6 @@
 ﻿using System;
 using Baballonia.Services;
+using Baballonia.Services.Inference;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -52,7 +53,9 @@ public class DefaultInferenceRunnerTest
     {
         var image = new Mat(_defaultInference.InputSize.Height, _defaultInference.InputSize.Width,
             MatType.CV_32F, new Scalar(0.5f));
-        var result = _defaultInference.Run(image);
+        var conv = new MatToFloatTensorConverter();
+        conv.Convert(image, _defaultInference.InputTensor);
+        var result = _defaultInference.Run();
         Assert.IsNotNull(result);
     }
 
@@ -62,7 +65,9 @@ public class DefaultInferenceRunnerTest
         for (var i = 0; i < 10; i++)
         {
             var image = new Mat(224, 224, MatType.CV_32F, new Scalar(0.5f));
-            var result = _defaultInference.Run(image);
+            var conv = new MatToFloatTensorConverter();
+            conv.Convert(image, _defaultInference.InputTensor);
+            var result = _defaultInference.Run();
             Assert.IsNotNull(result);
         }
     }

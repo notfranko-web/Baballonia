@@ -108,7 +108,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 _processingPipeline.InferenceService = inferenceRunner;
             }
 
-            _processingPipeline.ImageConverter = new MatToFloatMatConverter();
+            _processingPipeline.ImageConverter = new MatToFloatTensorConverter();
         }
 
         [RelayCommand]
