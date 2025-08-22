@@ -86,25 +86,25 @@ public partial class HomePageView : UserControl
         // in theory should be cleaned up by the GC so no need to manually unsubscribe
         image.PointerPressed += (sender, e) =>
         {
-            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+            if (model.CamViewMode != CamViewMode.Cropping) return;
             var pos = e.GetPosition(image);
-            model.Controller.CropManager.StartCrop(pos);
-            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+            model.CropManager.StartCrop(pos);
+            model.OverlayRectangle = model.CropManager.CropZone.GetRect();
         };
         image.PointerMoved += (sender, e) =>
         {
-            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+            if (model.CamViewMode != CamViewMode.Cropping) return;
 
             var pos = e.GetPosition(image);
-            model.Controller.CropManager.UpdateCrop(pos);
-            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+            model.CropManager.UpdateCrop(pos);
+            model.OverlayRectangle = model.CropManager.CropZone.GetRect();
         };
         image.PointerReleased += (sender, e) =>
         {
-            if (model.Controller.CamViewMode != CamViewMode.Cropping) return;
+            if (model.CamViewMode != CamViewMode.Cropping) return;
 
-            model.Controller.CropManager.EndCrop();
-            model.OverlayRectangle = model.Controller.CropManager.CropZone.GetRect();
+            model.CropManager.EndCrop();
+            model.OnCropUpdated();
         };
     }
 

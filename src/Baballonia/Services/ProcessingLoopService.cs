@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Baballonia.Contracts;
 using Baballonia.Services.Inference;
-using Baballonia.Services.Inference.Enums;
-using Baballonia.Services.Inference.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Baballonia.Services;
 
@@ -16,96 +13,61 @@ public class ProcessingLoopService : IDisposable
 
     public record struct Expressions(float[]? FaceExpression, float[]? EyeExpression);
 
-    public event Action<Bitmaps> BitmapUpdateEvent;
-    public event Action<Expressions> ExpressionUpdateEvent;
-    public CameraController LeftCameraController { get; set; }
-    public CameraController RightCameraController { get; set; }
-    public CameraController FaceCameraController { get; set; }
+    public event Action<Expressions> ExpressionChangeEvent;
+
+    public readonly DefaultProcessingPipeline FaceProcessingPipeline = new();
 
     private readonly ILocalSettingsService _localSettingsService;
-    private IInferenceService _eyeInferenceService;
-    private readonly IFaceInferenceService _faceInferenceService;
-    private IServiceProvider _serviceProvider;
 
     private readonly DispatcherTimer _drawTimer = new()
     {
         Interval = TimeSpan.FromMilliseconds(10)
     };
 
+    private readonly ILogger<ProcessingLoopService> _logger;
+
     public ProcessingLoopService(
+        ILogger<ProcessingLoopService> logger,
         ILocalSettingsService localSettingsService,
         IFaceInferenceService faceInferenceService,
         IServiceProvider serviceProvider)
     {
         _localSettingsService = localSettingsService;
-        _faceInferenceService = faceInferenceService;
-        _serviceProvider = serviceProvider;
+        _logger = logger;
 
         _drawTimer.Tick += TimerEvent;
-    }
-
-    public async Task SetupCameraSettings(Dictionary<Camera, string>? cameraUrls)
-    {
-        var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-            new CameraSettings { Camera = Camera.Left });
-        var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
-            new CameraSettings { Camera = Camera.Right });
-        var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
-            new CameraSettings { Camera = Camera.Face });
-
-        // Create the appropriate eye inference service based on camera configuration
-        _eyeInferenceService =
-            EyeInferenceServiceFactory.Create(_serviceProvider, cameraUrls, leftSettings, rightSettings);
-
-        LeftCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Left,
-            leftSettings
-        );
-
-        RightCameraController = new CameraController(
-            _eyeInferenceService,
-            Camera.Right,
-            rightSettings
-        );
-
-        FaceCameraController = new CameraController(
-            _faceInferenceService,
-            Camera.Face,
-            faceSettings
-        );
-
         _drawTimer.Start();
     }
 
-    private async void TimerEvent(object? s, EventArgs e)
+    private void TimerEvent(object? s, EventArgs e)
     {
         try
         {
-            Bitmaps bitmaps = new Bitmaps();
-            Expressions expressions = new Expressions();
+            var expressions = new Expressions();
 
-            var leftSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("LeftCamera",
-                new CameraSettings { Camera = Camera.Left });
-            var rightSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("RightCamera",
-                new CameraSettings { Camera = Camera.Right });
-            var faceSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>("FaceCamera",
-                new CameraSettings { Camera = Camera.Face });
+            var faceExpression = FaceProcessingPipeline.RunUpdate();
+            if (faceExpression != null)
+                expressions.FaceExpression = faceExpression;
 
-            bitmaps.LeftBitmap = await LeftCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            bitmaps.RightBitmap = await RightCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-            bitmaps.FaceBitmap = await FaceCameraController.UpdateImage(leftSettings, rightSettings, faceSettings);
-
-            expressions.FaceExpression = CameraController.FaceExpressions;
-            expressions.EyeExpression = CameraController.EyeExpressions;
-
-            ExpressionUpdateEvent?.Invoke(expressions);
-            BitmapUpdateEvent?.Invoke(bitmaps);
+            if(expressions.FaceExpression != null || expressions.EyeExpression != null)
+                ExpressionChangeEvent?.Invoke(expressions);
         }
         catch (Exception ex)
         {
-            _drawTimer.Stop();
+            _logger.LogError("Unexpected Exception, pausing capture: {}", ex);
+            FaceProcessingPipeline.VideoSource?.Stop();
+            //_drawTimer.Stop();
         }
+    }
+
+    public void Start()
+    {
+        _drawTimer.Start();
+    }
+
+    public void Pause()
+    {
+        _drawTimer.Stop();
     }
 
     public void Dispose()

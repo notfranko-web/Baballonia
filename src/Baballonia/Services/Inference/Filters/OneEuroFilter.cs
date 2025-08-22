@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Baballonia.Services.Inference.Filters;
 
-public class OneEuroFilter
+public class OneEuroFilter : IFilter
 {
     private float[] minCutoff;
     private float[] beta;
@@ -99,6 +99,5 @@ public class OneEuroFilter
         }
         return result;
     }
-
 
 }

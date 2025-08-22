@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Baballonia.Contracts;
 using Baballonia.Helpers;
@@ -14,36 +15,29 @@ using Baballonia.Services.Inference.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using Discord;
 using HarfBuzzSharp;
+using Microsoft.Extensions.Logging;
+using OpenCvSharp;
+using Buffer = System.Buffer;
+using Rect = Avalonia.Rect;
 
 namespace Baballonia.ViewModels.SplitViewPane;
 
 public partial class HomePageViewModel : ViewModelBase, IDisposable
 {
     // This feels unorthodox but... i kinda like it?
-    public partial class CameraControllerModel : ObservableObject
+    public partial class CameraControllerModel : ObservableObject, IDisposable
     {
         public string Name;
+        public readonly CropManager CropManager = new();
+        public CamViewMode CamViewMode = CamViewMode.Tracking;
 
-        public CameraController Controller
-        {
-            get => _controller;
-            set
-            {
-                _controller = value;
-                OverlayRectangle = _controller.CameraSettings.Roi.GetRect();
-                FlipHorizontally = _controller.CameraSettings.UseHorizontalFlip;
-                FlipVertically = _controller.CameraSettings.UseVerticalFlip;
-                Rotation = _controller.CameraSettings.RotationRadians;
-                IsCropMode = _controller.CropManager.IsCropping;
-            }
-        }
-
-        [ObservableProperty] private WriteableBitmap _bitmap;
+        [ObservableProperty] private WriteableBitmap? _bitmap;
 
         [ObservableProperty] private bool _hintEnabled;
         [ObservableProperty] private bool _inferEnabled;
-        [ObservableProperty] private string? _displayAddress;
+        [ObservableProperty] private string _displayAddress = "";
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
@@ -53,41 +47,116 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         public ObservableCollection<string> Suggestions { get; set; } = [];
 
         private readonly ILocalSettingsService _localSettingsService;
-        private CameraController _controller;
+        private readonly DefaultProcessingPipeline _processingPipeline;
 
-        public CameraControllerModel(ILocalSettingsService localSettingsService, string name)
+        public CameraControllerModel(ILocalSettingsService localSettingsService, string name,
+            DefaultProcessingPipeline processingPipeline)
         {
             _localSettingsService = localSettingsService;
+            _processingPipeline = processingPipeline;
             Name = name;
 
             Dispatcher.UIThread.Post(async () =>
             {
                 DisplayAddress = await _localSettingsService.ReadSettingAsync<string>("LastOpened" + Name);
+                var camSettings = await _localSettingsService.ReadSettingAsync<CameraSettings>(name);
+                CropManager.SetCropZone(camSettings.Roi);
+                OverlayRectangle = CropManager.CropZone.GetRect();
             });
+
+            if(processingPipeline != null)
+                _processingPipeline.TransformedFrameEvent += ImageUpdateEventHandler;
         }
 
-        void SaveCameraConfig()
+        public void OnCropUpdated()
         {
-            Dispatcher.UIThread.Post(async () =>
+            OverlayRectangle = CropManager.CropZone.GetRect();
+            var t = _processingPipeline.ImageTransformer;
+            if (t is ImageTransformer transformer)
             {
-                await _localSettingsService.SaveSettingAsync(Name, Controller.CameraSettings);
-            });
+                transformer.Transformation.Roi = CropManager.CropZone;
+                SaveTransformer(transformer.Transformation);
+            }
         }
 
-
-        partial void OnDisplayAddressChanged(string? oldValue, string? newValue)
+        [RelayCommand]
+        private void StartCamera()
         {
-            SaveCameraConfig();
+            var camera = DisplayAddress;
+
+            if (string.IsNullOrEmpty(camera)) return;
+
+            if (App.DeviceEnumerator.Cameras.TryGetValue(camera, out var mappedAddress))
+            {
+                camera = mappedAddress;
+            }
+
+            var cameraSource = new SingleCameraSourceFactory().Create(camera);
+            if (cameraSource == null)
+                return;
+
+            cameraSource.Start();
+            _processingPipeline.VideoSource = cameraSource;
+            var imageT = new ImageTransformer();
+            imageT.Transformation.Roi = CropManager.CropZone;
+            _processingPipeline.ImageTransformer = imageT;
+            if (_processingPipeline.InferenceService == null)
+            {
+                var inferenceRunner =
+                    new DefaultInferenceRunner(Ioc.Default.GetService<ILogger<DefaultInferenceRunner>>()!);
+                inferenceRunner.Setup("faceModel.onnx", false);
+                _processingPipeline.InferenceService = inferenceRunner;
+            }
+
+            _processingPipeline.ImageConverter = new MatToFloatMatConverter();
         }
+
+        [RelayCommand]
+        void StopCamera()
+        {
+            _processingPipeline.VideoSource?.Stop();
+        }
+
+        void ImageUpdateEventHandler(Mat image)
+        {
+            if (_bitmap is null ||
+                _bitmap.PixelSize.Width != image.Width ||
+                _bitmap.PixelSize.Height != image.Height)
+            {
+                _bitmap = new WriteableBitmap(
+                    new PixelSize(image.Width, image.Height),
+                    new Vector(96, 96),
+                    image.Channels() == 3 ? PixelFormats.Bgr24 : PixelFormats.Gray8,
+                    AlphaFormat.Opaque);
+            }
+
+            CropManager.MaxSize.Height = _bitmap.PixelSize.Height;
+            CropManager.MaxSize.Width = _bitmap.PixelSize.Width;
+
+            // scope for "using" a lock hehe...
+            {
+                using var frameBuffer = _bitmap.Lock();
+
+                IntPtr srcPtr = image.Data;
+                IntPtr destPtr = frameBuffer.Address;
+                int size = image.Rows * image.Cols * image.ElemSize();
+
+                unsafe
+                {
+                    Buffer.MemoryCopy(srcPtr.ToPointer(), destPtr.ToPointer(), size, size);
+                }
+            }
+
+            IsCameraRunning = true;
+            var tmp = Bitmap;
+            Bitmap = null;
+            Bitmap = tmp;
+        }
+
 
         partial void OnBitmapChanged(WriteableBitmap? value)
         {
             IsCameraRunning = value != null;
-        }
-
-        partial void OnOverlayRectangleChanged(Rect value)
-        {
-            SaveCameraConfig();
         }
 
         partial void OnDisplayAddressChanged(string value)
@@ -97,41 +166,75 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         partial void OnFlipHorizontallyChanged(bool value)
         {
-            Controller.CameraSettings.UseHorizontalFlip = value;
-            SaveCameraConfig();
+            var t = _processingPipeline.ImageTransformer;
+            if (t is ImageTransformer transformer)
+            {
+                transformer.Transformation.UseHorizontalFlip = value;
+                SaveTransformer(transformer.Transformation);
+            }
         }
 
         partial void OnFlipVerticallyChanged(bool value)
         {
-            Controller.CameraSettings.UseVerticalFlip = value;
-            SaveCameraConfig();
+            var t = _processingPipeline.ImageTransformer;
+            if (t is ImageTransformer transformer)
+            {
+                transformer.Transformation.UseVerticalFlip = value;
+                SaveTransformer(transformer.Transformation);
+            }
         }
 
         partial void OnRotationChanged(float value)
         {
-            Controller.CameraSettings.RotationRadians = value;
-            SaveCameraConfig();
+            if (_processingPipeline.ImageTransformer is ImageTransformer transformer)
+            {
+                transformer.Transformation.RotationRadians = value;
+                SaveTransformer(transformer.Transformation);
+            }
+        }
+        void SaveTransformer(CameraSettings transformer)
+        {
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await _localSettingsService.SaveSettingAsync(Name, transformer);
+            });
         }
 
         partial void OnIsCropModeChanged(bool value)
         {
             if (value)
-                Controller.SetCroppingMode();
+            {
+                _processingPipeline.TransformedFrameEvent -= ImageUpdateEventHandler;
+                _processingPipeline.NewFrameEvent += ImageUpdateEventHandler;
+                CamViewMode = CamViewMode.Cropping;
+            }
             else
-                Controller.SetTrackingMode();
-
-            SaveCameraConfig();
+            {
+                _processingPipeline.NewFrameEvent -= ImageUpdateEventHandler;
+                _processingPipeline.TransformedFrameEvent += ImageUpdateEventHandler;
+                CamViewMode = CamViewMode.Tracking;
+            }
         }
 
         public void SelectWholeFrame()
         {
-            OverlayRectangle = Controller.SelectEntireFrame();
-            SaveCameraConfig();
+            CropManager.SelectEntireFrame(Camera.Face);
+            OnCropUpdated();
+        }
+
+        private bool _disposed = false;
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            _processingPipeline.TransformedFrameEvent -= ImageUpdateEventHandler;
+            _processingPipeline.NewFrameEvent -= ImageUpdateEventHandler;
         }
     }
 
-    [ObservableProperty] public bool _shouldShowEyeCalibration;
-    [ObservableProperty] public string _selectedCalibrationText;
+    [ObservableProperty] private bool _shouldShowEyeCalibration;
+    [ObservableProperty] private string _selectedCalibrationText;
 
     [ObservableProperty] [property: SavedSetting("EyeHome_EyeModel", "eyeModel.onnx")]
     private string _eyeModel;
@@ -159,6 +262,8 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     private readonly ProcessingLoopService _processingLoopService;
 
 
+    private ILogger<HomePageViewModel> _logger;
+
     public HomePageViewModel()
     {
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;
@@ -169,6 +274,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         _serviceProvider = Ioc.Default.GetRequiredService<IServiceProvider>();
         _faceInferenceService = Ioc.Default.GetService<IFaceInferenceService>()!;
         _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
+        _logger = Ioc.Default.GetService<ILogger<HomePageViewModel>>()!;
         LocalSettingsService.Load(this);
 
         MessagesInPerSecCount = "0";
@@ -189,9 +295,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         };
         _msgCounterTimer.Start();
 
-        LeftCamera = new CameraControllerModel(_localSettingsService, "LeftCamera");
-        RightCamera = new CameraControllerModel(_localSettingsService, "RightCamera");
-        FaceCamera = new CameraControllerModel(_localSettingsService, "FaceCamera");
+        LeftCamera = new CameraControllerModel(_localSettingsService, "LeftCamera", null);
+        RightCamera = new CameraControllerModel(_localSettingsService, "RightCamera", null);
+        FaceCamera = new CameraControllerModel(_localSettingsService, "FaceCamera",
+            _processingLoopService.FaceProcessingPipeline);
 
         Dispatcher.UIThread.Post(async () => { await SetupCameraControllers(); });
     }
@@ -212,143 +319,63 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             });
         });
 
-        await SetupCameraSettings();
-        _processingLoopService.BitmapUpdateEvent += BitmapUpdateHandler;
-    }
-
-    private void BitmapUpdateHandler(ProcessingLoopService.Bitmaps bitmaps)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            // a hack to force the UI refresh
-            LeftCamera.Bitmap = null!;
-            LeftCamera.Bitmap = bitmaps.LeftBitmap!;
-
-            RightCamera.Bitmap = null!;
-            RightCamera.Bitmap = bitmaps.RightBitmap!;
-
-            FaceCamera.Bitmap = null!;
-            FaceCamera.Bitmap = bitmaps.FaceBitmap!;
-        });
-    }
-
-    private async Task SetupCameraSettings()
-    {
-        // Create camera URL dictionary for eye inference service
-        var cameraUrls = new Dictionary<Camera, string>();
-        if (!string.IsNullOrEmpty(_leftCamera.DisplayAddress))
-            cameraUrls[Camera.Left] = _leftCamera.DisplayAddress;
-        if (!string.IsNullOrEmpty(_rightCamera.DisplayAddress))
-            cameraUrls[Camera.Right] = _rightCamera.DisplayAddress;
-
-        await _processingLoopService.SetupCameraSettings(cameraUrls);
-
-        LeftCamera.Controller = _processingLoopService.LeftCameraController;
-        RightCamera.Controller = _processingLoopService.RightCameraController;
-        FaceCamera.Controller = _processingLoopService.FaceCameraController;
     }
 
     private void SaveCameraSettings()
     {
-        _localSettingsService.SaveSettingAsync("LeftCamera",
-            _processingLoopService.LeftCameraController.CameraSettings);
-        _localSettingsService.SaveSettingAsync("RightCamera",
-            _processingLoopService.RightCameraController.CameraSettings);
-        _localSettingsService.SaveSettingAsync("FaceCamera",
-            _processingLoopService.FaceCameraController.CameraSettings);
+        // _localSettingsService.SaveSettingAsync("LeftCamera",
+        //     _processingLoopService.LeftCameraController.CameraSettings);
+        // _localSettingsService.SaveSettingAsync("RightCamera",
+        //     _processingLoopService.RightCameraController.CameraSettings);
+        // _localSettingsService.SaveSettingAsync("FaceCamera",
+        //     _processingLoopService.FaceCameraController.CameraSettings);
     }
 
     [RelayCommand]
     private async void CameraStart(CameraControllerModel model)
     {
-        await SetupCameraSettings();
-        string camera = model.DisplayAddress;
-        if (string.IsNullOrEmpty(camera)) return;
+        // model.Controller.StartCamera(camera);
+        //
+        // if (model.Name == "FaceCamera") return;
 
-        if (App.DeviceEnumerator.Cameras != null)
-        {
-            if (App.DeviceEnumerator.Cameras.TryGetValue(camera, out var mappedAddress))
-            {
-                camera = mappedAddress;
-            }
-        }
-        else
-        {
-            return;
-        }
-
-        model.Controller.StartCamera(camera);
-
-        if (model.Name == "FaceCamera") return;
-
-        if (_eyeInferenceService is DualCameraEyeInferenceService)
-        {
-            switch (model.Controller.CameraSettings.Camera)
-            {
-                case Camera.Left:
-                {
-                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                    {
-                        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
-                        {
-                            if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
-                            {
-                                _processingLoopService.RightCameraController.StartCamera(mappedAddress);
-                            }
-                        }
-                    }
-
-                    break;
-                }
-                case Camera.Right:
-                {
-                    if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                    {
-                        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
-                        {
-                            if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
-                            {
-                                _processingLoopService.LeftCameraController.StartCamera(mappedAddress);
-                            }
-                        }
-                    }
-
-                    break;
-                }
-            }
-        }
+        // if (_eyeInferenceService is DualCameraEyeInferenceService)
+        // {
+        //     switch (model.Controller.CameraSettings.Camera)
+        //     {
+        //         case Camera.Left:
+        //         {
+        //             if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+        //             {
+        //                 if (!string.IsNullOrEmpty(RightCamera.DisplayAddress))
+        //                 {
+        //                     if (App.DeviceEnumerator.Cameras!.TryGetValue(RightCamera.DisplayAddress, out var mappedAddress))
+        //                     {
+        //                         // _processingLoopService.RightCameraController.StartCamera(mappedAddress);
+        //                     }
+        //                 }
+        //             }
+        //
+        //             break;
+        //         }
+        //         case Camera.Right:
+        //         {
+        //             if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
+        //             {
+        //                 if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress))
+        //                 {
+        //                     if (App.DeviceEnumerator.Cameras!.TryGetValue(LeftCamera.DisplayAddress, out var mappedAddress))
+        //                     {
+        //                         // _processingLoopService.LeftCameraController.StartCamera(mappedAddress);
+        //                     }
+        //                 }
+        //             }
+        //
+        //             break;
+        //         }
+        //     }
+        // }
 
         SaveCameraSettings();
-    }
-
-    [RelayCommand]
-    private void CameraStop(CameraControllerModel model)
-    {
-        model.Controller.StopCamera();
-
-        if (_eyeInferenceService is not DualCameraEyeInferenceService) return;
-
-        switch (model.Controller.CameraSettings.Camera)
-        {
-            case Camera.Left:
-            {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                {
-                    _processingLoopService.RightCameraController.StopCamera();
-                }
-
-                break;
-            }
-            case Camera.Right:
-            {
-                if (LeftCamera.DisplayAddress != RightCamera.DisplayAddress)
-                {
-                    _processingLoopService.LeftCameraController.StopCamera();
-                }
-
-                break;
-            }
-        }
     }
 
     [RelayCommand]
@@ -360,14 +387,14 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task RequestVRCalibration()
     {
-        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration,
-            _processingLoopService.LeftCameraController, _processingLoopService.RightCameraController,
-            _localSettingsService, _eyeInferenceService);
-        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
+        // await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration,
+        //     _processingLoopService.LeftCameraController, _processingLoopService.RightCameraController,
+        //     _localSettingsService, _eyeInferenceService);
+        // await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
         // This will restart the right camera, as well as the left
-        CameraStop(LeftCamera);
-        CameraStart(LeftCamera);
+        // CameraStop(LeftCamera);
+        // CameraStart(LeftCamera);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
@@ -383,9 +410,13 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     {
         if (_disposed) return;
 
+        _faceCamera.Dispose();
+        _leftCamera.Dispose();
+        _rightCamera.Dispose();
+
         OscSendService.OnMessagesDispatched -= MessageDispatched;
         _msgCounterTimer.Stop();
 
-        _processingLoopService.BitmapUpdateEvent -= BitmapUpdateHandler;
+        // _processingLoopService.BitmapUpdateEvent -= BitmapUpdateHandler;
     }
 }

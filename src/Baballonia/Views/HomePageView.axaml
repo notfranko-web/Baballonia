@@ -110,8 +110,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStartCommand}"
-                                        CommandParameter="{Binding LeftCamera}"
+                                        Command="{Binding LeftCamera.StartCameraCommand}"
                                         Content="Start Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding LeftCamera.InferEnabled}" />
@@ -122,8 +121,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStopCommand}"
-                                        CommandParameter="{Binding LeftCamera}"
+                                        Command="{Binding  LeftCamera.StopCameraCommand}"
                                         Content="Stop Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding LeftCamera.InferEnabled}" />
@@ -321,8 +319,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStartCommand}"
-                                        CommandParameter="{Binding RightCamera}"
+                                        Command="{Binding RightCamera.StartCameraCommand}"
                                         Content="Start Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding RightCamera.InferEnabled}" />
@@ -333,8 +330,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStopCommand}"
-                                        CommandParameter="{Binding RightCamera}"
+                                        Command="{Binding RightCamera.StopCameraCommand}"
                                         Content="Stop Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding RightCamera.InferEnabled}" />
@@ -528,8 +524,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStartCommand}"
-                                        CommandParameter="{Binding FaceCamera}"
+                                        Command="{Binding FaceCamera.StartCameraCommand}"
                                         Content="Start Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding FaceCamera.InferEnabled}" />
@@ -540,8 +535,7 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding CameraStopCommand}"
-                                        CommandParameter="{Binding FaceCamera}"
+                                        Command="{Binding FaceCamera.StopCameraCommand}"
                                         Content="Stop Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding FaceCamera.InferEnabled}" />
