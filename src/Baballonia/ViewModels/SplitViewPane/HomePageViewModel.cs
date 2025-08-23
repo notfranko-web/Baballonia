@@ -108,22 +108,15 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (t is ImageTransformer transformer)
             {
                 transformer.Transformation.Roi = CropManager.CropZone;
-                SaveTransformer(transformer.Transformation);
             }
             else if (t is DualImageTransformer dualTransformer)
             {
                 if (Camera == Camera.Left)
-                {
                     dualTransformer.LeftTransformer.Transformation.Roi = CropManager.CropZone;
-                    SaveTransformer(dualTransformer.LeftTransformer.Transformation);
-                }
-
                 if (Camera == Camera.Right)
-                {
                     dualTransformer.RightTransformer.Transformation.Roi = CropManager.CropZone;
-                    SaveTransformer(dualTransformer.RightTransformer.Transformation);
-                }
             }
+            SaveTransformer();
         }
 
         [RelayCommand]
@@ -237,8 +230,15 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (t is ImageTransformer transformer)
             {
                 transformer.Transformation.UseHorizontalFlip = value;
-                SaveTransformer(transformer.Transformation);
             }
+            else if (t is DualImageTransformer dualTransformer)
+            {
+                if (Camera == Camera.Left)
+                    dualTransformer.LeftTransformer.Transformation.UseHorizontalFlip = value;
+                if (Camera == Camera.Right)
+                    dualTransformer.RightTransformer.Transformation.UseHorizontalFlip = value;
+            }
+            SaveTransformer();
         }
 
         partial void OnFlipVerticallyChanged(bool value)
@@ -247,7 +247,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (t is ImageTransformer transformer)
             {
                 transformer.Transformation.UseVerticalFlip = value;
-                SaveTransformer(transformer.Transformation);
             }
             else if (t is DualImageTransformer dualTransformer)
             {
@@ -256,6 +255,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.UseVerticalFlip = value;
             }
+            SaveTransformer();
         }
 
         partial void OnRotationChanged(float value)
@@ -264,7 +264,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (t is ImageTransformer transformer)
             {
                 transformer.Transformation.RotationRadians = value;
-                SaveTransformer(transformer.Transformation);
             }
             else if (t is DualImageTransformer dualTransformer)
             {
@@ -273,11 +272,23 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.RotationRadians = value;
             }
+            SaveTransformer();
         }
 
-        void SaveTransformer(CameraSettings transformer)
+        void SaveTransformer()
         {
-             _localSettingsService.SaveSettingAsync(Name, transformer);
+            var t = _processingPipeline.ImageTransformer;
+            if (t is ImageTransformer transformer)
+            {
+                _localSettingsService.SaveSettingAsync(Name, transformer.Transformation);
+            }
+            else if (t is DualImageTransformer dualTransformer)
+            {
+                if(Camera == Camera.Left)
+                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.LeftTransformer);
+                if(Camera == Camera.Right)
+                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.RightTransformer);
+            }
         }
 
         partial void OnGammaChanged(float value)
@@ -286,7 +297,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (t is ImageTransformer transformer)
             {
                 transformer.Transformation.Gamma = value;
-                SaveTransformer(transformer.Transformation);
             }
             else if (t is DualImageTransformer dualTransformer)
             {
@@ -295,6 +305,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.Gamma = value;
             }
+            SaveTransformer();
         }
 
         partial void OnIsCropModeChanged(bool value)
@@ -493,7 +504,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             model.StartButtonEnabled = false;
             model.StopButtonEnabled = true;
         });
-
+        await _localSettingsService.SaveSettingAsync("LastOpened" + FaceCamera.Name, FaceCamera.DisplayAddress);
     }
 
     [RelayCommand]
@@ -533,6 +544,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
             LeftCamera.StopButtonEnabled = true;
         });
+        await _localSettingsService.SaveSettingAsync("LastOpened" + LeftCamera.Name, LeftCamera.DisplayAddress);
     }
 
     [RelayCommand]
@@ -573,6 +585,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             RightCamera.StopButtonEnabled = true;
             RightCamera.StartButtonEnabled = false;
         });
+        await _localSettingsService.SaveSettingAsync("LastOpened" + RightCamera.Name, RightCamera.DisplayAddress);
     }
 
     [RelayCommand]
