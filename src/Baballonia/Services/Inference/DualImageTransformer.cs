@@ -10,7 +10,6 @@ public class DualImageTransformer : IImageTransformer
     public ImageTransformer LeftTransformer = new();
     public ImageTransformer RightTransformer = new();
 
-    private Queue<Mat> ImageQueue = new();
 
     public Mat? Apply(Mat image)
     {
@@ -36,41 +35,10 @@ public class DualImageTransformer : IImageTransformer
             return null;
         }
 
-        var histMatLeft = new Mat();
-        var histMatRight = new Mat();
-        Cv2.EqualizeHist(leftTransformed, histMatLeft);
-        Cv2.EqualizeHist(rightTransformed, histMatRight);
-
         var combined = new Mat();
-        Cv2.Merge([histMatLeft, histMatRight], combined);
+        Cv2.Merge([leftTransformed, rightTransformed], combined);
 
-        leftTransformed.Dispose();
-        rightTransformed.Dispose();
-        histMatLeft.Dispose();
-        histMatRight.Dispose();
-
-        ImageQueue.Enqueue(combined);
-
-        if (ImageQueue.Count < 5)
-            return null;
-
-        var removed = ImageQueue.Dequeue();
-        removed.Dispose();
-
-        var last4 = ImageQueue.Skip(ImageQueue.Count - 4).Take(4).Reverse().ToArray();
-
-        var channels = new List<Mat>();
-        foreach (var m in last4)
-        {
-            Mat[] splitChannels = Cv2.Split(m);
-            channels.AddRange(splitChannels);
-        }
-        Mat octoMat = new Mat();
-        Cv2.Merge(channels.ToArray(), octoMat);
-
-        foreach (var channel in channels)
-            channel.Dispose();
-
-        return octoMat;
+        return combined;
     }
+
 }

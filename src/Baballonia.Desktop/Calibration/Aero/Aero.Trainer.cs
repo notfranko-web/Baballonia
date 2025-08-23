@@ -34,7 +34,7 @@ public partial class AeroOverlayTrainerCombo
     private void HandleEyeImageEvent(Mat image)
     {
         int channels = image.Channels();
-        if (channels != 8)
+        if (channels != 2)
             return;
 
         var images = image.Split();

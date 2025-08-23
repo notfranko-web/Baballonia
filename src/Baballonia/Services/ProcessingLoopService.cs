@@ -18,8 +18,8 @@ public class ProcessingLoopService : IDisposable
 
     public event Action<Expressions> ExpressionChangeEvent;
 
-    public readonly DefaultProcessingPipeline FaceProcessingPipeline = new();
-    public readonly DefaultProcessingPipeline EyesProcessingPipeline = new();
+    public readonly FaceProcessingPipeline FaceProcessingPipeline = new();
+    public readonly EyeProcessingPipeline EyesProcessingPipeline = new();
 
     private readonly ILocalSettingsService _localSettingsService;
 

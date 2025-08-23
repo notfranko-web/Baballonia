@@ -21,6 +21,21 @@ public class DefaultProcessingPipeline : IProcessingPipeline
     public event Action<Mat> TransformedFrameEvent;
     public event Action<float[]> FilteredResultEvent;
 
+    protected void InvokeNewFrameEvent(Mat mat)
+    {
+        NewFrameEvent?.Invoke(mat);
+    }
+
+    protected void InvokeTransformedFrameEvent(Mat mat)
+    {
+        TransformedFrameEvent?.Invoke(mat);
+    }
+
+    protected void InvokeFilteredResultEvent(float[] arr)
+    {
+        FilteredResultEvent?.Invoke(arr);
+    }
+
     public float[]? RunUpdate()
     {
         var frame = VideoSource?.GetFrame(ColorType.Gray8);

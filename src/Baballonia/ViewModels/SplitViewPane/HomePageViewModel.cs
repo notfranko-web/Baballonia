@@ -170,7 +170,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                     }
                 }
             }
-            else if (channels == 8)
+            else if (channels == 2)
             {
                 var images = image.Split();
 
