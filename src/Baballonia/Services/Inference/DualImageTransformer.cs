@@ -27,21 +27,30 @@ public class DualImageTransformer : IImageTransformer
         using var rightRoi = new Mat(image, rightHalf);
 
         // transform both simultaneously with same settings
-        Mat leftTransformed = LeftTransformer.Apply(leftRoi);
-        Mat rightTransformed =  RightTransformer.Apply(rightRoi);
+        var leftTransformed = LeftTransformer.Apply(leftRoi);
+        var rightTransformed =  RightTransformer.Apply(rightRoi);
         if (leftTransformed == null || rightTransformed == null)
+        {
+            leftTransformed?.Dispose();
+            rightTransformed?.Dispose();
             return null;
+        }
 
-        Mat combined = new Mat();
+        var combined = new Mat();
         Cv2.Merge([leftTransformed, rightTransformed], combined);
+
+        leftTransformed.Dispose();
+        rightTransformed.Dispose();
 
         ImageQueue.Enqueue(combined);
 
-        if (ImageQueue.Count < 4)
+        if (ImageQueue.Count < 5)
             return null;
 
-        var last4 = ImageQueue.Skip(ImageQueue.Count - 4).Take(4).ToArray();
         var removed = ImageQueue.Dequeue();
+        removed.Dispose();
+
+        var last4 = ImageQueue.Skip(ImageQueue.Count - 4).Take(4).ToArray();
 
         var channels = new List<Mat>();
         foreach (var m in last4)
@@ -51,6 +60,9 @@ public class DualImageTransformer : IImageTransformer
         }
         Mat octoMat = new Mat();
         Cv2.Merge(channels.ToArray(), octoMat);
+
+        foreach (var channel in channels)
+            channel.Dispose();
 
         return octoMat;
     }

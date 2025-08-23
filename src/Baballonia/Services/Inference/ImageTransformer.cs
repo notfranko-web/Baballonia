@@ -32,10 +32,12 @@ public class ImageTransformer : IImageTransformer
         }
 
         using var roiMat = new Mat(image, roi);
+
         Mat resultMat = roiMat.Clone();
 
+        var channels = resultMat.Channels();
         // Convert to grayscale or extract red channel
-        if (resultMat.Channels() >= 2)
+        if (channels >= 2)
         {
             var newMat = new Mat();
             if (Transformation.UseRedChannel)

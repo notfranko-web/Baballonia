@@ -88,7 +88,7 @@
                                       FilterMode="Contains"
                                       FontSize="13"
                                       ItemsSource="{Binding LeftCamera.Suggestions}"
-                                      Text="{Binding LeftCamera.DisplayAddress}"
+                                      Text="{Binding LeftCamera.DisplayAddress, Mode=TwoWay}"
                                       TextChanged="EyeAddressEntry_OnTextChanged"
                                       Watermark="Start typing..." />
 
@@ -113,10 +113,10 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding LeftCamera.StartCameraCommand}"
+                                          Command="{Binding StartLeftCameraCommand}"
                                           Content="Start Camera"
                                           FontSize="13"
-                                          IsEnabled="{Binding LeftCamera.InferEnabled}" />
+                                          IsEnabled="{Binding LeftCamera.StartButtonEnabled}" />
 
                                       <Button
                                           Grid.Column="1"
@@ -127,7 +127,7 @@
                                           Command="{Binding  LeftCamera.StopCameraCommand}"
                                           Content="Stop Camera"
                                           FontSize="13"
-                                          IsEnabled="{Binding LeftCamera.InferEnabled}" />
+                                          IsEnabled="{Binding LeftCamera.StopButtonEnabled}" />
                                   </Grid>
                               </Grid>
 
@@ -297,7 +297,7 @@
                                       FilterMode="Contains"
                                       FontSize="13"
                                       ItemsSource="{Binding RightCamera.Suggestions}"
-                                      Text="{Binding RightCamera.DisplayAddress}"
+                                      Text="{Binding RightCamera.DisplayAddress, Mode=TwoWay}"
                                       TextChanged="EyeAddressEntry_OnTextChanged"
                                       Watermark="Start typing..." />
 
@@ -322,10 +322,10 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding RightCamera.StartCameraCommand}"
+                                          Command="{Binding StartRightCameraCommand}"
                                           Content="Start Camera"
                                           FontSize="13"
-                                          IsEnabled="{Binding RightCamera.InferEnabled}" />
+                                          IsEnabled="{Binding RightCamera.StartButtonEnabled}" />
 
                                       <Button
                                           Grid.Column="1"
@@ -336,7 +336,7 @@
                                           Command="{Binding RightCamera.StopCameraCommand}"
                                           Content="Stop Camera"
                                           FontSize="13"
-                                          IsEnabled="{Binding RightCamera.InferEnabled}" />
+                                          IsEnabled="{Binding RightCamera.StopButtonEnabled}" />
                                   </Grid>
                               </Grid>
 
@@ -503,7 +503,7 @@
                                     FilterMode="Contains"
                                     FontSize="13"
                                     ItemsSource="{Binding FaceCamera.Suggestions}"
-                                    Text="{Binding FaceCamera.DisplayAddress}"
+                                    Text="{Binding FaceCamera.DisplayAddress, Mode=TwoWay}"
                                     TextChanged="FaceAddressEntry_OnTextChanged"
                                     Watermark="Start typing..." />
 
@@ -528,10 +528,10 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding FaceCamera.StartCameraCommand}"
+                                        Command="{Binding StartFaceCameraCommand}"
                                         Content="Start Camera"
                                         FontSize="13"
-                                        IsEnabled="{Binding FaceCamera.InferEnabled}" />
+                                        IsEnabled="{Binding FaceCamera.StartButtonEnabled}" />
 
                                     <Button
                                         Grid.Column="1"
@@ -542,7 +542,7 @@
                                         Command="{Binding FaceCamera.StopCameraCommand}"
                                         Content="Stop Camera"
                                         FontSize="13"
-                                        IsEnabled="{Binding FaceCamera.InferEnabled}" />
+                                        IsEnabled="{Binding FaceCamera.StopButtonEnabled}" />
                                 </Grid>
                             </Grid>
 

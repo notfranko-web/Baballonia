@@ -6,8 +6,8 @@ namespace Baballonia.Services.Inference;
 
 public class DualCameraSource : IVideoSource
 {
-    private IVideoSource? LeftCam;
-    private IVideoSource? RightCam;
+    public IVideoSource? LeftCam;
+    public IVideoSource? RightCam;
 
     private Mat? LastLeftImage;
     private Mat? LastRightImage;
@@ -26,8 +26,8 @@ public class DualCameraSource : IVideoSource
     // if at least one image can be acquired, try to stitch it with last second image
     public Mat? GetFrame(ColorType? color = null)
     {
-        var leftImage = LeftCam?.GetFrame();
-        var rightImage = RightCam?.GetFrame();
+        var leftImage = LeftCam?.GetFrame(color);
+        var rightImage = RightCam?.GetFrame(color);
 
         if (leftImage == null && rightImage == null)
             return null;
@@ -44,9 +44,19 @@ public class DualCameraSource : IVideoSource
         Mat result = new Mat(height, width, leftImage.Type(), Scalar.All(0));
 
         leftImage.CopyTo(result[new Rect(0, 0, leftImage.Cols, leftImage.Rows)]);
-
         rightImage.CopyTo(result[new Rect(leftImage.Cols, 0, rightImage.Cols, rightImage.Rows)]);
 
+        leftImage.Dispose();
+        rightImage.Dispose();
+
         return result;
+    }
+
+    public void Dispose()
+    {
+        LeftCam?.Dispose();
+        RightCam?.Dispose();
+        LastLeftImage?.Dispose();
+        LastRightImage?.Dispose();
     }
 }

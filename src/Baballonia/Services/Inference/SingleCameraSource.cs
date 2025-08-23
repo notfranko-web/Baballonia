@@ -77,6 +77,12 @@ public class SingleCameraSource : IVideoSource
             image = convertedMat;
         }
 
+
         return image;
+    }
+
+    public void Dispose()
+    {
+        Stop();
     }
 }

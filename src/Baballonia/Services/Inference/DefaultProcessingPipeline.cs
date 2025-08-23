@@ -1,5 +1,6 @@
 ﻿using System;
 using Baballonia.Contracts;
+using Baballonia.Services.Inference.Enums;
 using OpenCvSharp;
 
 namespace Baballonia.Services.Inference;
@@ -22,9 +23,10 @@ public class DefaultProcessingPipeline : IProcessingPipeline
 
     public float[]? RunUpdate()
     {
-        var frame = VideoSource?.GetFrame();
+        var frame = VideoSource?.GetFrame(ColorType.Gray8);
         if(frame == null)
             return null;
+
         NewFrameEvent?.Invoke(frame);
 
         var transformed = ImageTransformer?.Apply(frame);
@@ -46,6 +48,9 @@ public class DefaultProcessingPipeline : IProcessingPipeline
             inferenceResult = Filter.Filter(inferenceResult);
 
         FilteredResultEvent?.Invoke(inferenceResult);
+
+        frame.Dispose();
+        transformed.Dispose();
 
         return inferenceResult;
     }

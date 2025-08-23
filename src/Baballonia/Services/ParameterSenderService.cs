@@ -92,7 +92,7 @@ public class ParameterSenderService : BackgroundService
         this.calibrationService = calibrationService;
         this.processingLoopService = processingLoopService;
 
-        // processingLoopService.ExpressionUpdateEvent += ExpressionUpdateHandler;
+         processingLoopService.ExpressionChangeEvent += ExpressionUpdateHandler;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
