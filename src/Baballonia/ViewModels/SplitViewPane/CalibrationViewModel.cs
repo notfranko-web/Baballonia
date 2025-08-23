@@ -138,7 +138,7 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
             }
         };
 
-        // _processingLoopService.ExpressionUpdateEvent += ExpressionUpdateHandler;
+        _processingLoopService.ExpressionChangeEvent += ExpressionUpdateHandler;
 
         LoadInitialSettings();
     }

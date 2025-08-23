@@ -29,7 +29,7 @@ public class OneEuroFilter : IFilter
     public float[] Filter(float[] x)
     {
         if (x.Length != xPrev.Length)
-            throw new ArgumentException("Input shape does not match initial shape.");
+            throw new ArgumentException($"Input shape does not match initial shape. Expected: {xPrev.Length}, got: {x.Length}");
 
         DateTime now = DateTime.UtcNow;
         float elapsedTime = (float)(now - tPrev).TotalSeconds;

@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Baballonia.Contracts;
 using Baballonia.Services.Inference;
+using Baballonia.Services.Inference.Filters;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using HarfBuzzSharp;
 using Microsoft.Extensions.Logging;
@@ -43,15 +44,43 @@ public class ProcessingLoopService : IDisposable
         FaceProcessingPipeline.ImageTransformer = new ImageTransformer();
         EyesProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
         EyesProcessingPipeline.ImageTransformer = new DualImageTransformer();
-        Setup();
+        _ = Setup();
+        _ = LoadFilters();
 
         _drawTimer.Tick += TimerEvent;
         _drawTimer.Start();
     }
 
-    private void Setup(bool useGpu = false)
+    private async Task LoadFilters()
     {
-        Task.Run(() =>
+        var enabled = await _localSettingsService.ReadSettingAsync<bool>("AppSettings_OneEuroEnabled");
+        var cutoff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroMinFreqCutoff");
+        var speedCutoff = await _localSettingsService.ReadSettingAsync<float>("AppSettings_OneEuroSpeedCutoff");
+
+        if (!enabled)
+            return;
+
+        float[] faceArray = new float[Utils.FaceRawExpressions];
+        var faceFilter = new OneEuroFilter(
+            faceArray,
+            minCutoff: cutoff,
+            beta: speedCutoff
+        );
+        float[] eyeArray = new float[Utils.EyeRawExpressions];
+        var eyeFilter = new OneEuroFilter(
+            eyeArray,
+            minCutoff: cutoff,
+            beta: speedCutoff
+        );
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            FaceProcessingPipeline.Filter = faceFilter;
+            EyesProcessingPipeline.Filter = eyeFilter;
+        });
+    }
+    private async Task Setup(bool useGpu = false)
+    {
+        await Task.Run(() =>
         {
             var l = Ioc.Default.GetService<ILogger<DefaultInferenceRunner>>()!;
             var faceInference = new DefaultInferenceRunner(l);
@@ -59,6 +88,7 @@ public class ProcessingLoopService : IDisposable
 
             var eyeInference = new DefaultInferenceRunner(l);
             eyeInference.Setup("eyeModel.onnx", useGpu);
+
 
             Dispatcher.UIThread.Post(() =>
             {
