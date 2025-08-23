@@ -26,6 +26,7 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
+
     public CameraSettings CameraSettings { get; set; }
 
     // TODO: move this somewhere else and not static
@@ -102,8 +103,8 @@ public class CameraController : IDisposable
                 useColor = true;
                 valid = _inferenceService.GetRawImage(CameraSettings, ColorType.Bgr24, out image);
                 CameraSize = (image.Width, image.Height);
-                CropManager.CameraSize.Width = image.Width;
-                CropManager.CameraSize.Height = image.Height;
+                CropManager.MaxSize.Width = image.Width;
+                CropManager.MaxSize.Height = image.Height;
                 break;
             default:
                 return null;
@@ -132,7 +133,6 @@ public class CameraController : IDisposable
                     new Vector(96, 96),
                     useColor ? PixelFormats.Bgr24 : PixelFormats.Gray8,
                     AlphaFormat.Opaque);
-                // _imageWindow.Source = _bitmap;
             }
 
             // Allocation-free image-update

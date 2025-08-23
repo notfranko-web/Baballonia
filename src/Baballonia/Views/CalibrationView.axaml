@@ -81,7 +81,6 @@
                         Maximum="1"
                         Minimum="-1"
                         TickFrequency="0.01"
-                        ShowMiddleThumb="True"
                         MiddleSelectedValue="{Binding CurrentExpression, Mode=OneWay}"
                         UpperSelectedValue="{Binding Upper, Mode=TwoWay}" />
                     </StackPanel>

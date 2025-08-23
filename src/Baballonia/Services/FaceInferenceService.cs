@@ -87,7 +87,7 @@ public class FaceInferenceService(ILogger<InferenceService> logger, ILocalSettin
         if (!platformConnector.Capture!.IsReady) return false;
 
         // Update the (256x256) image the onnx model uses
-        if (platformConnector.ExtractFrameData(platformSettings.Tensor.Buffer.Span, platformSettings.InputSize, cameraSettings) != true)
+        if (!platformConnector.ExtractFrameData(platformSettings.Tensor.Buffer.Span, platformSettings.InputSize, cameraSettings))
             return false;
 
         // Camera ready, prepare Mat as DenseTensor

@@ -20,9 +20,6 @@ public abstract class PlatformConnector
     protected ILogger Logger { get; }
     protected ILocalSettingsService LocalSettingsService { get; }
 
-    /// <summary>
-    /// The path to where the "data" lies
-    /// </summary>
     public string Url { get; private set; }
 
     /// <summary>
