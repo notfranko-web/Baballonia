@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -15,8 +14,6 @@ using Baballonia.Services.Inference.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using Discord;
-using HarfBuzzSharp;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using Buffer = System.Buffer;
@@ -569,33 +566,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             RightCamera.StartButtonEnabled = false;
         });
     }
-
-    // [RelayCommand]
-    // public void StartCamera(CameraControllerModel model)
-    // {
-    //     if (LeftCamera.DisplayAddress != "" && LeftCamera.DisplayAddress == RightCamera.DisplayAddress)
-    //     {
-    //         // If we already started in dual camera mode, get active and switch to single
-    //         if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualCamera)
-    //         {
-    //             var existingCam = dualCamera.LeftCam;
-    //             if (existingCam == null)
-    //                 existingCam = dualCamera.RightCam;
-    //             if (existingCam != null)
-    //             {
-    //                 _processingLoopService.EyesProcessingPipeline.VideoSource = existingCam;
-    //             }
-    //         }
-    //         model.StartCamera();
-    //     }
-    //     else
-    //     {
-    //         _processingLoopService.EyesProcessingPipeline.VideoSource = new DualCameraSource();
-    //         model.StartCamera();
-    //     }
-    //
-    //     SaveCameraSettings();
-    // }
 
     [RelayCommand]
     private void SelectWholeFrame(CameraControllerModel model)

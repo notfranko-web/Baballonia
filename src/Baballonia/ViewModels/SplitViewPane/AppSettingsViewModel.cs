@@ -105,4 +105,14 @@ public partial class AppSettingsViewModel : ViewModelBase
             SettingsService.Save(this);
         };
     }
+
+    partial void OnUseGPUChanged(bool value)
+    {
+        Task.Run(async () =>
+        {
+            await SettingsService.SaveSettingAsync("AppSettings_UseGPU", value);
+            await _processingLoopService.SetupFaceInference();
+            await _processingLoopService.SetupEyeInference();
+        });
+    }
 }
