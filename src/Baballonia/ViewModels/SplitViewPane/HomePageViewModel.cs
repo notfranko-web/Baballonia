@@ -114,9 +114,16 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             else if (t is DualImageTransformer dualTransformer)
             {
                 if (Camera == Camera.Left)
+                {
                     dualTransformer.LeftTransformer.Transformation.Roi = CropManager.CropZone;
+                    SaveTransformer(dualTransformer.LeftTransformer.Transformation);
+                }
+
                 if (Camera == Camera.Right)
+                {
                     dualTransformer.RightTransformer.Transformation.Roi = CropManager.CropZone;
+                    SaveTransformer(dualTransformer.RightTransformer.Transformation);
+                }
             }
         }
 
@@ -622,6 +629,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     private void CleanupResources()
     {
         if (_disposed) return;
+        FaceCamera.CamViewMode = CamViewMode.Tracking;
+        LeftCamera.CamViewMode = CamViewMode.Tracking;
+        RightCamera.CamViewMode = CamViewMode.Tracking;
 
         _faceCamera.Dispose();
         _leftCamera.Dispose();
