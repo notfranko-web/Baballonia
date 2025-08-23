@@ -36,11 +36,18 @@ public class DualImageTransformer : IImageTransformer
             return null;
         }
 
+        var histMatLeft = new Mat();
+        var histMatRight = new Mat();
+        Cv2.EqualizeHist(leftTransformed, histMatLeft);
+        Cv2.EqualizeHist(rightTransformed, histMatRight);
+
         var combined = new Mat();
-        Cv2.Merge([leftTransformed, rightTransformed], combined);
+        Cv2.Merge([histMatLeft, histMatRight], combined);
 
         leftTransformed.Dispose();
         rightTransformed.Dispose();
+        histMatLeft.Dispose();
+        histMatRight.Dispose();
 
         ImageQueue.Enqueue(combined);
 
@@ -50,7 +57,7 @@ public class DualImageTransformer : IImageTransformer
         var removed = ImageQueue.Dequeue();
         removed.Dispose();
 
-        var last4 = ImageQueue.Skip(ImageQueue.Count - 4).Take(4).ToArray();
+        var last4 = ImageQueue.Skip(ImageQueue.Count - 4).Take(4).Reverse().ToArray();
 
         var channels = new List<Mat>();
         foreach (var m in last4)

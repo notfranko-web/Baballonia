@@ -175,9 +175,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 var images = image.Split();
 
                 if (Camera == Camera.Left)
-                    UpdateBitmap(images[6]);
+                    UpdateBitmap(images[0]);
                 else if (Camera == Camera.Right)
-                    UpdateBitmap(images[7]);
+                    UpdateBitmap(images[1]);
             }
         }
 
@@ -285,9 +285,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             else if (t is DualImageTransformer dualTransformer)
             {
                 if(Camera == Camera.Left)
-                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.LeftTransformer);
+                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.LeftTransformer.Transformation);
                 if(Camera == Camera.Right)
-                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.RightTransformer);
+                    _localSettingsService.SaveSettingAsync(Name, dualTransformer.RightTransformer.Transformation);
             }
         }
 

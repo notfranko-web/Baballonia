@@ -38,8 +38,8 @@ public partial class AeroOverlayTrainerCombo
             return;
 
         var images = image.Split();
-        leftStreamService.UpdateMjpegFrame(images[6]);
-        rightStreamService.UpdateMjpegFrame(images[7]);
+        leftStreamService.UpdateMjpegFrame(images[0]);
+        rightStreamService.UpdateMjpegFrame(images[1]);
 
     }
     public async Task EyeTrackingCalibrationRequested(string calibrationRoutine)
