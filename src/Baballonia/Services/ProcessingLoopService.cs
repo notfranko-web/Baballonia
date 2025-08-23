@@ -14,7 +14,6 @@ namespace Baballonia.Services;
 
 public class ProcessingLoopService : IDisposable
 {
-
     public record struct Expressions(float[]? FaceExpression, float[]? EyeExpression);
 
     public event Action<Expressions> ExpressionChangeEvent;
@@ -44,7 +43,9 @@ public class ProcessingLoopService : IDisposable
         FaceProcessingPipeline.ImageTransformer = new ImageTransformer();
         EyesProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
         EyesProcessingPipeline.ImageTransformer = new DualImageTransformer();
-        _ = Setup();
+
+        _ = SetupFaceInference();
+        _ = SetupEyeInference();
         _ = LoadFilters();
 
         _drawTimer.Tick += TimerEvent;
@@ -78,23 +79,32 @@ public class ProcessingLoopService : IDisposable
             EyesProcessingPipeline.Filter = eyeFilter;
         });
     }
-    private async Task Setup(bool useGpu = false)
+
+    public async Task SetupEyeInference()
     {
+        var eyeModel = await _localSettingsService.ReadSettingAsync<string>("EyeHome_EyeModel", "eyeModel.onnx");
+        var useGpu = await _localSettingsService.ReadSettingAsync<bool>("AppSettings_UseGPU", false);
+
+        await Task.Run(() =>
+        {
+            var l = Ioc.Default.GetService<ILogger<DefaultInferenceRunner>>()!;
+            var eyeInference = new DefaultInferenceRunner(l);
+            eyeInference.Setup(eyeModel, useGpu);
+            Dispatcher.UIThread.Post(() => { EyesProcessingPipeline.InferenceService = eyeInference; });
+        });
+    }
+
+    public async Task SetupFaceInference()
+    {
+        var useGpu = await _localSettingsService.ReadSettingAsync<bool>("AppSettings_UseGPU", false);
+
         await Task.Run(() =>
         {
             var l = Ioc.Default.GetService<ILogger<DefaultInferenceRunner>>()!;
             var faceInference = new DefaultInferenceRunner(l);
             faceInference.Setup("faceModel.onnx", useGpu);
 
-            var eyeInference = new DefaultInferenceRunner(l);
-            eyeInference.Setup("eyeModel.onnx", useGpu);
-
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                FaceProcessingPipeline.InferenceService = faceInference;
-                EyesProcessingPipeline.InferenceService = eyeInference;
-            });
+            Dispatcher.UIThread.Post(() => { FaceProcessingPipeline.InferenceService = faceInference; });
         });
     }
 

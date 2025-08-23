@@ -26,6 +26,7 @@ namespace Baballonia.Services.Inference;
 
 public class CameraController : IDisposable
 {
+
     public CameraSettings CameraSettings { get; set; }
 
     // TODO: move this somewhere else and not static

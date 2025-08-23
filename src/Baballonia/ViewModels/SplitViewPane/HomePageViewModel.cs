@@ -533,7 +533,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     public async Task StartRightCamera()
     {
-
         RightCamera.StartButtonEnabled = false;
 
         var cameraSource = await StartCameraAsync(RightCamera.DisplayAddress);
@@ -607,14 +606,14 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task RequestVRCalibration()
     {
-        // await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration,
-        //     _processingLoopService.LeftCameraController, _processingLoopService.RightCameraController,
-        //     _localSettingsService, _eyeInferenceService);
-        // await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
+         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration);
+         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
 
-        // This will restart the right camera, as well as the left
-        // CameraStop(LeftCamera);
-        // CameraStart(LeftCamera);
+         await _processingLoopService.SetupEyeInference();
+
+         // This will restart the right camera, as well as the left
+         // CameraStop(LeftCamera);
+         // CameraStart(LeftCamera);
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
