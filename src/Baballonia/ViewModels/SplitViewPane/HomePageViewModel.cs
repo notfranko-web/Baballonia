@@ -693,12 +693,12 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     {
          await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration);
          await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
-
          await _processingLoopService.SetupEyeInference();
 
-         // This will restart the right camera, as well as the left
-         // CameraStop(LeftCamera);
-         // CameraStart(LeftCamera);
+         StopCamera(LeftCamera);
+         StopCamera(RightCamera);
+         await StartLeftCamera();
+         await StartRightCamera();
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
