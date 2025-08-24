@@ -32,6 +32,10 @@ public class DualCameraSource : IVideoSource
         if (leftImage == null && rightImage == null)
             return null;
 
+        // Track which images are new vs fallback
+        var leftIsNew = leftImage != null;
+        var rightIsNew = rightImage != null;
+
         leftImage ??= LastLeftImage;
         rightImage ??= LastRightImage;
 
@@ -43,7 +47,9 @@ public class DualCameraSource : IVideoSource
                 leftImage = rightImage.Clone();
                 break;
             default:
-                rightImage = leftImage.Clone();
+                // Don't clone - preserve both cameras when both are available!
+                if (rightImage == null)
+                    rightImage = leftImage.Clone();
                 break;
         }
 
@@ -55,8 +61,24 @@ public class DualCameraSource : IVideoSource
         leftImage.CopyTo(result[new Rect(0, 0, leftImage.Cols, leftImage.Rows)]);
         rightImage.CopyTo(result[new Rect(leftImage.Cols, 0, rightImage.Cols, rightImage.Rows)]);
 
-        leftImage.Dispose();
-        rightImage.Dispose();
+        // Update last images only for new frames
+        if (leftIsNew)
+        {
+            LastLeftImage?.Dispose();
+            LastLeftImage = leftImage.Clone();
+        }
+        
+        if (rightIsNew)
+        {
+            LastRightImage?.Dispose();
+            LastRightImage = rightImage.Clone();
+        }
+
+        // Only dispose new images, not the cached LastImages
+        if (leftIsNew)
+            leftImage.Dispose();
+        if (rightIsNew)
+            rightImage.Dispose();
 
         return result;
     }
