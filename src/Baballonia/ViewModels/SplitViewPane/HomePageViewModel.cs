@@ -71,6 +71,11 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 DisplayAddress = displayAddress;
+                FlipHorizontally = camSettings.UseHorizontalFlip;
+                FlipVertically = camSettings.UseVerticalFlip;
+                Rotation = camSettings.RotationRadians;
+                Gamma = camSettings.Gamma;
+
 
                 CropManager.SetCropZone(camSettings.Roi);
                 OverlayRectangle = CropManager.CropZone.GetRect();
