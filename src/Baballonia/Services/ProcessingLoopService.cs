@@ -126,7 +126,7 @@ public class ProcessingLoopService : IDisposable
             _logger.LogError("Unexpected exception in Face Tracking pipeline, stopping... : {}", ex);
             FaceProcessingPipeline.VideoSource?.Dispose();
             FaceProcessingPipeline.VideoSource = null;
-            PipelineExceptionEvent.Invoke(ex);
+            PipelineExceptionEvent?.Invoke(ex);
         }
 
         try
@@ -140,7 +140,7 @@ public class ProcessingLoopService : IDisposable
             _logger.LogError("Unexpected exception in Eye Tracking pipeline, stopping... : {}", ex);
             EyesProcessingPipeline.VideoSource?.Dispose();
             EyesProcessingPipeline.VideoSource = null;
-            PipelineExceptionEvent.Invoke(ex);
+            PipelineExceptionEvent?.Invoke(ex);
         }
 
         if (expressions.FaceExpression != null || expressions.EyeExpression != null)

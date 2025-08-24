@@ -433,16 +433,19 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             FaceCamera.StopButtonEnabled = false;
 
             FaceCamera.Bitmap = null;
+            FaceCamera.IsCameraRunning = false;
         }
         if (_processingLoopService.EyesProcessingPipeline.VideoSource == null)
         {
             LeftCamera.StartButtonEnabled = true;
             LeftCamera.StopButtonEnabled = false;
             LeftCamera.Bitmap = null;
+            LeftCamera.IsCameraRunning = false;
 
             RightCamera.StartButtonEnabled = true;
             RightCamera.StopButtonEnabled = false;
             RightCamera.Bitmap = null;
+            RightCamera.IsCameraRunning = false;
         }
 
     }
