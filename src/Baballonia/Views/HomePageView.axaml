@@ -124,7 +124,8 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding  LeftCamera.StopCameraCommand}"
+                                          Command="{Binding  StopCameraCommand}"
+                                          CommandParameter="{Binding LeftCamera}"
                                           Content="Stop Camera"
                                           FontSize="13"
                                           IsEnabled="{Binding LeftCamera.StopButtonEnabled}" />
@@ -351,7 +352,8 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding RightCamera.StopCameraCommand}"
+                                          Command="{Binding StopCameraCommand}"
+                                          CommandParameter="{Binding RightCamera}"
                                           Content="Stop Camera"
                                           FontSize="13"
                                           IsEnabled="{Binding RightCamera.StopButtonEnabled}" />

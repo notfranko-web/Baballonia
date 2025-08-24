@@ -45,9 +45,9 @@ public abstract class PlatformConnector
     /// <summary>
     /// Initializes a Platform Connector
     /// </summary>
-    public virtual void Initialize(string source)
+    public virtual bool Initialize(string source)
     {
-        if (string.IsNullOrEmpty(source)) return;
+        if (string.IsNullOrEmpty(source)) return false;
 
         this.Source = source;
 
@@ -61,16 +61,20 @@ public abstract class PlatformConnector
                 break;
             }
 
-            if (Capture is null) return;
+            if (Capture is null) return false;
 
             Capture.StartCapture();
             Logger.LogInformation($"Starting {Capture.GetType().Name} capture source...");
+            return true;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+            return false;
             throw;
         }
+
+        return false;
     }
 
     /// <summary>

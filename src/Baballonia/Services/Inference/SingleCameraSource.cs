@@ -25,8 +25,7 @@ public class SingleCameraSource : IVideoSource
 
     public bool Start()
     {
-        _platformConnector.Initialize(_cameraAddress);
-        return true;
+        return _platformConnector.Initialize(_cameraAddress);
     }
 
     public bool Stop()

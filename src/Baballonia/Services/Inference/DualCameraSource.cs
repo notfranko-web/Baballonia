@@ -35,8 +35,17 @@ public class DualCameraSource : IVideoSource
         leftImage ??= LastLeftImage;
         rightImage ??= LastRightImage;
 
-        if (leftImage == null || rightImage == null)
-            return null;
+        switch (leftImage)
+        {
+            case null when rightImage == null:
+                return null;
+            case null:
+                leftImage = rightImage.Clone();
+                break;
+            default:
+                rightImage = leftImage.Clone();
+                break;
+        }
 
         int height = Math.Max(leftImage.Rows, rightImage.Rows);
         int width = leftImage.Cols + rightImage.Cols;

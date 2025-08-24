@@ -49,7 +49,7 @@ public sealed class OpenCvCapture(string source) : Capture(source)
         return lowered.StartsWith("/dev/video") ||
                lowered.EndsWith("appsink") ||
                int.TryParse(connectionString, out _) ||
-               Uri.TryCreate(connectionString, UriKind.RelativeOrAbsolute, out _);
+               Uri.TryCreate(connectionString, UriKind.Absolute, out _);
     }
 
     public override async Task<bool> StartCapture()

@@ -125,13 +125,14 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         }
 
         [RelayCommand]
-        void StopCamera()
+        public void StopCamera()
         {
             _processingPipeline.VideoSource?.Dispose();
             _processingPipeline.VideoSource = null;
 
             Bitmap = null;
 
+            IsCameraRunning = false;
             StartButtonEnabled = true;
             StopButtonEnabled = false;
         }
@@ -145,7 +146,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 return;
             }
 
-            IsCameraRunning = true;
+            if (!IsCameraRunning)
+                return;
+
             if (Camera == Camera.Face)
             {
                 UpdateBitmap(image);
@@ -226,7 +229,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         partial void OnBitmapChanged(WriteableBitmap? value)
         {
-            IsCameraRunning = value != null;
+            // IsCameraRunning = value != null;
         }
 
         partial void OnFlipHorizontallyChanged(bool value)
@@ -479,25 +482,63 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (cameraSource == null)
                 return null;
 
-            cameraSource.Start();
-            return cameraSource;
+            return !cameraSource.Start() ? null : cameraSource;
         });
+    }
+
+    [RelayCommand]
+    public void StopCamera(CameraControllerModel model)
+    {
+        var pipeline = _processingLoopService.EyesProcessingPipeline;
+        switch (pipeline.VideoSource)
+        {
+            case SingleCameraSource singleCameraSource:
+                singleCameraSource.Dispose();
+                pipeline.VideoSource = null;
+
+                LeftCamera.IsCameraRunning = false;
+                LeftCamera.StartButtonEnabled = true;
+                LeftCamera.StopButtonEnabled = false;
+
+                RightCamera.IsCameraRunning = false;
+                RightCamera.StartButtonEnabled = true;
+                RightCamera.StopButtonEnabled = false;
+                break;
+            case DualCameraSource dualCameraSource:
+                if (model.Camera == Camera.Right)
+                {
+                    dualCameraSource.RightCam?.Dispose();
+                    dualCameraSource.RightCam = null;
+
+                    RightCamera.IsCameraRunning = false;
+                    RightCamera.StartButtonEnabled = true;
+                    RightCamera.StopButtonEnabled = false;
+                }
+                else if (model.Camera == Camera.Left)
+                {
+                    dualCameraSource.LeftCam?.Dispose();
+                    dualCameraSource.LeftCam = null;
+
+                    LeftCamera.IsCameraRunning = false;
+                    LeftCamera.StartButtonEnabled = true;
+                    LeftCamera.StopButtonEnabled = false;
+                }
+                break;
+        }
     }
 
     [RelayCommand]
     public async Task StartFaceCamera()
     {
-        var model = FaceCamera;
-
-        model.StartButtonEnabled = false;
-        model.StopButtonEnabled = false;
-        var cameraSource = await StartCameraAsync(model.DisplayAddress);
+        FaceCamera.StartButtonEnabled = false;
+        FaceCamera.StopButtonEnabled = false;
+        var cameraSource = await StartCameraAsync(FaceCamera.DisplayAddress);
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (cameraSource == null)
             {
-                model.StartButtonEnabled = true;
-                model.StopButtonEnabled = false;
+                FaceCamera.StartButtonEnabled = true;
+                FaceCamera.StopButtonEnabled = false;
                 return;
             }
 
@@ -509,8 +550,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
             _processingLoopService.FaceProcessingPipeline.VideoSource = cameraSource;
 
-            model.StartButtonEnabled = false;
-            model.StopButtonEnabled = true;
+            FaceCamera.IsCameraRunning = true;
+            FaceCamera.StartButtonEnabled = false;
+            FaceCamera.StopButtonEnabled = true;
         });
         await _localSettingsService.SaveSettingAsync("LastOpened" + FaceCamera.Name, FaceCamera.DisplayAddress);
     }
@@ -519,6 +561,20 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     public async Task StartLeftCamera()
     {
         LeftCamera.StartButtonEnabled = false;
+
+        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress) && string.Equals(RightCamera.DisplayAddress, LeftCamera.DisplayAddress))
+        {
+            if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualCameraSource)
+            {
+                var tmp = dualCameraSource.RightCam;
+                _processingLoopService.EyesProcessingPipeline.VideoSource = tmp;
+
+                LeftCamera.IsCameraRunning = true;
+                LeftCamera.StopButtonEnabled = true;
+                LeftCamera.StartButtonEnabled = false;
+                return;
+            }
+        }
 
         var cameraSource = await StartCameraAsync(LeftCamera.DisplayAddress);
         await Dispatcher.UIThread.InvokeAsync(() =>
@@ -534,23 +590,30 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
             if (pipeline.VideoSource == null)
             {
-                pipeline.VideoSource = cameraSource;
-            }
-            else if (pipeline.VideoSource is SingleCameraSource)
-            {
-                var rightSource = pipeline.VideoSource;
-
                 var dualSource = new DualCameraSource();
                 dualSource.LeftCam = cameraSource;
-                dualSource.RightCam = rightSource;
                 pipeline.VideoSource = dualSource;
             }
-            else if (pipeline.VideoSource is DualCameraSource dualCameraSource)
+            else if (pipeline.VideoSource is DualCameraSource dualSource)
             {
-                dualCameraSource.LeftCam = cameraSource;
+                dualSource.LeftCam = cameraSource;
+            }
+            else if (pipeline.VideoSource is SingleCameraSource singleCameraSource)
+            {
+                var tmp = singleCameraSource;
+                pipeline.VideoSource = null;
+                var dual = new DualCameraSource();
+                dual.RightCam = tmp;
+                dual.LeftCam = cameraSource;
+
+                pipeline.VideoSource = dual;
             }
 
+
+            LeftCamera.IsCameraRunning = true;
+
             LeftCamera.StopButtonEnabled = true;
+            LeftCamera.StartButtonEnabled = false;
         });
         await _localSettingsService.SaveSettingAsync("LastOpened" + LeftCamera.Name, LeftCamera.DisplayAddress);
     }
@@ -559,6 +622,20 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     public async Task StartRightCamera()
     {
         RightCamera.StartButtonEnabled = false;
+
+        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress) && string.Equals(RightCamera.DisplayAddress, LeftCamera.DisplayAddress))
+        {
+            if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualCameraSource)
+            {
+                var tmp = dualCameraSource.LeftCam;
+                _processingLoopService.EyesProcessingPipeline.VideoSource = tmp;
+
+                RightCamera.IsCameraRunning = true;
+                RightCamera.StopButtonEnabled = true;
+                RightCamera.StartButtonEnabled = false;
+                return;
+            }
+        }
 
         var cameraSource = await StartCameraAsync(RightCamera.DisplayAddress);
         await Dispatcher.UIThread.InvokeAsync(() =>
@@ -574,21 +651,26 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
             if (pipeline.VideoSource == null)
             {
-                pipeline.VideoSource = cameraSource;
-            }
-            else if (pipeline.VideoSource is SingleCameraSource)
-            {
-                var leftSource = pipeline.VideoSource;
-
                 var dualSource = new DualCameraSource();
-                dualSource.LeftCam = leftSource;
                 dualSource.RightCam = cameraSource;
                 pipeline.VideoSource = dualSource;
             }
-            else if (pipeline.VideoSource is DualCameraSource dualCameraSource)
+            else if (pipeline.VideoSource is DualCameraSource dualSource)
             {
-                dualCameraSource.RightCam = cameraSource;
+                dualSource.RightCam = cameraSource;
             }
+            else if (pipeline.VideoSource is SingleCameraSource singleCameraSource)
+            {
+                var tmp = singleCameraSource;
+                pipeline.VideoSource = null;
+                var dual = new DualCameraSource();
+                dual.LeftCam = tmp;
+                dual.RightCam = cameraSource;
+
+                pipeline.VideoSource = dual;
+            }
+
+            RightCamera.IsCameraRunning = true;
 
             RightCamera.StopButtonEnabled = true;
             RightCamera.StartButtonEnabled = false;
