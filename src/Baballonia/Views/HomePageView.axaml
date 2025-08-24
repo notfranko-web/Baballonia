@@ -216,7 +216,7 @@
                           <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
                               <StackPanel>
 
-                                  <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                  <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                                       <StackPanel Grid.Row="0" Grid.Column="0">
                                           <TextBlock
                                               FontSize="14"
@@ -259,6 +259,24 @@
                                           Maximum="6.28"
                                           Minimum="0"
                                           Value="{Binding LeftCamera.Rotation}" />
+
+                                      <StackPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock
+                                          FontSize="14"
+                                          FontWeight="Medium"
+                                          Text="Image Brightness" />
+                                        <TextBlock FontSize="12" Text="Adjust the brightness of the image" />
+                                      </StackPanel>
+                                      <Slider
+                                        x:Name="LeftEyeGammaSlider"
+                                        Grid.Row="5"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        TickPlacement="BottomRight"
+                                        Maximum="2"
+                                        Minimum="0.5"
+                                        Ticks="0.5,1,2"
+                                        Value="{Binding LeftCamera.Gamma, Mode=TwoWay}" />
                                   </Grid>
                               </StackPanel>
                           </Border>
@@ -425,7 +443,7 @@
                           <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="8">
                               <StackPanel>
 
-                                  <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                  <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                                       <StackPanel Grid.Row="0" Grid.Column="0">
                                           <TextBlock
                                               FontSize="14"
@@ -468,6 +486,24 @@
                                           Maximum="6.28"
                                           Minimum="0"
                                           Value="{Binding RightCamera.Rotation}" />
+
+                                      <StackPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock
+                                          FontSize="14"
+                                          FontWeight="Medium"
+                                          Text="Image Brightness" />
+                                        <TextBlock FontSize="12" Text="Adjust the brightness of the image" />
+                                      </StackPanel>
+                                      <Slider
+                                        x:Name="RightEyeGammaSlider"
+                                        Grid.Row="5"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        TickPlacement="BottomRight"
+                                        Maximum="2"
+                                        Minimum="0.5"
+                                        Ticks="0.5,1,2"
+                                        Value="{Binding RightCamera.Gamma, Mode=TwoWay}" />
                                   </Grid>
                               </StackPanel>
                           </Border>
@@ -687,11 +723,11 @@
                                         Grid.Row="5"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="3"
-                                        IsSnapToTickEnabled="True"
-                                        Maximum="1"
-                                        Minimum="0"
-                                        TickFrequency="0.1"
-                                        Value="{Binding FaceCamera.Gamma}" />
+                                        TickPlacement="BottomRight"
+                                        Maximum="2"
+                                        Minimum="0.5"
+                                        Ticks="0.5,1,2"
+                                        Value="{Binding FaceCamera.Gamma, Mode=TwoWay}" />
                                 </Grid>
                             </StackPanel>
                         </Border>

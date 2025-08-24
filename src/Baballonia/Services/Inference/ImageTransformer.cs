@@ -49,6 +49,15 @@ public class ImageTransformer : IImageTransformer
             resultMat = newMat;
         }
 
+        // Adjust brightness
+        if (Transformation.Gamma is not 1f)
+        {
+            var newMat = new Mat();
+            resultMat.ConvertTo(newMat, image.Type(),Transformation.Gamma);
+            resultMat.Dispose();
+            resultMat = newMat;
+        }
+
         // Adjust brightness and type conversion
 
         double rotationRadians = Transformation.RotationRadians;

@@ -36,14 +36,14 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         [ObservableProperty] private bool _startButtonEnabled = true;
         [ObservableProperty] private bool _stopButtonEnabled = false;
-        [ObservableProperty] private bool _hintEnabled;
-        [ObservableProperty] private bool _inferEnabled;
+        [ObservableProperty] private bool _hintEnabled = false;
+        [ObservableProperty] private bool _inferEnabled = false;
         [ObservableProperty] private string _displayAddress;
         [ObservableProperty] private Rect _overlayRectangle;
         [ObservableProperty] private bool _flipHorizontally = false;
         [ObservableProperty] private bool _flipVertically = false;
         [ObservableProperty] private float _rotation = 0f;
-        [ObservableProperty] private float _gamma = 0.5f;
+        [ObservableProperty] private float _gamma = 1f;
         [ObservableProperty] private bool _isCropMode = false;
         [ObservableProperty] private bool _isCameraRunning = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
@@ -298,6 +298,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         partial void OnGammaChanged(float value)
         {
+            // If the slider is close enough to 1, then we treat it as 1
+            value = Math.Abs(value - 1) > 0.1f ? value : 1f;
+
             var t = _processingPipeline.ImageTransformer;
             if (t is ImageTransformer transformer)
             {
