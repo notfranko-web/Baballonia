@@ -572,6 +572,8 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 LeftCamera.IsCameraRunning = true;
                 LeftCamera.StopButtonEnabled = true;
                 LeftCamera.StartButtonEnabled = false;
+
+                await _localSettingsService.SaveSettingAsync("LastOpened" + LeftCamera.Name, LeftCamera.DisplayAddress);
                 return;
             }
         }
@@ -633,6 +635,8 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 RightCamera.IsCameraRunning = true;
                 RightCamera.StopButtonEnabled = true;
                 RightCamera.StartButtonEnabled = false;
+
+                await _localSettingsService.SaveSettingAsync("LastOpened" + RightCamera.Name, RightCamera.DisplayAddress);
                 return;
             }
         }
