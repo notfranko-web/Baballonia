@@ -36,7 +36,7 @@ public class DualImageTransformer : IImageTransformer
         }
 
         var combined = new Mat();
-        Cv2.Merge([rightTransformed, leftTransformed], combined);
+        Cv2.Merge([leftTransformed, rightTransformed], combined);
 
         return combined;
     }

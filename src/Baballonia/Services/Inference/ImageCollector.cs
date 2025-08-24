@@ -16,7 +16,8 @@ public class ImageCollector : IImageTransformer
         }
 
         Mat merged = new Mat();
-        Cv2.Merge(split, merged);
+        // swap left and right because inference requires them in that way
+        Cv2.Merge(split.Reverse().ToArray(), merged);
 
         ImageQueue.Enqueue(merged);
 
@@ -34,12 +35,12 @@ public class ImageCollector : IImageTransformer
             Mat[] splitChannels = Cv2.Split(m);
             channels.AddRange(splitChannels);
         }
-        Mat octoMat = new Mat();
-        Cv2.Merge(channels.ToArray(), octoMat);
+        Mat octoMatrix = new Mat();
+        Cv2.Merge(channels.ToArray(), octoMatrix);
 
         foreach (var channel in channels)
             channel.Dispose();
 
-        return octoMat;
+        return octoMatrix;
     }
 }
