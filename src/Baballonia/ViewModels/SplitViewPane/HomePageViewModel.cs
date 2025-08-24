@@ -86,6 +86,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                     case null:
                         return;
                     case SingleCameraSource singleCamera:
+                        IsCameraRunning = true;
                         StartButtonEnabled = false;
                         StopButtonEnabled = true;
                         break;
@@ -96,6 +97,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                             case Camera.Right when dualCamera.RightCam == null:
                                 return;
                             default:
+                                IsCameraRunning = true;
                                 StartButtonEnabled = false;
                                 StopButtonEnabled = true;
                                 break;
@@ -694,11 +696,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
          await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration);
          await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
          await _processingLoopService.SetupEyeInference();
-
-         StopCamera(LeftCamera);
-         StopCamera(RightCamera);
-         await StartLeftCamera();
-         await StartRightCamera();
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;
