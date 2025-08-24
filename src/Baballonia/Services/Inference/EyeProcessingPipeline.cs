@@ -1,5 +1,6 @@
 ﻿using System;
 using Baballonia.Contracts;
+using Baballonia.Helpers;
 using Baballonia.Services.Inference.Enums;
 using OpenCvSharp;
 
@@ -7,13 +8,16 @@ namespace Baballonia.Services.Inference;
 
 public class EyeProcessingPipeline : DefaultProcessingPipeline
 {
-    private HistogramTranformer histogramTranformer = new();
-    private ImageCollector imageCollector = new();
+    private readonly FastCorruptionDetector _fastCorruptionDetector = new();
+    private readonly ImageCollector _imageCollector = new();
 
     public float[]? RunUpdate()
     {
         var frame = VideoSource?.GetFrame(ColorType.Gray8);
         if(frame == null)
+            return null;
+
+        if (_fastCorruptionDetector.IsCorrupted(frame).isCorrupted)
             return null;
 
         InvokeNewFrameEvent(frame);
@@ -24,7 +28,7 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
 
         InvokeTransformedFrameEvent(transformed);
 
-        var collected = imageCollector.Apply(transformed);
+        var collected = _imageCollector.Apply(transformed);
         transformed.Dispose();
         if (collected == null)
             return null;
