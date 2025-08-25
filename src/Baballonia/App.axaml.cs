@@ -77,10 +77,6 @@ public class App : Application
                 services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<ILanguageSelectorService, LanguageSelectorService>();
-                services.AddSingleton<ISingleCameraEyeInferenceService, SingleCameraEyeInferenceService>();
-                services.AddSingleton<IDualCameraEyeInferenceService, DualCameraEyeInferenceService>();
-
-                services.AddSingleton<IFaceInferenceService, FaceInferenceService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IDispatcherService, DispatcherService>();
