@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
@@ -102,6 +104,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                                 StopButtonEnabled = true;
                                 break;
                         }
+
                         break;
                 }
             });
@@ -123,6 +126,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.Roi = CropManager.CropZone;
             }
+
             SaveTransformer();
         }
 
@@ -248,6 +252,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.UseHorizontalFlip = value;
             }
+
             SaveTransformer();
         }
 
@@ -265,6 +270,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.UseVerticalFlip = value;
             }
+
             SaveTransformer();
         }
 
@@ -282,6 +288,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.RotationRadians = value;
             }
+
             SaveTransformer();
         }
 
@@ -294,9 +301,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             }
             else if (t is DualImageTransformer dualTransformer)
             {
-                if(Camera == Camera.Left)
+                if (Camera == Camera.Left)
                     _localSettingsService.SaveSettingAsync(Name, dualTransformer.LeftTransformer.Transformation);
-                if(Camera == Camera.Right)
+                if (Camera == Camera.Right)
                     _localSettingsService.SaveSettingAsync(Name, dualTransformer.RightTransformer.Transformation);
             }
         }
@@ -318,6 +325,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 if (Camera == Camera.Right)
                     dualTransformer.RightTransformer.Transformation.Gamma = value;
             }
+
             SaveTransformer();
         }
 
@@ -419,10 +427,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         _processingLoopService.PipelineExceptionEvent += PipelineExceptionEventHandler;
 
-        Dispatcher.UIThread.Post(async () =>
-        {
-            await SetupCameraControllers();
-        });
+        Dispatcher.UIThread.Post(async () => { await SetupCameraControllers(); });
     }
 
     private void PipelineExceptionEventHandler(Exception ex)
@@ -435,6 +440,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             FaceCamera.Bitmap = null;
             FaceCamera.IsCameraRunning = false;
         }
+
         if (_processingLoopService.EyesProcessingPipeline.VideoSource == null)
         {
             LeftCamera.StartButtonEnabled = true;
@@ -447,7 +453,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             RightCamera.Bitmap = null;
             RightCamera.IsCameraRunning = false;
         }
-
     }
 
     private async Task SetupCameraControllers()
@@ -467,10 +472,6 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private void SaveCameraSettings()
-    {
-    }
-
     private async Task<IVideoSource?> StartCameraAsync(string address)
     {
         var camera = address;
@@ -487,7 +488,23 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             if (cameraSource == null)
                 return null;
 
-            return !cameraSource.Start() ? null : cameraSource;
+            if (!cameraSource.Start())
+            {
+                _logger.LogError("Could not initialize {}", address);
+                return null;
+            }
+
+            Stopwatch sw = Stopwatch.StartNew();
+            var timeout = TimeSpan.FromSeconds(3);
+            while (sw.Elapsed < timeout)
+            {
+                var testFrame = cameraSource.GetFrame();
+                if (testFrame != null)
+                    return cameraSource;
+            }
+            _logger.LogError("No data was received from {}, closing...", address);
+            cameraSource.Dispose();
+            return null;
         });
     }
 
@@ -528,163 +545,173 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                     LeftCamera.StartButtonEnabled = true;
                     LeftCamera.StopButtonEnabled = false;
                 }
+
                 break;
         }
     }
 
-    [RelayCommand]
-    public async Task StartFaceCamera()
+
+    private SemaphoreSlim _cameraStartLock = new(1, 1);
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    public async Task StartCamera(CameraControllerModel model)
     {
-        FaceCamera.StartButtonEnabled = false;
-        FaceCamera.StopButtonEnabled = false;
-        var cameraSource = await StartCameraAsync(FaceCamera.DisplayAddress);
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        SetButtons(model, false, false);
+
+        if (model.Camera == Camera.Face)
         {
-            if (cameraSource == null)
-            {
-                FaceCamera.StartButtonEnabled = true;
-                FaceCamera.StopButtonEnabled = false;
-                return;
-            }
-
-            if (_processingLoopService.FaceProcessingPipeline.VideoSource != null)
-            {
-                _processingLoopService.FaceProcessingPipeline.VideoSource.Dispose();
-                _processingLoopService.FaceProcessingPipeline.VideoSource = null;
-            }
-
-            _processingLoopService.FaceProcessingPipeline.VideoSource = cameraSource;
-
-            FaceCamera.IsCameraRunning = true;
-            FaceCamera.StartButtonEnabled = false;
-            FaceCamera.StopButtonEnabled = true;
-        });
-        await _localSettingsService.SaveSettingAsync("LastOpened" + FaceCamera.Name, FaceCamera.DisplayAddress);
-    }
-
-    [RelayCommand]
-    public async Task StartLeftCamera()
-    {
-        LeftCamera.StartButtonEnabled = false;
-
-        if (!string.IsNullOrEmpty(LeftCamera.DisplayAddress) && string.Equals(RightCamera.DisplayAddress, LeftCamera.DisplayAddress))
-        {
-            if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualCameraSource)
-            {
-                var tmp = dualCameraSource.RightCam;
-                _processingLoopService.EyesProcessingPipeline.VideoSource = tmp;
-
-                LeftCamera.IsCameraRunning = true;
-                LeftCamera.StopButtonEnabled = true;
-                LeftCamera.StartButtonEnabled = false;
-
-                await _localSettingsService.SaveSettingAsync("LastOpened" + LeftCamera.Name, LeftCamera.DisplayAddress);
-                return;
-            }
+            await StartCameraAsync(model);
+            return;
         }
 
-        var cameraSource = await StartCameraAsync(LeftCamera.DisplayAddress);
+        await _cameraStartLock.WaitAsync();
+        try
+        {
+            await StartCameraAsync(model);
+        }
+        finally
+        {
+            _cameraStartLock.Release();
+        }
+    }
+
+    private bool IsSameAddressAsOtherEye(CameraControllerModel model)
+    {
+        var type = model.Camera;
+        if (type == Camera.Left)
+            return !string.IsNullOrEmpty(model.DisplayAddress) &&
+                   string.Equals(model.DisplayAddress, RightCamera.DisplayAddress);
+        if (type == Camera.Right)
+            return !string.IsNullOrEmpty(model.DisplayAddress) &&
+                   string.Equals(model.DisplayAddress, LeftCamera.DisplayAddress);
+        return false;
+    }
+
+    private bool TryHandleSameEyeCamera(CameraControllerModel model)
+    {
+        var type = model.Camera;
+
+        if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualSource)
+        {
+            if (type == Camera.Left && dualSource.RightCam != null)
+                _processingLoopService.EyesProcessingPipeline.VideoSource = dualSource.RightCam;
+            else if (dualSource.LeftCam != null)
+                _processingLoopService.EyesProcessingPipeline.VideoSource = dualSource.LeftCam;
+            else
+                return false;
+
+            model.IsCameraRunning = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    private Task SaveLastOpenedAsync(CameraControllerModel model)
+    {
+        return _localSettingsService.SaveSettingAsync("LastOpened" + model.Name, model.DisplayAddress);
+    }
+
+    private void SetButtons(CameraControllerModel model, bool startEnabled, bool stopEnabled)
+    {
+        model.StartButtonEnabled = startEnabled;
+        model.StopButtonEnabled = stopEnabled;
+    }
+
+
+    private async Task StartCameraAsync(CameraControllerModel model)
+    {
+        var type = model.Camera;
+
+        var isSameEye = await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (type == Camera.Face || !IsSameAddressAsOtherEye(model)) return false;
+
+            var tryRes = TryHandleSameEyeCamera(model);
+            if (tryRes)
+                SetButtons(model, false, true);
+            return tryRes;
+        });
+        if (isSameEye)
+        {
+            await SaveLastOpenedAsync(model);
+            return;
+        }
+
+        var cameraSource = await StartCameraAsync(model.DisplayAddress);
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (cameraSource == null)
             {
-                LeftCamera.StartButtonEnabled = true;
-                LeftCamera.StopButtonEnabled = false;
+                SetButtons(model, true, false);
                 return;
             }
 
-            var pipeline = _processingLoopService.EyesProcessingPipeline;
+            if (type == Camera.Face)
+            {
+                UpdateFacePipeline(cameraSource);
+            }
+            else
+            {
+                UpdateEyePipeline(cameraSource, type);
+            }
 
-            if (pipeline.VideoSource == null)
-            {
-                var dualSource = new DualCameraSource();
+            model.IsCameraRunning = true;
+            SetButtons(model, false, true);
+        });
+
+        await SaveLastOpenedAsync(model);
+    }
+
+    private void UpdateFacePipeline(IVideoSource cameraSource)
+    {
+        var pipeline = _processingLoopService.FaceProcessingPipeline;
+
+        if (pipeline.VideoSource != null)
+        {
+            pipeline.VideoSource.Dispose();
+            pipeline.VideoSource = null;
+        }
+
+        pipeline.VideoSource = cameraSource;
+    }
+
+    private void UpdateEyePipeline(IVideoSource cameraSource, Camera type)
+    {
+        var pipeline = _processingLoopService.EyesProcessingPipeline;
+
+        if (pipeline.VideoSource == null)
+        {
+            var dualSource = new DualCameraSource();
+            if (type == Camera.Left)
                 dualSource.LeftCam = cameraSource;
-                pipeline.VideoSource = dualSource;
-            }
-            else if (pipeline.VideoSource is DualCameraSource dualSource)
-            {
+            else
+                dualSource.RightCam = cameraSource;
+
+            pipeline.VideoSource = dualSource;
+        }
+        else if (pipeline.VideoSource is DualCameraSource dualSource)
+        {
+            if (type == Camera.Left)
                 dualSource.LeftCam = cameraSource;
-            }
-            else if (pipeline.VideoSource is SingleCameraSource singleCameraSource)
+            else
+                dualSource.RightCam = cameraSource;
+        }
+        else if (pipeline.VideoSource is SingleCameraSource singleSource)
+        {
+            var dual = new DualCameraSource();
+            if (type == Camera.Left)
             {
-                var tmp = singleCameraSource;
-                pipeline.VideoSource = null;
-                var dual = new DualCameraSource();
-                dual.RightCam = tmp;
                 dual.LeftCam = cameraSource;
-
-                pipeline.VideoSource = dual;
+                dual.RightCam = singleSource;
             }
-
-
-            LeftCamera.IsCameraRunning = true;
-
-            LeftCamera.StopButtonEnabled = true;
-            LeftCamera.StartButtonEnabled = false;
-        });
-        await _localSettingsService.SaveSettingAsync("LastOpened" + LeftCamera.Name, LeftCamera.DisplayAddress);
-    }
-
-    [RelayCommand]
-    public async Task StartRightCamera()
-    {
-        RightCamera.StartButtonEnabled = false;
-
-        if (!string.IsNullOrEmpty(RightCamera.DisplayAddress) && string.Equals(RightCamera.DisplayAddress, LeftCamera.DisplayAddress))
-        {
-            if (_processingLoopService.EyesProcessingPipeline.VideoSource is DualCameraSource dualCameraSource)
+            else
             {
-                var tmp = dualCameraSource.LeftCam;
-                _processingLoopService.EyesProcessingPipeline.VideoSource = tmp;
-
-                RightCamera.IsCameraRunning = true;
-                RightCamera.StopButtonEnabled = true;
-                RightCamera.StartButtonEnabled = false;
-
-                await _localSettingsService.SaveSettingAsync("LastOpened" + RightCamera.Name, RightCamera.DisplayAddress);
-                return;
-            }
-        }
-
-        var cameraSource = await StartCameraAsync(RightCamera.DisplayAddress);
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            if (cameraSource == null)
-            {
-                RightCamera.StartButtonEnabled = true;
-                RightCamera.StopButtonEnabled = false;
-                return;
-            }
-
-            var pipeline = _processingLoopService.EyesProcessingPipeline;
-
-            if (pipeline.VideoSource == null)
-            {
-                var dualSource = new DualCameraSource();
-                dualSource.RightCam = cameraSource;
-                pipeline.VideoSource = dualSource;
-            }
-            else if (pipeline.VideoSource is DualCameraSource dualSource)
-            {
-                dualSource.RightCam = cameraSource;
-            }
-            else if (pipeline.VideoSource is SingleCameraSource singleCameraSource)
-            {
-                var tmp = singleCameraSource;
-                pipeline.VideoSource = null;
-                var dual = new DualCameraSource();
-                dual.LeftCam = tmp;
                 dual.RightCam = cameraSource;
-
-                pipeline.VideoSource = dual;
+                dual.LeftCam = singleSource;
             }
 
-            RightCamera.IsCameraRunning = true;
-
-            RightCamera.StopButtonEnabled = true;
-            RightCamera.StartButtonEnabled = false;
-        });
-        await _localSettingsService.SaveSettingAsync("LastOpened" + RightCamera.Name, RightCamera.DisplayAddress);
+            pipeline.VideoSource = dual;
+        }
     }
 
     [RelayCommand]
@@ -696,9 +723,9 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task RequestVRCalibration()
     {
-         await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration);
-         await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
-         await _processingLoopService.SetupEyeInference();
+        await App.Overlay.EyeTrackingCalibrationRequested(CalibrationRoutine.QuickCalibration);
+        await _localSettingsService.SaveSettingAsync("EyeHome_EyeModel", "tuned_temporal_eye_tracking.onnx");
+        await _processingLoopService.SetupEyeInference();
     }
 
     private void MessageDispatched(int msgCount) => _messagesSent += msgCount;

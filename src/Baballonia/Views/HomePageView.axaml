@@ -113,7 +113,8 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding StartLeftCameraCommand}"
+                                          Command="{Binding StartCameraCommand}"
+                                          CommandParameter="{Binding LeftCamera}"
                                           Content="Start Camera"
                                           FontSize="13"
                                           IsEnabled="{Binding LeftCamera.StartButtonEnabled}" />
@@ -341,7 +342,8 @@
                                           Padding="12,8"
                                           HorizontalAlignment="Stretch"
                                           HorizontalContentAlignment="Center"
-                                          Command="{Binding StartRightCameraCommand}"
+                                          Command="{Binding StartCameraCommand}"
+                                          CommandParameter="{Binding RightCamera}"
                                           Content="Start Camera"
                                           FontSize="13"
                                           IsEnabled="{Binding RightCamera.StartButtonEnabled}" />
@@ -566,7 +568,8 @@
                                         Padding="12,8"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
-                                        Command="{Binding StartFaceCameraCommand}"
+                                        Command="{Binding StartCameraCommand}"
+                                        CommandParameter="{Binding FaceCamera}"
                                         Content="Start Camera"
                                         FontSize="13"
                                         IsEnabled="{Binding FaceCamera.StartButtonEnabled}" />
