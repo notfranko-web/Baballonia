@@ -132,10 +132,7 @@ public class ParameterSenderService : BackgroundService
             var settings = calibrationService.GetExpressionSettings(eyeElement.Key);
 
             var msg = new OscMessage(prefix + eyeElement.Value,
-                Math.Clamp(
-                    weight.Remap(settings.Lower, settings.Upper, settings.Min, settings.Max),
-                    settings.Min,
-                    settings.Max));
+                weight.Remap(settings.Lower, settings.Upper, settings.Min, settings.Max));
             _sendQueue.Enqueue(msg);
         }
     }
