@@ -53,32 +53,41 @@ public class DualCameraSource : IVideoSource
                 break;
         }
 
-        int height = Math.Max(leftImage.Rows, rightImage.Rows);
-        int width = leftImage.Cols + rightImage.Cols;
+        int minHeight = Math.Min(leftImage.Rows, rightImage.Rows);
+        int minWidth = Math.Min(leftImage.Cols, rightImage.Cols);
 
-        Mat result = new Mat(height, width, leftImage.Type(), Scalar.All(0));
 
-        leftImage.CopyTo(result[new Rect(0, 0, leftImage.Cols, leftImage.Rows)]);
-        rightImage.CopyTo(result[new Rect(leftImage.Cols, 0, rightImage.Cols, rightImage.Rows)]);
+        Mat resizedLeft = new Mat();
+        Mat resizedRight = new Mat();
+        Cv2.Resize(leftImage, resizedLeft, new Size(minWidth, minHeight));
+        Cv2.Resize(rightImage, resizedRight, new Size(minWidth, minHeight));
+
+        int height = Math.Max(resizedRight.Rows, resizedLeft.Rows);
+        int width = resizedRight.Cols + resizedLeft.Cols;
+
+        Mat result = new Mat(height, width, resizedLeft.Type(), Scalar.All(0));
+
+        resizedLeft.CopyTo(result[new Rect(0, 0, resizedLeft.Cols, resizedRight.Rows)]);
+        resizedRight.CopyTo(result[new Rect(resizedLeft.Cols, 0, resizedRight.Cols, resizedRight.Rows)]);
 
         // Update last images only for new frames
         if (leftIsNew)
         {
             LastLeftImage?.Dispose();
-            LastLeftImage = leftImage.Clone();
+            LastLeftImage = resizedLeft.Clone();
         }
-        
+
         if (rightIsNew)
         {
             LastRightImage?.Dispose();
-            LastRightImage = rightImage.Clone();
+            LastRightImage = resizedRight.Clone();
         }
 
         // Only dispose new images, not the cached LastImages
         if (leftIsNew)
-            leftImage.Dispose();
+            resizedLeft.Dispose();
         if (rightIsNew)
-            rightImage.Dispose();
+            resizedRight.Dispose();
 
         return result;
     }
