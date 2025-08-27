@@ -132,7 +132,7 @@ public partial class HomePageView : UserControl
         };
     }
 
-    private void EyeAddressEntry_OnTextChanged(object? sender, TextChangedEventArgs e)
+    private void EyeAddressEntry_OnTextChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (DataContext is not HomePageViewModel vm) return;
 
@@ -163,7 +163,7 @@ public partial class HomePageView : UserControl
         }
     }
 
-    private void FaceAddressEntry_OnTextChanged(object? sender, TextChangedEventArgs e)
+    private void FaceAddressEntry_OnTextChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (this.DataContext is not HomePageViewModel vm) return;
 
