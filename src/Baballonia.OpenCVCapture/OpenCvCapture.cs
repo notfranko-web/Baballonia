@@ -56,7 +56,6 @@ public sealed class OpenCvCapture(string source, ILogger logger) : Capture(sourc
     public override async Task<bool> StartCapture()
     {
         Logger.LogDebug("Starting OpenCV capture...");
-        Logger.LogDebug("Operating System: " + Environment.OSVersion);
         Logger.LogDebug("Camera Source URL: '" + Source + "'");
         Logger.LogDebug("Preferred Backend: " + PreferredBackend);
         Logger.LogDebug("OpenCV Version: " + Cv2.GetVersionString());

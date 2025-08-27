@@ -61,7 +61,7 @@ public class LogFileLogger(string categoryName, StreamWriter file) : ILogger
         Mutex.WaitOne(); // Wait for the semaphore to be released
         try
         {
-            file.Write($"[{categoryName}] {logLevel}: {formatter(state, exception)}\n");
+            file.Write($"[{categoryName}][{DateTime.Now}] {logLevel}: {formatter(state, exception)}\n");
             file.Flush();
         }
         catch

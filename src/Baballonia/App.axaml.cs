@@ -163,71 +163,76 @@ public class App : Application
         _host = hostBuilder.Build();
         Ioc.Default.ConfigureServices(_host.Services);
 
-        if (Utils.IsSupportedDesktopOS && DeviceEnumerator != null && DeviceEnumerator.GetType().Name == "DesktopDeviceEnumerator")
+        // Hacky
+        if (Utils.IsSupportedDesktopOS)
         {
-            var appLogger = Ioc.Default.GetService<ILogger<App>>();
-
-            try
+            if (DeviceEnumerator != null && DeviceEnumerator.GetType().Name == "DesktopDeviceEnumerator")
             {
-                // Use reflection to create DesktopDeviceEnumerator with logger since we can't reference Baballonia.Desktop here
-                var deviceEnumeratorType = DeviceEnumerator.GetType();
+                var appLogger = Ioc.Default.GetService<ILogger<App>>();
 
-                if (deviceEnumeratorType == null)
-                {
-                    appLogger?.LogWarning("DeviceEnumerator type is null, cannot reinitialize with logger");
-                    return;
-                }
-
-                appLogger?.LogInformation("Attempting to reinitialize DeviceEnumerator of type: {TypeName}", deviceEnumeratorType.FullName);
-
-                // Create generic logger type safely
-                Type loggerType;
                 try
                 {
-                    loggerType = typeof(ILogger<>).MakeGenericType(deviceEnumeratorType);
-                }
-                catch (Exception ex)
-                {
-                    appLogger?.LogError(ex, "Failed to create generic logger type for DeviceEnumerator: {TypeName}", deviceEnumeratorType.FullName);
-                    return;
-                }
+                    // Use reflection to create DesktopDeviceEnumerator with logger since we can't reference Baballonia.Desktop here
+                    var deviceEnumeratorType = DeviceEnumerator.GetType();
 
-                // Attempt to get the logger service
-                var deviceLogger = Ioc.Default.GetService(loggerType);
-                appLogger?.LogInformation("Logger service resolution result. Logger found: {LoggerFound}", deviceLogger != null);
+                    if (deviceEnumeratorType == null)
+                    {
+                        appLogger?.LogWarning("DeviceEnumerator type is null, cannot reinitialize with logger");
+                        return;
+                    }
 
-                if (deviceLogger != null)
-                {
-                    // Attempt to create new instance with logger using reflection
+                    appLogger?.LogInformation("Attempting to (re)initialize DeviceEnumerator of type: {TypeName}", deviceEnumeratorType.FullName);
+
+                    // Create generic logger type safely
+                    Type loggerType;
                     try
                     {
-                        var newDeviceEnumerator = Activator.CreateInstance(deviceEnumeratorType, deviceLogger);
-
-                        if (newDeviceEnumerator is IDeviceEnumerator deviceEnum)
-                        {
-                            DeviceEnumerator = deviceEnum;
-                            appLogger?.LogInformation("DeviceEnumerator successfully reinitialized with logger");
-                        }
-                        else
-                        {
-                            appLogger?.LogError("Created instance does not implement IDeviceEnumerator interface. Type: {TypeName}", newDeviceEnumerator?.GetType().FullName ?? "null");
-                        }
+                        loggerType = typeof(ILogger<>).MakeGenericType(deviceEnumeratorType);
                     }
                     catch (Exception ex)
                     {
-                        appLogger?.LogError(ex, "Failed to create DeviceEnumerator instance via reflection. This could be due to missing constructor, constructor exceptions, or security restrictions. Type: {TypeName}", deviceEnumeratorType.FullName);
+                        appLogger?.LogError(ex, "Failed to create generic logger type for DeviceEnumerator: {TypeName}", deviceEnumeratorType.FullName);
+                        return;
+                    }
+
+                    // Attempt to get the logger service
+                    var deviceLogger = Ioc.Default.GetService(loggerType);
+                    appLogger?.LogInformation("Logger service resolution result. Logger found: {LoggerFound}", deviceLogger != null);
+
+                    if (deviceLogger != null)
+                    {
+                        // Attempt to create new instance with logger using reflection
+                        try
+                        {
+                            var newDeviceEnumerator = Activator.CreateInstance(deviceEnumeratorType, deviceLogger);
+
+                            if (newDeviceEnumerator is IDeviceEnumerator deviceEnum)
+                            {
+                                DeviceEnumerator = deviceEnum;
+                                appLogger?.LogInformation("DeviceEnumerator successfully reinitialized with logger");
+                            }
+                            else
+                            {
+                                appLogger?.LogError("Created instance does not implement IDeviceEnumerator interface. Type: {TypeName}", newDeviceEnumerator?.GetType().FullName ?? "null");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            appLogger?.LogError(ex, "Failed to create DeviceEnumerator instance via reflection. This could be due to missing constructor, constructor exceptions, or security restrictions. Type: {TypeName}", deviceEnumeratorType.FullName);
+                        }
+                    }
+                    else
+                    {
+                        appLogger?.LogWarning("Could not resolve logger service for DeviceEnumerator type: {TypeName}. DeviceEnumerator will continue without enhanced logging.", deviceEnumeratorType.FullName);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    appLogger?.LogWarning("Could not resolve logger service for DeviceEnumerator type: {TypeName}. DeviceEnumerator will continue without enhanced logging.", deviceEnumeratorType.FullName);
+                    appLogger?.LogError(ex, "Unexpected error during DeviceEnumerator logger initialization. DeviceEnumerator will continue with existing instance.");
                 }
             }
-            catch (Exception ex)
-            {
-                appLogger?.LogError(ex, "Unexpected error during DeviceEnumerator logger initialization. DeviceEnumerator will continue with existing instance.");
-            }
         }
+
 
         Assembly assembly = Assembly.GetExecutingAssembly();
         Version version = assembly.GetName().Version!;
