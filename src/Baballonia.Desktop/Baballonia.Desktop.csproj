@@ -45,9 +45,9 @@
       <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj" />
+        <ProjectReference Include="..\Baballonia.OpenCVCapture\Baballonia.OpenCVCapture.csproj"/>
         <ProjectReference Include="..\Baballonia.SDK\Baballonia.SDK.csproj" />
-        <ProjectReference Include="..\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj" />
+        <ProjectReference Include="..\Baballonia.SerialCameraCapture\Baballonia.SerialCameraCapture.csproj"/>
         <ProjectReference Include="..\Baballonia\Baballonia.csproj" />
     </ItemGroup>
 
@@ -152,4 +152,15 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
+	
+	<Target Name="CopyModulesToFolder" AfterTargets="AfterBuild">
+	  <ItemGroup>
+		<ModuleDlls Include="$(OutputPath)Baballonia.SerialCameraCapture.dll" />
+		<ModuleDlls Include="$(OutputPath)Baballonia.OpenCVCapture.dll" />
+	  </ItemGroup>
+	  <MakeDir Directories="$(OutputPath)Modules" />
+	  <Copy SourceFiles="@(ModuleDlls)" DestinationFolder="$(OutputPath)Modules\" />
+	  <!-- Remove the DLLs from the root output directory -->
+	  <Delete Files="@(ModuleDlls)" />
+	</Target>
 </Project>

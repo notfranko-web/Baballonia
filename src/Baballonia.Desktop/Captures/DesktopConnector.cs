@@ -19,13 +19,15 @@ namespace Baballonia.Desktop.Captures;
 /// </summary>
 public class DesktopConnector : PlatformConnector, IPlatformConnector
 {
-    public DesktopConnector(string source, ILogger logger, ILocalSettingsService settingsService) : base(source, logger, settingsService)
+    public DesktopConnector(string source, ILogger logger) : base(source, logger)
     {
         Captures = new Dictionary<Capture, Type>();
 
         // Load all modules
-        var dlls = Directory.GetFiles(AppContext.BaseDirectory, "*.dll");
+        var dlls = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "Modules"), "*.dll");
+        Logger.LogDebug("Found {DllCount} DLL files in application directory: {DllFiles}", dlls.Length, string.Join(", ", dlls.Select(Path.GetFileName)));
         Captures = LoadAssembliesFromPath(dlls);
+        Logger.LogDebug("Loaded {CaptureCount} capture types from assemblies", Captures.Count);
     }
 
     private Dictionary<Capture, Type> LoadAssembliesFromPath(string[] paths)
@@ -39,23 +41,25 @@ public class DesktopConnector : PlatformConnector, IPlatformConnector
                 var alc = new AssemblyLoadContext(dll, true);
                 var loaded = alc.LoadFromAssemblyPath(dll);
 
+                Logger.LogDebug("Scanning assembly '{AssemblyName}' for capture types", loaded.FullName);
                 foreach (var type in loaded.GetExportedTypes())
                 {
+                    Logger.LogDebug("Checking type '{TypeName}' for Capture compatibility", type.FullName);
                     if (!typeof(Capture).IsAssignableFrom(type) || type.IsAbstract) continue;
 
-                    // Check if the type has a constructor that takes a string parameter (for source)
-                    var constructor = type.GetConstructor([typeof(string)]);
+                    // Check if the type has a constructor that takes a string parameter (for source) and a logger
+                    var constructor = type.GetConstructor([typeof(string), typeof(ILogger)] );
                     if (constructor == null) continue;
 
                     // Create a temporary instance to access the Connections property
-                    var tempInstance = (Capture)Activator.CreateInstance(type, "temp")!;
+                    var tempInstance = (Capture)Activator.CreateInstance(type, "temp", null!)!;
                     returnList.Add(tempInstance, type);
+                    Logger.LogDebug("Successfully loaded capture type '{CaptureTypeName}'", type.Name);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                //_logger.LogWarning("{error} Assembly not able to be loaded. Skipping.", e.Message);
+                Logger.LogWarning("Assembly '{DllPath}' not able to be loaded. Skipping. Error: {ErrorMessage}", dll, e.Message);
             }
         }
 
