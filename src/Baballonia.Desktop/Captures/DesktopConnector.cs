@@ -19,14 +19,24 @@ namespace Baballonia.Desktop.Captures;
 /// </summary>
 public class DesktopConnector : PlatformConnector, IPlatformConnector
 {
+    private static Dictionary<Capture, Type> CaptureCache;
+
     public DesktopConnector(string source, ILogger logger) : base(source, logger)
     {
+        // If we've already scanned for DLL's, just return the original result. Reflection is slow!
+        if (CaptureCache != null)
+        {
+            Captures = CaptureCache;
+            return;
+        }
+
         Captures = new Dictionary<Capture, Type>();
 
         // Load all modules
         var dlls = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "Modules"), "*.dll");
         Logger.LogDebug("Found {DllCount} DLL files in application directory: {DllFiles}", dlls.Length, string.Join(", ", dlls.Select(Path.GetFileName)));
         Captures = LoadAssembliesFromPath(dlls);
+        CaptureCache = Captures;
         Logger.LogDebug("Loaded {CaptureCount} capture types from assemblies", Captures.Count);
     }
 
@@ -48,6 +58,7 @@ public class DesktopConnector : PlatformConnector, IPlatformConnector
                     if (!typeof(Capture).IsAssignableFrom(type) || type.IsAbstract) continue;
 
                     // Check if the type has a constructor that takes a string parameter (for source) and a logger
+                    // Adding this second parameter makes reflection take longer...
                     var constructor = type.GetConstructor([typeof(string), typeof(ILogger)] );
                     if (constructor == null) continue;
 
