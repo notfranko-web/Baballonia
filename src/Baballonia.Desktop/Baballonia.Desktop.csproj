@@ -15,7 +15,7 @@
     <PropertyGroup>
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
-	
+
 	<PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
 	  <DefineConstants>WINDOWS</DefineConstants>
 	</PropertyGroup>
@@ -41,6 +41,7 @@
         <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <!-- Linux-specific -->
+        <PackageReference Include="Sdcb.OpenCvSharp4.mini.runtime.linux-x64" Version="4.11.0.35" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
 	    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
       <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0" Condition="$([MSBuild]::IsOSPlatform('Linux'))"/>
     </ItemGroup>
@@ -152,7 +153,7 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
-	
+
 
 	<Target Name="CopyModulesToFolder" AfterTargets="AfterBuild">
 	  <ItemGroup>
@@ -171,20 +172,20 @@
           <ExtractToPath>$(OutputPath)_internal</ExtractToPath>
       </PropertyGroup>
 
-      <Message Text="Extracting $(ZipFilePath) to $(ExtractToPath)" 
-               Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')" 
+      <Message Text="Extracting $(ZipFilePath) to $(ExtractToPath)"
+               Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')"
                Importance="high" />
 
-      <Unzip SourceFiles="$(ZipFilePath)" 
-             DestinationFolder="$(ExtractToPath)" 
-             Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')" 
+      <Unzip SourceFiles="$(ZipFilePath)"
+             DestinationFolder="$(ExtractToPath)"
+             Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')"
              OverwriteReadOnlyFiles="true" />
 
-      <Message Text="Extraction folder already exists: $(ExtractToPath)" 
-               Condition="Exists('$(ExtractToPath)')" 
+      <Message Text="Extraction folder already exists: $(ExtractToPath)"
+               Condition="Exists('$(ExtractToPath)')"
                Importance="normal" />
 
-      <Warning Text="Zip file not found: $(ZipFilePath)" 
+      <Warning Text="Zip file not found: $(ZipFilePath)"
                Condition="!Exists('$(ZipFilePath)')" />
   </Target>
 
