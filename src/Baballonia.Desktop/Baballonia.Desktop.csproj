@@ -153,6 +153,7 @@
       </None>
     </ItemGroup>
 	
+
 	<Target Name="CopyModulesToFolder" AfterTargets="AfterBuild">
 	  <ItemGroup>
 		<ModuleDlls Include="$(OutputPath)Baballonia.SerialCameraCapture.dll" />
@@ -163,4 +164,28 @@
 	  <!-- Remove the DLLs from the root output directory -->
 	  <Delete Files="@(ModuleDlls)" />
 	</Target>
+
+  <Target Name="ExtractZipIfNeeded" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+      <PropertyGroup>
+          <ZipFilePath>$(ProjectDir)_internal.zip</ZipFilePath>
+          <ExtractToPath>$(OutputPath)_internal</ExtractToPath>
+      </PropertyGroup>
+
+      <Message Text="Extracting $(ZipFilePath) to $(ExtractToPath)" 
+               Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')" 
+               Importance="high" />
+
+      <Unzip SourceFiles="$(ZipFilePath)" 
+             DestinationFolder="$(ExtractToPath)" 
+             Condition="Exists('$(ZipFilePath)') AND !Exists('$(ExtractToPath)')" 
+             OverwriteReadOnlyFiles="true" />
+
+      <Message Text="Extraction folder already exists: $(ExtractToPath)" 
+               Condition="Exists('$(ExtractToPath)')" 
+               Importance="normal" />
+
+      <Warning Text="Zip file not found: $(ZipFilePath)" 
+               Condition="!Exists('$(ZipFilePath)')" />
+  </Target>
+
 </Project>
