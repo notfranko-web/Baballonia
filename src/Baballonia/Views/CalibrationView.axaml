@@ -60,26 +60,19 @@
           <TextBlock FontWeight="SemiBold" Text="Eye Expressions" />
         </Expander.Header>
         <StackPanel Margin="0,5">
-          <!-- Add the Stabilize Eyes checkbox at the top -->
-          <Border
-            Margin="0,0,0,8"
-            Padding="16"
-            Background="{DynamicResource SystemChromeMediumLowColor}"
-            CornerRadius="8">
-            <Grid>
-              <StackPanel>
-                <TextBlock Margin="0,0,10,0" VerticalAlignment="Center">
-                  <Run FontWeight="SemiBold" Text="Stabilize Eyes" />
-                  <Run Text=" - Averages left and right eye positions, with a convergence offset" />
-                </TextBlock>
-                <CheckBox
-                  IsChecked="{Binding StabilizeEyes, Mode=TwoWay}"
-                  Content="Enable eye position stabilization" />
-              </StackPanel>
-            </Grid>
+
+          <Border Background="{DynamicResource SystemChromeMediumLowColor}" CornerRadius="6" Padding="12" Margin="0,4">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="Stabilize Eyes" FontWeight="SemiBold"/>
+                  <TextBlock Text="Averages eye position, but preserves convergence" FontSize="12" Foreground="{DynamicResource SystemBaseMediumColor}"/>
+                </StackPanel>
+                <CheckBox Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding StabilizeEyes, Mode=TwoWay}"/>
+              </Grid>
+            </StackPanel>
           </Border>
           
-          <!-- Existing eye settings -->
           <ItemsControl ItemsSource="{Binding EyeSettings}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="models:SliderBindableSetting">
