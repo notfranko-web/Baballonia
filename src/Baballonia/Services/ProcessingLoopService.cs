@@ -41,7 +41,10 @@ public class ProcessingLoopService : IDisposable
 
         FaceProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
         FaceProcessingPipeline.ImageTransformer = new ImageTransformer();
+ 
+        EyesProcessingPipeline = new EyeProcessingPipeline();
         EyesProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
+        
         var dualTransformer = new DualImageTransformer();
         dualTransformer.LeftTransformer.TargetSize = new Size(128, 128);
         dualTransformer.RightTransformer.TargetSize = new Size(128, 128);
@@ -50,6 +53,7 @@ public class ProcessingLoopService : IDisposable
         _ = SetupFaceInference();
         _ = SetupEyeInference();
         _ = LoadFilters();
+        _ = LoadEyeStabilizationSetting(); // Add this call!
 
         _drawTimer.Tick += TimerEvent;
         _drawTimer.Start();
@@ -118,6 +122,12 @@ public class ProcessingLoopService : IDisposable
 
             Dispatcher.UIThread.Post(() => { FaceProcessingPipeline.InferenceService = faceInference; });
         });
+    }
+
+    private async Task LoadEyeStabilizationSetting()
+    {
+        var stabilizeEyes = await _localSettingsService.ReadSettingAsync<bool>("AppSettings_StabilizeEyes", false);
+        EyesProcessingPipeline.StabilizeEyes = stabilizeEyes;
     }
 
     private void TimerEvent(object? s, EventArgs e)
