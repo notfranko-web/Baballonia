@@ -17,8 +17,6 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
 
     public EyeProcessingPipeline()
     {
-        // The original constructor body is removed as per the edit hint.
-        // The LoadEyeStabilizationSetting() call is also removed.
     }
 
     public float[]? RunUpdate()
@@ -65,7 +63,6 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         return inferenceResult;
     }
 
-    // Keep the method synchronous
     private bool ProcessExpressions(ref float[] arKitExpressions)
     {
         if (arKitExpressions.Length < Utils.EyeRawExpressions)
@@ -82,27 +79,22 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         var rightYaw = arKitExpressions[4] * mulV - mulV / 2;
         var rightLid = 1 - arKitExpressions[5];
 
-        // Use the property instead of async call
         if (StabilizeEyes)
         {
-            // Calculate convergence before averaging
-            // Clamp convergence to never go below 0 (no wall-eyed behavior)
+            // Clamp convergence to never go below 0 (no wall-eyed behavior. We do this because it's entirely possible to have the model output give your eyes divergence)
             var rawConvergence = (leftYaw - rightYaw) / 2.0f;
             var convergence = Math.Max(0, rawConvergence);
             
-            // Calculate averaged eye positions
             var averagedPitch = (leftPitch + rightPitch) / 2.0f;
             var averagedYaw = (leftYaw + rightYaw) / 2.0f;
             
-            // Apply convergence back to the averaged positions
             var leftYawWithConvergence = averagedYaw + convergence;
             var rightYawWithConvergence = averagedYaw - convergence;
 
-            // Update the expressions with stabilized values
-            arKitExpressions[0] = averagedPitch;              // left pitch (averaged)
-            arKitExpressions[1] = leftYawWithConvergence;     // left yaw (averaged + convergence)
-            arKitExpressions[3] = averagedPitch;              // right pitch (averaged)
-            arKitExpressions[4] = rightYawWithConvergence;    // right yaw (averaged - convergence)
+            arKitExpressions[0] = averagedPitch;
+            arKitExpressions[1] = leftYawWithConvergence;
+            arKitExpressions[3] = averagedPitch;
+            arKitExpressions[4] = rightYawWithConvergence;
         }
 
         var eyeY = (leftPitch * leftLid + rightPitch * rightLid) / (leftLid + rightLid);

@@ -149,13 +149,11 @@ public partial class CalibrationViewModel : ViewModelBase, IDisposable
         LoadInitialSettings();
         _settingsService.Load(this);
         
-        // Add property change handler for StabilizeEyes
         PropertyChanged += async (o, p) =>
         {
             if (p.PropertyName == nameof(StabilizeEyes))
             {
                 await _settingsService.SaveSettingAsync("AppSettings_StabilizeEyes", StabilizeEyes);
-                // Update the pipeline immediately
                 _processingLoopService.EyesProcessingPipeline.StabilizeEyes = StabilizeEyes;
             }
         };
