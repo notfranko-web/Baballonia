@@ -79,6 +79,24 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         var rightYaw = arKitExpressions[4] * mulV - mulV / 2;
         var rightLid = 1 - arKitExpressions[5];
 
+        if (StabilizeEyes)
+        {
+            // Clamp convergence to never go below 0 (no wall-eyed behavior. We do this because it's entirely possible to have the model output give your eyes divergence)
+            var rawConvergence = (leftYaw - rightYaw) / 2.0f;
+            var convergence = Math.Max(0, rawConvergence);
+            
+            var averagedPitch = (leftPitch + rightPitch) / 2.0f;
+            var averagedYaw = (leftYaw + rightYaw) / 2.0f;
+            
+            var leftYawWithConvergence = averagedYaw + convergence;
+            var rightYawWithConvergence = averagedYaw - convergence;
+
+            arKitExpressions[0] = averagedPitch;
+            arKitExpressions[1] = leftYawWithConvergence;
+            arKitExpressions[3] = averagedPitch;
+            arKitExpressions[4] = rightYawWithConvergence;
+        }
+
         var eyeY = (leftPitch * leftLid + rightPitch * rightLid) / (leftLid + rightLid);
 
         var leftEyeYawCorrected = rightYaw * (1 - leftLid) + leftYaw * leftLid;
@@ -94,34 +112,6 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         convertedExpressions[3] = leftEyeYawCorrected;  // right pitch
         convertedExpressions[4] = eyeY;                   // right yaw
         convertedExpressions[5] = leftLid;                // right lid
-
-        // NOW apply stabilization to the converted expressions
-        if (StabilizeEyes)
-        {
-            // Calculate convergence from the converted expressions
-            var leftPitchStable = convertedExpressions[0];
-            var leftYawStable = convertedExpressions[1];
-            var rightPitchStable = convertedExpressions[3];
-            var rightYawStable = convertedExpressions[4];
-
-            // Calculate convergence before averaging
-            var rawConvergence = (leftYawStable - rightYawStable) / 2.0f;
-            var convergence = Math.Max(0, rawConvergence);
-            
-            // Calculate averaged eye positions
-            var averagedPitch = (leftPitchStable + rightPitchStable) / 2.0f;
-            var averagedYaw = (leftYawStable + rightYawStable) / 2.0f;
-            
-            // Apply convergence back to the averaged positions
-            var leftYawWithConvergence = averagedYaw + convergence;
-            var rightYawWithConvergence = averagedYaw - convergence;
-
-            // Update the converted expressions with stabilized values
-            convertedExpressions[0] = averagedPitch;              // left pitch (averaged)
-            convertedExpressions[1] = leftYawWithConvergence;     // left yaw (averaged + convergence)
-            convertedExpressions[3] = averagedPitch;              // right pitch (averaged)
-            convertedExpressions[4] = rightYawWithConvergence;    // right yaw (averaged - convergence)
-        }
 
         arKitExpressions = convertedExpressions;
 
