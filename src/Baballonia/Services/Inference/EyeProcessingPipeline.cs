@@ -11,12 +11,9 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
 {
     private readonly FastCorruptionDetector _fastCorruptionDetector = new();
     private readonly ImageCollector _imageCollector = new();
-    
-    // Add a property to control stabilization
     public bool StabilizeEyes { get; set; } = false;
 
-    public EyeProcessingPipeline()
-    {
+    public EyeProcessingPipeline(){
     }
 
     public float[]? RunUpdate()
@@ -87,7 +84,7 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         if (StabilizeEyes)
         {
             var rawConvergence = (rightEyeYawCorrected - leftEyeYawCorrected) / 2.0f;
-            var convergence = Math.Max(rawConvergence, 0.0f);
+            var convergence = Math.Max(rawConvergence, 0.0f); //We clamp the value here to avoid accidental divergence, as the model sometimes decides that's a thing
 
             var averagedYaw = (rightEyeYawCorrected + leftEyeYawCorrected) / 2.0f;
 
@@ -98,8 +95,8 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         // [left pitch, left yaw, left lid...
         float[] convertedExpressions = new float[Utils.EyeRawExpressions];
 
-        // swap eyes at this point
-        convertedExpressions[0] = rightEyeYawCorrected; // left pitch (what the fuck are you doing here why are these comments like this none of this makes any sense - Ridge)
+        // swap eyes at this point                            ↓ this is abysmal
+        convertedExpressions[0] = rightEyeYawCorrected; // left pitch 
         convertedExpressions[1] = eyeY;                   // left yaw
         convertedExpressions[2] = rightLid;               // left lid
         convertedExpressions[3] = leftEyeYawCorrected;  // right pitch

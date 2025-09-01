@@ -55,7 +55,7 @@ public class ProcessingLoopService : IDisposable
         _ = SetupFaceInference();
         _ = SetupEyeInference();
         _ = LoadFilters();
-        _ = LoadEyeStabilizationSetting(); // Add this call!
+        _ = LoadEyeStabilizationSetting();
 
         _drawTimer.Tick += TimerEvent;
         _drawTimer.Start();
