@@ -44,7 +44,6 @@ public class ProcessingLoopService : IDisposable
         FaceProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
         FaceProcessingPipeline.ImageTransformer = new ImageTransformer();
  
-        EyesProcessingPipeline = new EyeProcessingPipeline();
         EyesProcessingPipeline.ImageConverter = new MatToFloatTensorConverter();
         
         var dualTransformer = new DualImageTransformer();
