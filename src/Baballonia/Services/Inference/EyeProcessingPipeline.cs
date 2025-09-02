@@ -13,9 +13,6 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
     private readonly ImageCollector _imageCollector = new();
     public bool StabilizeEyes { get; set; } = false;
 
-    public EyeProcessingPipeline(){
-    }
-
     public float[]? RunUpdate()
     {
         var frame = VideoSource?.GetFrame(ColorType.Gray8);
