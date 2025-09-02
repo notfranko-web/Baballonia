@@ -95,7 +95,7 @@ public class EyeProcessingPipeline : DefaultProcessingPipeline
         // [left pitch, left yaw, left lid...
         float[] convertedExpressions = new float[Utils.EyeRawExpressions];
 
-        // swap eyes at this point                            ↓ this is abysmal
+        // swap eyes at this point
         convertedExpressions[0] = rightEyeYawCorrected; // left pitch 
         convertedExpressions[1] = eyeY;                   // left yaw
         convertedExpressions[2] = rightLid;               // left lid
