@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -135,8 +136,10 @@ public partial class HomePageView : UserControl
         if (e is null) return; // Skip DeviceEnumerator calls
         if (DataContext is not HomePageViewModel vm || vm.FaceCamera == null) return;
 
+        /*
         if (string.IsNullOrEmpty(vm.LeftCamera.DisplayAddress) ||
             string.IsNullOrEmpty(vm.RightCamera.DisplayAddress)) return;
+            */
 
         if (vm.LeftCamera.DisplayAddress.Length == 0)
         {
@@ -204,7 +207,7 @@ public partial class HomePageView : UserControl
         _isLayoutUpdating = false;
     }
 
-    private async void RefreshLeftEyeConnectedDevices(object? sender, EventArgs e)
+    private async void RefreshLeftEyeConnectedDevices(object? sender, CancelEventArgs e)
     {
         if (DataContext is not HomePageViewModel vm) return;
 
@@ -214,7 +217,7 @@ public partial class HomePageView : UserControl
         vm.LeftCamera.UpdateCameraDropDown(cameraNames);
     }
 
-    private async void RefreshRightEyeDevices(object? sender, EventArgs e)
+    private async void RefreshRightEyeDevices(object? sender, CancelEventArgs e)
     {
         if (DataContext is not HomePageViewModel vm) return;
 
@@ -224,7 +227,7 @@ public partial class HomePageView : UserControl
         vm.RightCamera.UpdateCameraDropDown(cameraNames);
     }
 
-    private async void RefreshConnectedFaceDevices(object? sender, EventArgs e)
+    private async void RefreshConnectedFaceDevices(object? sender, CancelEventArgs e)
     {
         if (DataContext is not HomePageViewModel vm) return;
 
