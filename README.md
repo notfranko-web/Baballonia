@@ -41,10 +41,10 @@ Baballonia supports many kinds of hardware for eye and face tracking:
 | Vive Facial Tracker | 0 | X | Linux Only |
 | DIY EyetrackVR | X | 0 |  |
 | Bigscreen Beyond 2e | X | 0 |  |
-| Vive Pro Eye | X | 0 | Requires \[Revision\](https://github.com/Blue-Doggo/ReVisionbro) |
+| Vive Pro Eye | X | 0 | Requires [Revision](https://github.com/Blue-Doggo/ReVisionbro) |
 | Varjo Aero | X | 0 | Requires the Varjo Streamer |
-| HP Reverb G2 Omnicept | X | 0 | Requires \[BrokenEye\](https://github.com/ghostiam/BrokenEye) |
-| Pimax Crystal | X | 0 | Requires \[BrokenEye\](https://github.com/ghostiam/BrokenEye) |
+| HP Reverb G2 Omnicept | X | 0 | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
+| Pimax Crystal | X | 0 | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
 
 ## Build Instructions
 
