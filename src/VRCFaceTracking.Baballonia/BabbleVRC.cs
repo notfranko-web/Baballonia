@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace VRCFaceTracking.Baballonia;
 
@@ -7,6 +7,8 @@ public class BabbleVrc : ExtTrackingModule
 {
     private BabbleOsc babbleOSC;
     private Config config;
+    private bool needsEye;
+    private bool needsExpression;
 
     // We need to call GetBabbleConfig ahead of Initialize
     public override (bool SupportsEye, bool SupportsExpression) Supported => (true, true);
@@ -18,17 +20,19 @@ public class BabbleVrc : ExtTrackingModule
 
         List<Stream> list = new List<Stream>();
         Assembly executingAssembly = Assembly.GetExecutingAssembly();
-        if (config.IsEyeSupported)
+        if (eyeAvailable && config.IsEyeSupported)
         {
             Logger.LogInformation("Baballonia will use Eye Tracking.");
             Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.Baballonia.BabbleEyeLogo.png")!;
             list.Add(manifestResourceStream);
+            needsEye = true;
         }
-        if (config.IsFaceSupported)
+        if (expressionAvailable && config.IsFaceSupported)
         {
             Logger.LogInformation("Baballonia will use Face Tracking.");
             Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.Baballonia.BabbleFaceLogo.png")!;
             list.Add(manifestResourceStream);
+            needsExpression = true;
         }
 
         executingAssembly.GetManifestResourceNames();
@@ -39,7 +43,7 @@ public class BabbleVrc : ExtTrackingModule
             StaticImages = list
         };
 
-        return (config.IsEyeSupported, config.IsFaceSupported);
+        return (needsEye, needsExpression);
     }
 
     public override void Teardown()
@@ -49,7 +53,7 @@ public class BabbleVrc : ExtTrackingModule
 
     public override void Update()
     {
-        if (config.IsEyeSupported)
+        if (needsEye)
         {
             UnifiedTracking.Data.Eye.Left.Gaze.x = BabbleOsc.EyeExpressions[(int)ExpressionMapping.EyeLeftX];
             UnifiedTracking.Data.Eye.Left.Gaze.y = BabbleOsc.EyeExpressions[(int)ExpressionMapping.EyeLeftY];
@@ -60,8 +64,7 @@ public class BabbleVrc : ExtTrackingModule
             UnifiedTracking.Data.Eye.Right.Openness = BabbleOsc.EyeExpressions[(int)ExpressionMapping.EyeRightLid];
         }
 
-
-        if (config.IsFaceSupported)
+        if (needsExpression)
         {
             foreach (var expression in BabbleExpressions.BabbleExpressionMap!)
             {

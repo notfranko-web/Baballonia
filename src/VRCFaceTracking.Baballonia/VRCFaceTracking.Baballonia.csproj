@@ -50,26 +50,33 @@
   </ItemGroup>
 
     <!-- Make module .zip -->
-    <Target Name="ZipFiles" AfterTargets="AfterBuild">
-        <PropertyGroup>
-            <TempZipFolder>$(OutputPath)temp_zip</TempZipFolder>
-        </PropertyGroup>
-
-        <ItemGroup>
-            <FilesToZip Include="$(OutputPath)VRCFaceTracking.Baballonia.dll" />
-            <FilesToZip Include="$(OutputPath)BabbleConfig.json" />
-            <FilesToZip Include="$(OutputPath)module.json" />
-        </ItemGroup>
-
-        <MakeDir Directories="$(TempZipFolder)" />
-
-        <Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(TempZipFolder)" />
-
-        <ZipDirectory SourceDirectory="$(TempZipFolder)"
-                      DestinationFile="$(OutputPath)VRCFaceTracking.Baballonia.zip" />
-
-        <RemoveDir Directories="$(TempZipFolder)" />
-    </Target>
+  <Target Name="ZipFiles" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <TempZipFolder>$(OutputPath)temp_zip</TempZipFolder>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <FilesToZip Include="$(OutputPath)VRCFaceTracking.Baballonia.dll" />
+      <FilesToZip Include="$(OutputPath)BabbleConfig.json" />
+      <FilesToZip Include="$(OutputPath)module.json" />
+    </ItemGroup>
+    
+    <!-- Delete existing zip file if it exists -->
+    <Delete Files="$(OutputPath)VRCFaceTracking.Baballonia.zip" ContinueOnError="true" />
+    
+    <!-- Create temp directory -->
+    <MakeDir Directories="$(TempZipFolder)" />
+    
+    <!-- Copy files to temp directory -->
+    <Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(TempZipFolder)" />
+    
+    <!-- Create zip from temp directory -->
+    <ZipDirectory SourceDirectory="$(TempZipFolder)" 
+                  DestinationFile="$(OutputPath)VRCFaceTracking.Baballonia.zip" />
+    
+    <!-- Clean up temp directory -->
+    <RemoveDir Directories="$(TempZipFolder)" />
+  </Target>
   
 
 </Project>
