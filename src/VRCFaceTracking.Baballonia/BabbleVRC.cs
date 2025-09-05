@@ -15,20 +15,29 @@ public class BabbleVrc : ExtTrackingModule
     {
         config = BabbleConfig.GetBabbleConfig();
         babbleOSC = new BabbleOsc(Logger, config.Host, config.Port);
+
         List<Stream> list = new List<Stream>();
         Assembly executingAssembly = Assembly.GetExecutingAssembly();
-        Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.Baballonia.BabbleLogo.png")!;
-        list.Add(manifestResourceStream);
+        if (config.IsEyeSupported)
+        {
+            Logger.LogInformation("Baballonia will use Eye Tracking.");
+            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.Baballonia.BabbleEyeLogo.png")!;
+            list.Add(manifestResourceStream);
+        }
+        if (config.IsFaceSupported)
+        {
+            Logger.LogInformation("Baballonia will use Face Tracking.");
+            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.Baballonia.BabbleFaceLogo.png")!;
+            list.Add(manifestResourceStream);
+        }
+
+        executingAssembly.GetManifestResourceNames();
+
         ModuleInformation = new ModuleMetadata
         {
-            Name = "Baballonia Module v1.0.5",
+            Name = "Project Babble Module v3.0.0",
             StaticImages = list
         };
-
-        if (config.IsEyeSupported)
-            Logger.LogInformation("Baballonia will use Eye Tracking.");
-        if (config.IsFaceSupported)
-            Logger.LogInformation("Baballonia will use Face Tracking.");
 
         return (config.IsEyeSupported, config.IsFaceSupported);
     }

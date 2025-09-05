@@ -12,7 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="BabbleLogo.png" />
+    <EmbeddedResource Include="BabbleEyeLogo.png" />
+    <None Remove="BabbleFaceLogo.png" />
+    <EmbeddedResource Include="BabbleFaceLogo.png" />
   </ItemGroup>
 
   <ItemGroup>
