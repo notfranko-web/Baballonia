@@ -65,7 +65,7 @@
                     <StackPanel Spacing="12">
                       <TextBlock FontWeight="Bold" Text="Toggle wired/wireless mode" />
                       <TextBlock TextWrapping="Wrap">
-                        <Run>• You WILL need to restart your tracker after a flash</Run><LineBreak />
+                        <Run>• You WILL need to restart your tracker after changing the mode</Run><LineBreak />
                         <Run>• You MAY need to restart the app after a flash for trackers to show</Run>
                       </TextBlock>
                       <StackPanel Orientation="Horizontal" Spacing="12">
@@ -177,7 +177,7 @@
             </Expander>
 
             <!-- Firmware flashing -->
-            <!-- <Expander HorizontalAlignment="Stretch" IsEnabled="{Binding IsValidDeviceSelected}">
+            <Expander HorizontalAlignment="Stretch" IsEnabled="{Binding IsValidDeviceSelected}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="Auto,Auto,*">
                         <PathIcon
@@ -206,6 +206,7 @@
                 <StackPanel Spacing="24">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Button
+                            Command="{Binding FlashFirmwareCommand}"
                             Content="Flash Firmware"/>
 
                         <TextBlock
@@ -216,15 +217,17 @@
                     </StackPanel>
 
                     <ProgressBar
+                      IsVisible="{Binding IsFlashing}"
                       Height="30"
                       IsIndeterminate="True"
                       ShowProgressText="False" />
 
                     <TextBlock
+                      IsVisible="{Binding IsFinished}"
                       HorizontalAlignment="Center"
-                      Text="Done! You may need to restart your tracker/the Babble App :)" />
+                      Text="Done! You will need to restart your tracker" />
                 </StackPanel>
-            </Expander> -->
+            </Expander>
 
            </StackPanel>
     </ScrollViewer>

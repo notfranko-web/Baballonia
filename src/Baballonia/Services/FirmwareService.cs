@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -27,7 +28,18 @@ public class FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFact
 
     static FirmwareService()
     {
-        EsptoolCommand = OperatingSystem.IsWindows() ? "espflash.exe" : "espflash";
+        if (OperatingSystem.IsWindows())
+        {
+            EsptoolCommand = Path.Combine("Firmware", "Windows", "espflash.exe");
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            EsptoolCommand = Path.Combine("Firmware", "Linux", "espflash");
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            EsptoolCommand = Path.Combine("Firmware", "MacOS", "espflash");
+        }
     }
 
     public FirmwareSession StartSession(CommandSenderType type, string port)
@@ -40,32 +52,31 @@ public class FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFact
     /// </summary>
     /// <param name="port">COM port where the device is connected</param>
     /// <param name="pathToFirmware">Path to the firmware file to upload</param>
-    /// <param name="token">Cancellation token</param>
     /// <returns>A task representing the asynchronous operation</returns>
-    public void UploadFirmware(string port, string pathToFirmware)
+    public async Task UploadFirmwareAsync(string port, string pathToFirmware)
     {
         try
         {
             // Check if firmware file exists
             if (!File.Exists(pathToFirmware))
             {
-                OnFirmwareUpdateError($"Firmware file not found: {pathToFirmware}");
+                OnFirmwareUpdateError?.Invoke($"Firmware file not found: {pathToFirmware}");
                 return;
             }
 
             // Notify start of firmware update
-            OnFirmwareUpdateStart();
+            OnFirmwareUpdateStart?.Invoke();
 
-            // Create process to run esptool.py
-            if (!RunEspSubprocess(
+            // Create process to run espflash
+            if (!await RunEspSubprocess(
                     arguments:
                     $"write-bin 0x00 \"{pathToFirmware}\" --port {port} --baud {DefaultBaudRate}"))
             {
-                OnFirmwareUpdateError($"Firmware update failed!");
+                OnFirmwareUpdateError?.Invoke($"Firmware update failed!");
             }
 
             // Wired firmware update completed successfully
-            OnFirmwareUpdateComplete();
+            OnFirmwareUpdateComplete?.Invoke();
         }
         catch (Exception ex)
         {
@@ -73,18 +84,20 @@ public class FirmwareService(ILogger<FirmwareService> logger, ICommandSenderFact
         }
     }
 
-    private bool RunEspSubprocess(string arguments)
+    private async Task<bool> RunEspSubprocess(string arguments)
     {
         try
         {
             using var process = new Process();
             process.StartInfo.FileName = EsptoolCommand;
             process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = true;
+            process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             process.Start();
-            process.WaitForExit();
+            await process.WaitForExitAsync();
             return process.ExitCode == 0;
         }
         catch (Exception ex)

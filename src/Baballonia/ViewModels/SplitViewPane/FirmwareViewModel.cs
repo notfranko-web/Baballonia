@@ -49,6 +49,12 @@ public partial class FirmwareViewModel : ViewModelBase, IDisposable
     private bool _isValidDeviceSelected;
 
     [ObservableProperty]
+    private bool _isFlashing;
+
+    [ObservableProperty]
+    private bool _isFinished;
+
+    [ObservableProperty]
     private string? _modeSetButton = "Set Mode";
 
     [ObservableProperty]
@@ -61,6 +67,8 @@ public partial class FirmwareViewModel : ViewModelBase, IDisposable
     private string? _onRefreshDevicesButton = "Refresh Devices";
 
     [ObservableProperty] private object? _deviceModeSelectedItem;
+
+    private readonly ProgressBar _progressBar;
 
     public FirmwareViewModel()
     {
@@ -105,7 +113,7 @@ public partial class FirmwareViewModel : ViewModelBase, IDisposable
     {
         AvailableWifiNetworks.Clear();
 
-        WifiScanButton = "Scanning. This might take a while...";
+        WifiScanButton = "Scanning. This will take at most 30 seconds...";
         var response = await _firmwareSessions[SelectedSerialPort!].SendCommandAsync(new FirmwareRequests.ScanWifiRequest(), TimeSpan.FromSeconds(30));
         if (response == null) return;
 
@@ -149,6 +157,21 @@ public partial class FirmwareViewModel : ViewModelBase, IDisposable
         //{
         //    _firmwareSessions[SelectedSerialPort!].SendCommand(new FirmwareRequests.SetMdns(Mdns), TimeSpan.FromSeconds(30));
         //}
+    }
+
+    [RelayCommand]
+    private async Task FlashFirmware()
+    {
+        IsFlashing = true;
+        await _firmwareSessions[SelectedSerialPort!].SendCommandAsync(new FirmwareRequests.SetPausedRequest(false), TimeSpan.FromSeconds(5));
+        _firmwareSessions[SelectedSerialPort!].Dispose();
+        await _firmwareService.UploadFirmwareAsync(SelectedSerialPort!, Path.Combine("Firmware", "babble_multimodal_firmware_1.0.0.bin"));
+        IsFlashing = false;
+
+        IsFinished = true;
+        _firmwareSessions[SelectedSerialPort!] = _firmwareService.StartSession(CommandSenderType.Serial, SelectedSerialPort!);
+        await Task.Delay(5000);
+        IsFinished = false;
     }
 
     private static FirmwareRequests.Mode StringToMode(string mode)
