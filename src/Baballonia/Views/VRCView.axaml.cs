@@ -23,6 +23,8 @@ public partial class VrcView : UserControl
         var moduleFiles = Directory.GetFiles(Utils.VrcftLibsDirectory, "*.json", SearchOption.AllDirectories);
         foreach (var moduleFile in moduleFiles)
         {
+            if (Path.GetFileName(moduleFile) != "BabbleConfig.json") continue;
+
             var contents = File.ReadAllText(moduleFile);
             var possibleBabbleConfig = JsonSerializer.Deserialize<ModuleConfig>(contents);
             if (possibleBabbleConfig != null)
