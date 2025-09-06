@@ -62,27 +62,20 @@ namespace Baballonia.Helpers
 
         public string ReadLine(TimeSpan timeout)
         {
-            StringBuilder responseBuilder = new StringBuilder();
-            var startTime = DateTime.Now;
-            do
+            string data;
+
+            // Read available data
+            if (_serialPort.BytesToRead > 0)
             {
-                if (DateTime.Now - startTime > timeout)
-                    throw new TimeoutException("Timeout reached");
+                data = _serialPort.ReadExisting();
+                data = data.Trim();
+            }
+            else
+            {
+                return "";
+            }
 
-                // Read available data
-                if (_serialPort.BytesToRead > 0)
-                {
-                    string receivedData = _serialPort.ReadExisting();
-                    responseBuilder.Append(receivedData);
-                }
-                else
-                {
-                    // Small delay to prevent CPU spinning
-                    Thread.Sleep(10);
-                }
-            } while (responseBuilder.Length == 0);
-
-            return responseBuilder.ToString().Trim();
+            return data;
         }
 
         public void WriteLine(string payload)
