@@ -18,6 +18,8 @@ public class FirmwareSession
     private ICommandSender _commandSender;
     private ILogger _logger;
 
+    JsonExtractor jsonExtractor = new JsonExtractor();
+
     private SemaphoreSlim _lock = new(1, 1);
 
     JsonSerializerOptions _options = new()
@@ -54,7 +56,6 @@ public class FirmwareSession
 
     private JsonDocument? ReadResponse(string responseJsonRootKey, TimeSpan timeout)
     {
-        JsonExtractor jsonExtractor = new JsonExtractor();
         while (true)
         {
             Thread.Sleep(10); // give it some breathing time
