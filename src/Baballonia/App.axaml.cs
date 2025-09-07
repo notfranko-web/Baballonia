@@ -96,6 +96,7 @@ public class App : Application
                 services.AddTransient<FirmwareService>();
                 services.AddSingleton<IMainService, MainStandalone>();
                 services.AddSingleton<ICalibrationService, CalibrationService>();
+                services.AddSingleton<DropOverlayService>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
@@ -113,6 +114,8 @@ public class App : Application
                 {
                     services.AddSingleton<ICommandSenderFactory, CommandSenderFactory>();
                     services.AddSingleton<ICommandSender, SerialCommandSender>();
+                    services.AddTransient<VrcViewModel>();
+                    services.AddTransient<VrcView>();
                     services.AddTransient<FirmwareViewModel>();
                     services.AddTransient<FirmwareView>();
                     services.AddTransient<OnboardingViewModel>();
