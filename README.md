@@ -26,6 +26,8 @@ Once you have the program installed, you will need to install our module from th
 
 More information can be found on the [VRCFT Docs](https://docs.vrcft.io/docs/vrcft-software/vrcft\#module-registry)
 
+Alternatively, we also support VRC Native Eyelook. Note that this is not as expressive as VRCFT, and doesn't support lower face tracking, but it does support almost all Avatars.
+
 ### Resonite / ChilloutVR
 
 TBD - Existing mods should be compatible with Baballonia's lower face tracking.
