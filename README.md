@@ -36,15 +36,15 @@ Baballonia supports many kinds of hardware for eye and face tracking:
 
 | Device | Eyes | Face | Notes |
 | ----- | ----- | ----- | ----- |
-| Official Babble Face Tracker | 0 | X |  |
-| DIY and 3rd party Babble Trackers | 0 | X |  |
-| Vive Facial Tracker | 0 | X | Linux Only |
-| DIY EyetrackVR | X | 0 |  |
-| Bigscreen Beyond 2e | X | 0 |  |
-| Vive Pro Eye | X | 0 | Requires [Revision](https://github.com/Blue-Doggo/ReVisionbro) |
-| Varjo Aero | X | 0 | Requires the Varjo Streamer |
-| HP Reverb G2 Omnicept | X | 0 | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
-| Pimax Crystal | X | 0 | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
+| Official Babble Face Tracker | :x: | ✅ |  |
+| DIY and 3rd party Babble Trackers | :x: | ✅ |  |
+| Vive Facial Tracker | :x: | ✅ | Linux Only |
+| DIY EyetrackVR | ✅ | :x: |  |
+| Bigscreen Beyond 2e | ✅ | :x: |  |
+| Vive Pro Eye | ✅ | :x: | Requires [Revision](https://github.com/Blue-Doggo/ReVisionbro) |
+| Varjo Aero | ✅ | :x: | Requires the Varjo Streamer |
+| HP Reverb G2 Omnicept | ✅ | :x: | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
+| Pimax Crystal | ✅ | :x: | Requires [BrokenEye](https://github.com/ghostiam/BrokenEye) |
 
 ## Build Instructions
 
