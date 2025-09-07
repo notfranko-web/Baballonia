@@ -144,6 +144,12 @@ public class App : Application
                 var defaultSettings = Path.Combine(AppContext.BaseDirectory, LocalSettingsService.DefaultLocalSettingsFile);
                 Directory.CreateDirectory(Path.GetDirectoryName(settingsLocation)!);
                 File.Copy(defaultSettings, settingsLocation);
+                if (!OperatingSystem.IsWindows()) {
+                    // Make file read-write if not on Windows as the source file might be in read-only.
+                    File.SetUnixFileMode(
+                        settingsLocation,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | File.GetUnixFileMode(settingsLocation));
+                }
             }
         }
         else // extract default models for mobile
