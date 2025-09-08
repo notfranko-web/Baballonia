@@ -21,10 +21,17 @@
   InstallDirRegKey HKCU "Software\${NAME}" ""
   RequestExecutionLevel user
 
+  SetCompressor /SOLID lzma ; "/FINAL" can be added to prevent anything from changing this later down the line.
+  SetCompressorDictSize 32
+  FileBufSize 64
+  ManifestDPIAware true
+  ;ManifestLongPathAware true ; disabled until the rest of the app is confirmed to have this setup right
+  XPStyle on ; does this even do anything meaningful anymore?
+
 ;--------------------------------
 ; UI
 
-  !define MUI_ICON "assets\IconOpaque_32x32.ico"
+  !define MUI_ICON "assets\IconOpaque.ico"
   !define MUI_HEADERIMAGE
   !define MUI_WELCOMEFINISHPAGE_BITMAP "assets\MUI_WELCOMEFINISHPAGE_BITMAP.bmp"
   !define MUI_HEADERIMAGE_BITMAP "assets\MUI_HEADERIMAGE_BITMAP.bmp"
