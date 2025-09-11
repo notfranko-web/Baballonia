@@ -186,7 +186,7 @@
             </Expander>
 
             <!-- Firmware flashing -->
-            <Expander HorizontalAlignment="Stretch" IsEnabled="{Binding IsValidDeviceSelected}">
+            <Expander HorizontalAlignment="Stretch" IsEnabled="{Binding IsDeviceSelectionPresent}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="Auto,Auto,*">
                         <PathIcon

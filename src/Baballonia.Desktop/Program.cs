@@ -33,7 +33,7 @@ sealed class Program
         // Give the mutex some time to think, check if another process with an identical mutex ID exists
         if (!Mutex.WaitOne(TimeSpan.FromSeconds(2), false))
         {
-            return 75; // Exit code fort BSD's EX_TEMPFAIL, invite the user to try again later
+            return 75; // Exit code for BSD's EX_TEMPFAIL, invite the user to try again later
         }
 
         VelopackApp.Build().Run();

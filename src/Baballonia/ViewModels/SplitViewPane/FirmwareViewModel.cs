@@ -279,9 +279,20 @@ public partial class FirmwareViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task FlashFirmware()
     {
+        if (_firmwareSessions.TryGetValue(SelectedSerialPort!, out FirmwareSession? value))
+        {
+            // True, this is a multimodal device that needs to be released prior to flashing
+            await TrySendCommandAsync(new FirmwareRequests.SetPausedRequest(false), TimeSpan.FromSeconds(5));
+            value.Dispose();
+        }
+        else if (!_firmwareService.FindAvailableSerialPorts().Contains(SelectedSerialPort))
+        {
+            // If we don't have a multimodal device, this is most likely a legacy device we're upgrading. No need to release!
+            // However, we need to make sure the user's input is an actual valid serial port
+            return;
+        }
+
         IsFlashing = true;
-        await TrySendCommandAsync(new FirmwareRequests.SetPausedRequest(false), TimeSpan.FromSeconds(5));
-        _firmwareSessions[SelectedSerialPort!].Dispose();
         await _firmwareService.UploadFirmwareAsync(SelectedSerialPort!, Path.Combine("Firmware", "babble_multimodal_firmware_1.0.0.bin"));
         IsFlashing = false;
 

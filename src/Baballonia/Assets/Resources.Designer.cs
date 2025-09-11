@@ -61,6 +61,24 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Administrator Mode Warning.
+        /// </summary>
+        public static string AdminWarning_Header {
+            get {
+                return ResourceManager.GetString("AdminWarning_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not run Baballonia as admin! There is no need, and it prevents eye tracking calibrations from working..
+        /// </summary>
+        public static string AdminWarning_Message {
+            get {
+                return ResourceManager.GetString("AdminWarning_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cheek Expressions.
         /// </summary>
         public static string Calibration_Cheek_Expressions_Header {
