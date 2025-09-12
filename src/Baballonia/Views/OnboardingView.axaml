@@ -140,46 +140,22 @@
                             MaxWidth="450"
                             TextWrapping="Wrap">
 
-                            <Run Text="1. " />
-                            <Run>
-                                <Run.Text>
-                                    <MultiBinding StringFormat="{}">
-                                        <Binding Source="{x:Static assets:Resources.Onboarding_UI_Home_Description}" />
-                                        <Binding Source="Home Page" />
-                                        <Binding Source="calibrate your eye tracking" />
-                                    </MultiBinding>
-                                </Run.Text>
-                            </Run>
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_Home_Description}" />
                             <LineBreak />
 
-                            <Run Text="2. The" />
-                            <Run FontWeight="Bold" Text="Calibration Page" />
-                            <Run Text="can be used to tweak your eye/face expressions individually." />
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_Calibration_Description}" />
                             <LineBreak />
 
-                            <Run Text="3. The" />
-                            <Run FontWeight="Bold" Text="Firmware Page" />
-                            <Run Text="is used to set up your device, or reset it." />
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_Firmware_Description}" />
                             <LineBreak />
 
-                            <Run Text="4. The" />
-                            <Run FontWeight="Bold" Text="VRChat Page" />
-                            <Run Text="is used to alter VRChat/VRCFaceTracking specific settings." />
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_VRChat_Description}" />
                             <LineBreak />
 
-                            <Run Text="5. The" />
-                            <Run FontWeight="Bold" Text="Output Page" />
-                            <Run Text="shows the status of the app," />
-                            <Run FontStyle="Italic" Text="errors" />
-                            <Run Text="and other useful information." />
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_Output_Description}" />
                             <LineBreak />
 
-                            <Run Text="6. The" />
-                            <Run FontWeight="Bold" Text="Settings Page" />
-                            <Run Text="is for general app settings, such as" />
-                            <Run FontStyle="Italic" Text="theme, language," />
-                            <Run Text="and more." />
-
+                            <Run Text="{x:Static assets:Resources.Onboarding_UI_Settings_Description}" />
                         </TextBlock>
                     </StackPanel>
 
@@ -198,8 +174,8 @@
                             FontSize="16"
                             Text="{x:Static assets:Resources.Onboarding_Complete_Description1}"
                             TextWrapping="Wrap" />
-                        <TextBlock 
-                            FontSize="16" 
+                        <TextBlock
+                            FontSize="16"
                             Text="{x:Static assets:Resources.Onboarding_Complete_Description2}" />
                     </StackPanel>
                 </Carousel>
