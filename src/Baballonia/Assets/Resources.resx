@@ -310,7 +310,7 @@
     <value>Enter WiFi password...</value>
   </data>
   <data name="Firmware_Flashing_Header" xml:space="preserve">
-    <value>Flashing Options</value>
+    <value>Upgrade/Reflash Firmware</value>
   </data>
   <data name="Firmware_Flashing_Description" xml:space="preserve">
     <value>Flash your device's firmware</value>
@@ -532,34 +532,19 @@
     <value>1. The Home Page is where you can set up your cameras, and perform an eye tracking calibration.</value>
   </data>
   <data name="Onboarding_UI_Calibration_Description" xml:space="preserve">
-    <value>2. The Calibration Page can be used to tweak your eye/face expressions individually.</value>
-  </data>
-    <data name="Onboarding_UI_Firmware_Description" xml:space="preserve">
-    <value>3. The Firmware Page is used to set up your device, or reset it.</value>
-  </data>
-    <data name="Onboarding_UI_VRChat_Description" xml:space="preserve">
-    <value>4. The VRChat Page is used to alter VRChat/VRCFaceTracking specific settings.</value>
-  </data>
-    <data name="Onboarding_UI_Output_Description" xml:space="preserve">
-    <value>5. The Output Page shows the status of the app errors and other useful information.</value>
-  </data>
-    <data name="Onboarding_UI_Settings_Description" xml:space="preserve">
-    <value>6. The Settings Page is for general app settings, such as theme, language, and more.</value>
-  </data>
-  <data name="Onboarding_UI_Calibration_Description" xml:space="preserve">
-    <value>The {0} can be used to tweak your eye/face expressions individually.</value>
+    <value>2. The Calibration can be used to tweak your eye/face expressions individually.</value>
   </data>
   <data name="Onboarding_UI_Firmware_Description" xml:space="preserve">
-    <value>The {0} is used to set up your device, or reset it.</value>
+    <value>3. The Firmware Page is used to set up your device, or reset it.</value>
   </data>
   <data name="Onboarding_UI_VRChat_Description" xml:space="preserve">
-    <value>The {0} is used to alter VRChat/VRCFaceTracking specific settings.</value>
+    <value>4. The VRChat Page is used to alter VRChat/VRCFaceTracking specific settings.</value>
   </data>
   <data name="Onboarding_UI_Output_Description" xml:space="preserve">
-    <value>The {0} shows the status of the app, {1} and other useful information.</value>
+    <value>5. The Output Page shows the status of the app and other useful information.</value>
   </data>
   <data name="Onboarding_UI_Settings_Description" xml:space="preserve">
-    <value>The {0} is for general app settings, such as {1} and more.</value>
+    <value>6. The Settings is for general app settings, such as theme, language and more.</value>
   </data>
   <data name="Onboarding_Complete_Header" xml:space="preserve">
     <value>Setup Complete!</value>
@@ -632,21 +617,6 @@
   </data>
   <data name="Calibration_Instructions_Bullet1_2" xml:space="preserve">
     <value>value requires a stronger expression before it starts to show.</value>
-  </data>
-  <data name="Settings_Language_Default" xml:space="preserve">
-    <value>System Default</value>
-  </data>
-  <data name="Settings_Language_English" xml:space="preserve">
-    <value>English</value>
-  </data>
-  <data name="Settings_Language_Spanish" xml:space="preserve">
-    <value>Spanish</value>
-  </data>
-  <data name="Settings_Language_Japanese" xml:space="preserve">
-    <value>Japanese</value>
-  </data>
-  <data name="Settings_Language_Polish" xml:space="preserve">
-    <value>Polish</value>
   </data>
   <data name="Settings_Language_Chinese_Simplified" xml:space="preserve">
     <value>Chinese (Simplified)</value>

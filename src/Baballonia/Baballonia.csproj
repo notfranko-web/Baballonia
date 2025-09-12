@@ -86,21 +86,6 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
       </Compile>
-      <Compile Update="Assets\Resources.es.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.es.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Assets\Resources.ja.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.ja.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Assets\Resources.pl.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.pl.resx</DependentUpon>
-      </Compile>
     </ItemGroup>
 
 

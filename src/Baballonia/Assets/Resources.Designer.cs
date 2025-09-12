@@ -466,7 +466,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Flashing Options.
+        ///   Looks up a localized string similar to Upgrade/Reflash Firmware.
         /// </summary>
         public static string Firmware_Flashing_Header {
             get {
@@ -1042,7 +1042,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} can be used to tweak your eye/face expressions individually..
+        ///   Looks up a localized string similar to 2. The Calibration can be used to tweak your eye/face expressions individually..
         /// </summary>
         public static string Onboarding_UI_Calibration_Description {
             get {
@@ -1051,7 +1051,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} is used to set up your device, or reset it..
+        ///   Looks up a localized string similar to 3. The Firmware Page is used to set up your device, or reset it..
         /// </summary>
         public static string Onboarding_UI_Firmware_Description {
             get {
@@ -1078,7 +1078,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} shows the status of the app, {1} and other useful information..
+        ///   Looks up a localized string similar to 5. The Output Page shows the status of the app and other useful information..
         /// </summary>
         public static string Onboarding_UI_Output_Description {
             get {
@@ -1087,7 +1087,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} is for general app settings, such as {1} and more..
+        ///   Looks up a localized string similar to 6. The Settings is for general app settings, such as theme, language and more..
         /// </summary>
         public static string Onboarding_UI_Settings_Description {
             get {
@@ -1096,7 +1096,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} is used to alter VRChat/VRCFaceTracking specific settings..
+        ///   Looks up a localized string similar to 4. The VRChat Page is used to alter VRChat/VRCFaceTracking specific settings..
         /// </summary>
         public static string Onboarding_UI_VRChat_Description {
             get {
