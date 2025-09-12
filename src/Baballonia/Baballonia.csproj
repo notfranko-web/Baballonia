@@ -101,11 +101,6 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.pl.resx</DependentUpon>
       </Compile>
-      <Compile Update="Assets\Resources.zh-cn.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.zh-cn.resx</DependentUpon>
-      </Compile>
     </ItemGroup>
 
 
@@ -140,11 +135,6 @@
 		    <Generator>ResXFileCodeGenerator</Generator>
 		    <LastGenOutput>Resources.pl.Designer.cs</LastGenOutput>
             <LogicalName>Baballonia.Assets.Resources.pl.resources</LogicalName>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Assets\Resources.zh-cn.resx">
-		    <Generator>ResXFileCodeGenerator</Generator>
-		    <LastGenOutput>Resources.zh-cn.Designer.cs</LastGenOutput>
-            <LogicalName>Baballonia.Assets.Resources.zh-cn.resources</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
 	<ItemGroup>

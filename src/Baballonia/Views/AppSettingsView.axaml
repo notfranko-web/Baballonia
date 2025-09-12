@@ -29,13 +29,38 @@
           Description="{x:Static assets:Resources.Settings_Language_Description}"
           IconPath="LanguageRegular">
         <controls:SettingsBlock.SettingsContent>
-          <ComboBox x:Name="LangCombo" VerticalAlignment="Center">
-            <ComboBoxItem x:Name="DefaultLanguage" Content="{x:Static assets:Resources.Settings_Language_Default}" />
-            <ComboBoxItem x:Name="en" Content="{x:Static assets:Resources.Settings_Language_English}" />
-            <ComboBoxItem x:Name="es" Content="{x:Static assets:Resources.Settings_Language_Spanish}" />
-            <ComboBoxItem x:Name="ja" Content="{x:Static assets:Resources.Settings_Language_Japanese}" />
-            <ComboBoxItem x:Name="pl" Content="{x:Static assets:Resources.Settings_Language_Polish}" />
-            <ComboBoxItem x:Name="zh" Content="{x:Static assets:Resources.Settings_Language_Chinese}" />
+            <ComboBox x:Name="LangCombo" VerticalAlignment="Center">
+            <ComboBoxItem x:Name="LangDefault" Content="{x:Static assets:Resources.Settings_Language_Default}" Tag="default" />
+            <ComboBoxItem x:Name="LangEnUs" Content="{x:Static assets:Resources.Settings_Language_English}" Tag="en-US" />
+            <ComboBoxItem x:Name="LangEsEs" Content="{x:Static assets:Resources.Settings_Language_Spanish}" Tag="es-ES" />
+            <ComboBoxItem x:Name="LangJaJp" Content="{x:Static assets:Resources.Settings_Language_Japanese}" Tag="ja-JP" />
+            <ComboBoxItem x:Name="LangPlPl" Content="{x:Static assets:Resources.Settings_Language_Polish}" Tag="pl-PL" />
+            <ComboBoxItem x:Name="LangZhCn" Content="{x:Static assets:Resources.Settings_Language_Chinese_Simplified}" Tag="zh-CN" />
+            <ComboBoxItem x:Name="LangZhTw" Content="{x:Static assets:Resources.Settings_Language_Chinese_Traditional}" Tag="zh-TW" />
+            <ComboBoxItem x:Name="LangDeDe" Content="{x:Static assets:Resources.Settings_Language_German}" Tag="de-DE" />
+            <ComboBoxItem x:Name="LangFrFr" Content="{x:Static assets:Resources.Settings_Language_French}" Tag="fr-FR" />
+            <ComboBoxItem x:Name="LangItIt" Content="{x:Static assets:Resources.Settings_Language_Italian}" Tag="it-IT" />
+            <ComboBoxItem x:Name="LangKoKr" Content="{x:Static assets:Resources.Settings_Language_Korean}" Tag="ko-KR" />
+            <ComboBoxItem x:Name="LangPtBr" Content="{x:Static assets:Resources.Settings_Language_Portuguese_Brazil}" Tag="pt-BR" />
+            <ComboBoxItem x:Name="LangPtPt" Content="{x:Static assets:Resources.Settings_Language_Portuguese_Portugal}" Tag="pt-PT" />
+            <ComboBoxItem x:Name="LangRuRu" Content="{x:Static assets:Resources.Settings_Language_Russian}" Tag="ru-RU" />
+            <ComboBoxItem x:Name="LangArSa" Content="{x:Static assets:Resources.Settings_Language_Arabic}" Tag="ar-SA" />
+            <ComboBoxItem x:Name="LangTrTr" Content="{x:Static assets:Resources.Settings_Language_Turkish}" Tag="tr-TR" />
+            <ComboBoxItem x:Name="LangNlNl" Content="{x:Static assets:Resources.Settings_Language_Dutch}" Tag="nl-NL" />
+            <ComboBoxItem x:Name="LangSvSe" Content="{x:Static assets:Resources.Settings_Language_Swedish}" Tag="sv-SE" />
+            <ComboBoxItem x:Name="LangFiFi" Content="{x:Static assets:Resources.Settings_Language_Finnish}" Tag="fi-FI" />
+            <ComboBoxItem x:Name="LangDaDk" Content="{x:Static assets:Resources.Settings_Language_Danish}" Tag="da-DK" />
+            <ComboBoxItem x:Name="LangNoNo" Content="{x:Static assets:Resources.Settings_Language_Norwegian}" Tag="no-NO" />
+            <ComboBoxItem x:Name="LangCsCz" Content="{x:Static assets:Resources.Settings_Language_Czech}" Tag="cs-CZ" />
+            <ComboBoxItem x:Name="LangHuHu" Content="{x:Static assets:Resources.Settings_Language_Hungarian}" Tag="hu-HU" />
+            <ComboBoxItem x:Name="LangRoRo" Content="{x:Static assets:Resources.Settings_Language_Romanian}" Tag="ro-RO" />
+            <ComboBoxItem x:Name="LangViVn" Content="{x:Static assets:Resources.Settings_Language_Vietnamese}" Tag="vi-VN" />
+            <ComboBoxItem x:Name="LangUkUa" Content="{x:Static assets:Resources.Settings_Language_Ukrainian}" Tag="uk-UA" />
+            <ComboBoxItem x:Name="LangElGr" Content="{x:Static assets:Resources.Settings_Language_Greek}" Tag="el-GR" />
+            <ComboBoxItem x:Name="LangHeIl" Content="{x:Static assets:Resources.Settings_Language_Hebrew}" Tag="he-IL" />
+            <ComboBoxItem x:Name="LangAfZa" Content="{x:Static assets:Resources.Settings_Language_Afrikaans}" Tag="af-ZA" />
+            <ComboBoxItem x:Name="LangCaEs" Content="{x:Static assets:Resources.Settings_Language_Catalan}" Tag="ca-ES" />
+            <ComboBoxItem x:Name="LangSrSp" Content="{x:Static assets:Resources.Settings_Language_Serbian}" Tag="sr-SP" />
           </ComboBox>
         </controls:SettingsBlock.SettingsContent>
       </controls:SettingsBlock>

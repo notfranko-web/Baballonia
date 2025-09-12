@@ -1069,7 +1069,7 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} is where you can set up your cameras, and {1}..
+        ///   Looks up a localized string similar to 1. The Home Page is where you can set up your cameras, and perform an eye tracking calibration..
         /// </summary>
         public static string Onboarding_UI_Home_Description {
             get {
@@ -1339,6 +1339,33 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Afrikaans.
+        /// </summary>
+        public static string Settings_Language_Afrikaans {
+            get {
+                return ResourceManager.GetString("Settings_Language_Afrikaans", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arabic.
+        /// </summary>
+        public static string Settings_Language_Arabic {
+            get {
+                return ResourceManager.GetString("Settings_Language_Arabic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Catalan.
+        /// </summary>
+        public static string Settings_Language_Catalan {
+            get {
+                return ResourceManager.GetString("Settings_Language_Catalan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 中文.
         /// </summary>
         public static string Settings_Language_Chinese {
@@ -1348,7 +1375,43 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default.
+        ///   Looks up a localized string similar to Chinese (Simplified).
+        /// </summary>
+        public static string Settings_Language_Chinese_Simplified {
+            get {
+                return ResourceManager.GetString("Settings_Language_Chinese_Simplified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chinese (Traditional).
+        /// </summary>
+        public static string Settings_Language_Chinese_Traditional {
+            get {
+                return ResourceManager.GetString("Settings_Language_Chinese_Traditional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Czech.
+        /// </summary>
+        public static string Settings_Language_Czech {
+            get {
+                return ResourceManager.GetString("Settings_Language_Czech", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danish.
+        /// </summary>
+        public static string Settings_Language_Danish {
+            get {
+                return ResourceManager.GetString("Settings_Language_Danish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System Default.
         /// </summary>
         public static string Settings_Language_Default {
             get {
@@ -1366,11 +1429,56 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dutch.
+        /// </summary>
+        public static string Settings_Language_Dutch {
+            get {
+                return ResourceManager.GetString("Settings_Language_Dutch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to English.
         /// </summary>
         public static string Settings_Language_English {
             get {
                 return ResourceManager.GetString("Settings_Language_English", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finnish.
+        /// </summary>
+        public static string Settings_Language_Finnish {
+            get {
+                return ResourceManager.GetString("Settings_Language_Finnish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French.
+        /// </summary>
+        public static string Settings_Language_French {
+            get {
+                return ResourceManager.GetString("Settings_Language_French", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to German.
+        /// </summary>
+        public static string Settings_Language_German {
+            get {
+                return ResourceManager.GetString("Settings_Language_German", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Greek.
+        /// </summary>
+        public static string Settings_Language_Greek {
+            get {
+                return ResourceManager.GetString("Settings_Language_Greek", resourceCulture);
             }
         }
         
@@ -1384,7 +1492,34 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 日本語.
+        ///   Looks up a localized string similar to Hebrew.
+        /// </summary>
+        public static string Settings_Language_Hebrew {
+            get {
+                return ResourceManager.GetString("Settings_Language_Hebrew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hungarian.
+        /// </summary>
+        public static string Settings_Language_Hungarian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Hungarian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Italian.
+        /// </summary>
+        public static string Settings_Language_Italian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Italian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Japanese.
         /// </summary>
         public static string Settings_Language_Japanese {
             get {
@@ -1393,7 +1528,25 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Polski.
+        ///   Looks up a localized string similar to Korean.
+        /// </summary>
+        public static string Settings_Language_Korean {
+            get {
+                return ResourceManager.GetString("Settings_Language_Korean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Norwegian.
+        /// </summary>
+        public static string Settings_Language_Norwegian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Norwegian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Polish.
         /// </summary>
         public static string Settings_Language_Polish {
             get {
@@ -1402,11 +1555,92 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Español.
+        ///   Looks up a localized string similar to Portuguese (Brazil).
+        /// </summary>
+        public static string Settings_Language_Portuguese_Brazil {
+            get {
+                return ResourceManager.GetString("Settings_Language_Portuguese_Brazil", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Portuguese (Portugal).
+        /// </summary>
+        public static string Settings_Language_Portuguese_Portugal {
+            get {
+                return ResourceManager.GetString("Settings_Language_Portuguese_Portugal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Romanian.
+        /// </summary>
+        public static string Settings_Language_Romanian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Romanian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Russian.
+        /// </summary>
+        public static string Settings_Language_Russian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Russian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Serbian.
+        /// </summary>
+        public static string Settings_Language_Serbian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Serbian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Spanish.
         /// </summary>
         public static string Settings_Language_Spanish {
             get {
                 return ResourceManager.GetString("Settings_Language_Spanish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Swedish.
+        /// </summary>
+        public static string Settings_Language_Swedish {
+            get {
+                return ResourceManager.GetString("Settings_Language_Swedish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Turkish.
+        /// </summary>
+        public static string Settings_Language_Turkish {
+            get {
+                return ResourceManager.GetString("Settings_Language_Turkish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ukrainian.
+        /// </summary>
+        public static string Settings_Language_Ukrainian {
+            get {
+                return ResourceManager.GetString("Settings_Language_Ukrainian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vietnamese.
+        /// </summary>
+        public static string Settings_Language_Vietnamese {
+            get {
+                return ResourceManager.GetString("Settings_Language_Vietnamese", resourceCulture);
             }
         }
         
