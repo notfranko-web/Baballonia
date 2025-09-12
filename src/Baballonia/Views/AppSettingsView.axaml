@@ -30,7 +30,7 @@
           IconPath="LanguageRegular">
         <controls:SettingsBlock.SettingsContent>
             <ComboBox x:Name="LangCombo" VerticalAlignment="Center">
-            <ComboBoxItem x:Name="LangDefault" Content="{x:Static assets:Resources.Settings_Language_Default}" Tag="default" />
+            <ComboBoxItem x:Name="LangDefault" Content="{x:Static assets:Resources.Settings_Language_Default}" Tag="DefaultLanguage" />
             <ComboBoxItem x:Name="LangEnUs" Content="{x:Static assets:Resources.Settings_Language_English}" Tag="en-US" />
             <ComboBoxItem x:Name="LangEsEs" Content="{x:Static assets:Resources.Settings_Language_Spanish}" Tag="es-ES" />
             <ComboBoxItem x:Name="LangJaJp" Content="{x:Static assets:Resources.Settings_Language_Japanese}" Tag="ja-JP" />
@@ -86,12 +86,12 @@
                   Margin="5"
                   FontSize="16"
                   FontWeight="SemiBold"
-                  Text="{x:Static assets:Resources.Settings_OSC_Description}" />
+                  Text="{x:Static assets:Resources.Settings_OSC_Header}" />
               <TextBlock
                   Margin="5"
                   FontSize="14"
                   Foreground="{DynamicResource SystemChromeGrayColor}"
-                  Text="{x:Static assets:Resources.Settings_OSC_Header}" />
+                  Text="{x:Static assets:Resources.Settings_OSC_Description}" />
             </StackPanel>
           </Grid>
         </Expander.Header>
