@@ -532,19 +532,19 @@
     <value>1. The Home Page is where you can set up your cameras, and perform an eye tracking calibration.</value>
   </data>
   <data name="Onboarding_UI_Calibration_Description" xml:space="preserve">
-    <value>The {0} can be used to tweak your eye/face expressions individually.</value>
+    <value>2. The Calibration can be used to tweak your eye/face expressions individually.</value>
   </data>
   <data name="Onboarding_UI_Firmware_Description" xml:space="preserve">
-    <value>The {0} is used to set up your device, or reset it.</value>
+    <value>3. The Firmware Page is used to set up your device, or reset it.</value>
   </data>
   <data name="Onboarding_UI_VRChat_Description" xml:space="preserve">
-    <value>The {0} is used to alter VRChat/VRCFaceTracking specific settings.</value>
+    <value>4. The VRChat Page is used to alter VRChat/VRCFaceTracking specific settings.</value>
   </data>
   <data name="Onboarding_UI_Output_Description" xml:space="preserve">
-    <value>The {0} shows the status of the app, {1} and other useful information.</value>
+    <value>5. The Output Page shows the status of the app and other useful information.</value>
   </data>
   <data name="Onboarding_UI_Settings_Description" xml:space="preserve">
-    <value>The {0} is for general app settings, such as {1} and more.</value>
+    <value>6. The Settings is for general app settings, such as theme, language and more.</value>
   </data>
   <data name="Onboarding_Complete_Header" xml:space="preserve">
     <value>Setup Complete!</value>
