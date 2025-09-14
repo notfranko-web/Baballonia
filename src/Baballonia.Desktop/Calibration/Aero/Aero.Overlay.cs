@@ -67,11 +67,11 @@ public partial class AeroOverlayTrainerCombo
         }
 
         var workingDir = AppContext.BaseDirectory;
-        if (OperatingSystem.IsWindows())
+        /*if (OperatingSystem.IsWindows())
         {
             if (Directory.Exists("win-x64"))
                 workingDir = Path.Combine(AppContext.BaseDirectory, "win-x64");
-        }
+        }*/
 
         var startInfo = new ProcessStartInfo
         {
