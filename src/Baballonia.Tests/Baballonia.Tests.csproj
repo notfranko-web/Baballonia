@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Baballonia.CaptureBin.IO\Baballonia.CaptureBin.IO.csproj" />
     <ProjectReference Include="..\Baballonia\Baballonia.csproj" />
       <ProjectReference Include="..\Baballonia.Desktop\Baballonia.Desktop.csproj" />
   </ItemGroup>
