@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,7 +22,7 @@ public class ParameterSenderService : BackgroundService
 
     private string prefix = "";
     private bool sendNativeVrcEyeTracking;
-    private readonly Queue<OscMessage> _sendQueue = new();
+    private readonly ConcurrentQueue<OscMessage> _sendQueue = new();
 
     // Expression parameter names
     public readonly Dictionary<string, string> EyeExpressionMap = new()
