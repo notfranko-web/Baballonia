@@ -8,7 +8,7 @@
 ; Custom defines
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
-  !define VERSION "1.1.0.4"
+  !define VERSION "1.1.0.5"
   !define SLUG "${NAME} v${VERSION}"
 
 ;--------------------------------
@@ -63,13 +63,26 @@
     SectionIn RO
     SetOutPath "$INSTDIR"
 
-    ; Copy all files except Calibration folders
-    File /r /x "Calibration" "bin\Release\net8.0\*"
+    ; Copy all files except Calibration, Firmware and runtime folders
+    File /r /x "Calibration" /x "Firmware"
 
-    ; Create Calibration directory and copy only Windows calibration files
-    CreateDirectory "$INSTDIR\win-x64\Calibration"
-    SetOutPath "$INSTDIR\win-x64\Calibration"
+    ; Create Firmware directory
+    CreateDirectory "$INSTDIR\Firmware"
+
+    ; Copy Windows-only Firmware tooling
+    CreateDirectory "$INSTDIR\Firmware\Windows"
+    SetOutPath "$INSTDIR\Firmware\Windows"
+    File /r "bin\Release\net8.0\win-x64\Firmware\Windows"
+
+    ; Create Windows-only Calibration tooling
+    CreateDirectory "$INSTDIR\Calibration"
+    SetOutPath "$INSTDIR\Calibration"
     File /r "bin\Release\net8.0\win-x64\Calibration\Windows"
+
+    ; Copy firmware over
+    CreateDirectory "$INSTDIR\Firmware\Binaries"
+    SetOutPath "$INSTDIR\Firmware\Binaries"
+    File /r "bin\Release\net8.0\win-x64\Firmware\Binaries"
 
     ; Reset output path and write registry values
     SetOutPath "$INSTDIR"
@@ -81,7 +94,7 @@
 ; Section - Shortcut
 
   Section "Desktop Shortcut" DeskShort
-    CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR\win-x64\${APPFILE}"
+    CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR\${APPFILE}"
   SectionEnd
 
 ;--------------------------------
