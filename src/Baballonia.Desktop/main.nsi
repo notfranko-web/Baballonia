@@ -3,11 +3,13 @@
 
   !include "MUI2.nsh"
   !include "logiclib.nsh"
+  !include "FileFunc.nsh"
 
 ;--------------------------------
 ;Custom defines
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
+  !define PUBLISHER "dfgHiatus - Paradigm Reality Enhancement Laboratories"
   !define VERSION "1.1.0.5"
   !define SLUG "${NAME} v${VERSION}"
 
@@ -87,14 +89,24 @@
     ;Reset output path and write registry values
     SetOutPath "$INSTDIR"
 
+    ;Get size to show in Control Panel
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+
     WriteUninstaller "$INSTDIR\Uninstall.exe"
-    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NAME}" "DisplayName" "${NAME}"
-    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
-    CreateShortCut "$SMPROGRAMS\${Name}.lnk" "$INSTDIR\Baballonia.Desktop.exe"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "DisplayName" "${NAME}"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "DisplayIcon" "$INSTDIR\${APPFILE}"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "DisplayVersion" "${VERSION}"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "Publisher" "${PUBLISHER}"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "InstallLocation" "$INSTDIR"
+    WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}" "EstimatedSize" "$0"
+
+    CreateShortCut "$SMPROGRAMS\${Name}.lnk" "$INSTDIR\${APPFILE}"
     CreateShortCut "$SMPROGRAMS\Uninstall ${Name}.lnk" "$INSTDIR\Uninstall.exe"
 
     ;Launch app when finished
-    ExecShell "" "$INSTDIR\Baballonia.Desktop.exe"
+    ExecShell "" "$INSTDIR\${APPFILE}"
 
   SectionEnd
 
@@ -162,7 +174,7 @@ Section "Uninstall"
   ;Delete Uninstall
   Delete "$SMPROGRAMS\${Name}.lnk"
   Delete "$SMPROGRAMS\Uninstall ${Name}.lnk"
-  DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NAME}"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NAME}"
   Delete "$INSTDIR\Uninstall.exe"
 
   ;Delete Folder
