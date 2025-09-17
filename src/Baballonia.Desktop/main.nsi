@@ -1,22 +1,22 @@
 ;--------------------------------
-; Includes
+;Includes
 
   !include "MUI2.nsh"
   !include "logiclib.nsh"
 
 ;--------------------------------
-; Custom defines
+;Custom defines
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
   !define VERSION "1.1.0.5"
   !define SLUG "${NAME} v${VERSION}"
 
 ;--------------------------------
-; General
+;General
 
   Name "${NAME}"
   OutFile "${NAME} Setup.exe"
-  ; Default install directory in user's AppData folder
+  ;Default install directory in user's AppData folder
   InstallDir "$LOCALAPPDATA\${NAME}"
   InstallDirRegKey HKCU "Software\${NAME}" ""
   RequestExecutionLevel user
@@ -29,7 +29,7 @@
   XPStyle on ; does this even do anything meaningful anymore?
 
 ;--------------------------------
-; UI
+;UI
 
   !define MUI_ICON "assets\IconOpaque.ico"
   !define MUI_HEADERIMAGE
@@ -39,9 +39,9 @@
   !define MUI_WELCOMEPAGE_TITLE "${SLUG} Setup"
 
 ;--------------------------------
-; Pages
+;Pages
 
-  ; Installer pages
+  ;Installer pages
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_LICENSE "assets\license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
@@ -49,56 +49,63 @@
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
 
-  ; Uninstaller pages
+  ;Uninstaller pages
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
 
-  ; Set UI language
+  ;Set UI language
   !insertmacro MUI_LANGUAGE "English"
 
 ;--------------------------------
-; Section - Install App
+;Section - Install App
 
   Section "-hidden app"
     SectionIn RO
     SetOutPath "$INSTDIR"
 
-    ; Copy all files except Calibration, Firmware and runtime folders
-    File /r /x "Calibration" /x "Firmware" "bin\Release\net8.0\win-x64\*"
+    ;Copy all files except Calibration, Firmware and publish folders
+    File /r /x "Calibration" /x "Firmware" /x "publish" "bin\Release\net8.0\win-x64\*"
 
-    ; Create Firmware directory
+    ;Create Firmware directory
     CreateDirectory "$INSTDIR\Firmware"
 
-    ; Copy Windows-only Firmware tooling
+    ;Copy Windows-only Firmware tooling
     CreateDirectory "$INSTDIR\Firmware\Windows"
     SetOutPath "$INSTDIR\Firmware\Windows"
     File /r "bin\Release\net8.0\win-x64\Firmware\Windows"
 
-    ; Create Windows-only Calibration tooling
+    ;Create Windows-only Calibration tooling
     CreateDirectory "$INSTDIR\Calibration"
     SetOutPath "$INSTDIR\Calibration"
     File /r "bin\Release\net8.0\win-x64\Calibration\Windows"
 
-    ; Copy firmware over
+    ;Copy firmware over
     CreateDirectory "$INSTDIR\Firmware\Binaries"
     SetOutPath "$INSTDIR\Firmware\Binaries"
     File /r "bin\Release\net8.0\win-x64\Firmware\Binaries"
 
-    ; Reset output path and write registry values
+    ;Reset output path and write registry values
     SetOutPath "$INSTDIR"
-    WriteRegStr HKCU "Software\${NAME}" "" $INSTDIR
+
     WriteUninstaller "$INSTDIR\Uninstall.exe"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Baballonia" "DisplayName" "${NAME}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Baballonia" "UninstallString" "$INSTDIR\Uninstall.exe"
+    CreateShortCut "$SMPROGRAMS\${Name}.lnk" "$INSTDIR\Baballonia.Desktop.exe"
+
+    ;Launch app when finished
+    ExecShell "" "$INSTDIR\Baballonia.Desktop.exe"
+
   SectionEnd
 
 ;--------------------------------
-; Section - Shortcut
+;Section - Shortcut
 
   Section "Desktop Shortcut" DeskShort
     CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR\${APPFILE}"
   SectionEnd
 
 ;--------------------------------
-; Descriptions
+;Descriptions
 
   ;Language strings
   LangString DESC_DeskShort ${LANG_ENGLISH} "Create Shortcut on Dekstop."
@@ -109,7 +116,7 @@
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
-; Remove empty parent directories
+;Remove empty parent directories
 
   Function un.RMDirUP
     !define RMDirUP '!insertmacro RMDirUPCall'
@@ -119,7 +126,7 @@
           Call un.RMDirUP
     !macroend
 
-    ; $0 - current folder
+    ;$0 - current folder
     ClearErrors
 
     Exch $0
@@ -135,20 +142,29 @@
   FunctionEnd
 
 ;--------------------------------
-; Section - Uninstaller
+;Section - Uninstaller
 
 Section "Uninstall"
+
+  ;Prompt to delete local data
+  MessageBox MB_YESNO|MB_ICONQUESTION \
+    "Do you also want to delete local user data/settings (stored under %APPDATA%\ProjectBabble)?" \
+    IDNO skip_userdata
+
+  RMDir /r "$APPDATA\ProjectBabble"
+
+  skip_userdata:
 
   ;Delete Shortcut
   Delete "$DESKTOP\${NAME}.lnk"
 
   ;Delete Uninstall
+  Delete "$SMPROGRAMS\${Name}.lnk"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Baballonia"
   Delete "$INSTDIR\Uninstall.exe"
 
   ;Delete Folder
   RMDir /r "$INSTDIR"
   ${RMDirUP} "$INSTDIR"
-
-  DeleteRegKey /ifempty HKCU "Software\${NAME}"
 
 SectionEnd
