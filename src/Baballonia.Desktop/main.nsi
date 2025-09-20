@@ -121,7 +121,7 @@
 ;Descriptions
 
   ;Language strings
-  LangString DESC_DeskShort ${LANG_ENGLISH} "Create Shortcut on Dekstop."
+  LangString DESC_DeskShort ${LANG_ENGLISH} "Create Shortcut on Desktop."
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
