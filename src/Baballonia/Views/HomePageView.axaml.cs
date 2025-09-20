@@ -1,11 +1,12 @@
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
+using Baballonia.Assets;
 using Baballonia.Helpers;
 using Baballonia.ViewModels.SplitViewPane;
 
@@ -256,5 +257,11 @@ public partial class HomePageView : UserControl
         vm.LocalSettingsService.SaveSetting("EyeHome_EyeModel", file[0].Path.AbsolutePath);
         var eye = await vm.ProcessingLoopService.LoadEyeInferenceAsync();
         vm.ProcessingLoopService.EyesProcessingPipeline.InferenceService = eye;
+
+        LoadEyeModelText.Text = file[0].Name;
+        LoadEyeModelText.Foreground = new SolidColorBrush(Colors.Green);
+        await Task.Delay(3000);
+        LoadEyeModelText.Text = Baballonia.Assets.Resources.Home_Eye_Load_Model;
+        LoadEyeModelText.Foreground = new SolidColorBrush(vm.GetBaseHighColor());
     }
 }

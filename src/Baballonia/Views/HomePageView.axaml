@@ -32,7 +32,7 @@
           <Button.Content>
             <StackPanel Orientation="Horizontal" Spacing="8">
               <PathIcon Data="{StaticResource FolderOpenVerticalRegular}" />
-              <TextBlock Text="{x:Static assets:Resources.Home_Eye_Load_Model}" VerticalAlignment="Center" />
+              <TextBlock x:Name="LoadEyeModelText" Text="{x:Static assets:Resources.Home_Eye_Load_Model}" VerticalAlignment="Center" />
             </StackPanel>
           </Button.Content>
         </Button>

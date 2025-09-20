@@ -112,7 +112,7 @@ public sealed class DesktopDeviceEnumerator(ILogger<DesktopDeviceEnumerator> log
         for (var index = 0; index < videoInputDevices.Length; index++)
         {
             var dev = videoInputDevices[index];
-            logger.LogInformation("Found device: {}, ClassId: {}, Path: {}", dev.Name, dev.ClassID, dev.DevicePath);
+            logger.LogDebug("Found device: {}, ClassId: {}, Path: {}", dev.Name, dev.ClassID, dev.DevicePath);
             EnsureUniqueKey(cameraDict, dev.Name, index.ToString());
         }
         #endif

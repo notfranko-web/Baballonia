@@ -771,7 +771,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         SelectedCalibrationTextBlock.Foreground = new SolidColorBrush(GetBaseHighColor());
     }
 
-    private Color GetBaseHighColor()
+    public Color GetBaseHighColor()
     {
         Color color = Colors.White;
         switch (Application.Current!.ActualThemeVariant.ToString())

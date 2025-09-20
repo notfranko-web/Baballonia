@@ -10,7 +10,7 @@
   !define NAME "Baballonia"
   !define APPFILE "Baballonia.Desktop.exe"
   !define PUBLISHER "dfgHiatus - Paradigm Reality Enhancement Laboratories"
-  !define VERSION "1.1.0.5"
+  !define VERSION "1.1.0.6"
   !define SLUG "${NAME} v${VERSION}"
 
 ;--------------------------------
@@ -22,13 +22,6 @@
   InstallDir "$LOCALAPPDATA\${NAME}"
   InstallDirRegKey HKCU "Software\${NAME}" ""
   RequestExecutionLevel user
-
-  SetCompressor /SOLID lzma ; "/FINAL" can be added to prevent anything from changing this later down the line.
-  SetCompressorDictSize 32
-  FileBufSize 64
-  ManifestDPIAware true
-  ;ManifestLongPathAware true ; disabled until the rest of the app is confirmed to have this setup right
-  XPStyle on ; does this even do anything meaningful anymore?
 
 ;--------------------------------
 ;UI
@@ -76,15 +69,15 @@
     SetOutPath "$INSTDIR\Firmware\Windows"
     File /r "bin\Release\net8.0\win-x64\Firmware\Windows"
 
+    ;Copy firmware over
+    CreateDirectory "$INSTDIR\Firmware\Binaries"
+    SetOutPath "$INSTDIR\Firmware\Binaries"
+    File /r "bin\Release\net8.0\win-x64\Firmware\Binaries\*"
+
     ;Create Windows-only Calibration tooling
     CreateDirectory "$INSTDIR\Calibration"
     SetOutPath "$INSTDIR\Calibration"
     File /r "bin\Release\net8.0\win-x64\Calibration\Windows"
-
-    ;Copy firmware over
-    CreateDirectory "$INSTDIR\Firmware\Binaries"
-    SetOutPath "$INSTDIR\Firmware\Binaries"
-    File /r "bin\Release\net8.0\win-x64\Firmware\Binaries"
 
     ;Reset output path and write registry values
     SetOutPath "$INSTDIR"
