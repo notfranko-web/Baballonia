@@ -64,7 +64,7 @@ public sealed class DesktopDeviceEnumerator(ILogger<DesktopDeviceEnumerator> log
             cameraDict.Add($"Error: {ex.Message}", "error");
         }
 
-        Logger.LogInformation("Camera enumeration completed. Found {CameraCount} devices", cameraDict.Count);
+        Logger.LogDebug("Camera enumeration completed. Found {CameraCount} devices", cameraDict.Count);
         foreach (var camera in cameraDict)
         {
             Logger.LogDebug("Detected camera: '{FriendlyName}' -> '{DeviceId}'", camera.Key, camera.Value);
