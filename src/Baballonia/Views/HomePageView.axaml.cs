@@ -245,7 +245,7 @@ public partial class HomePageView : UserControl
             await topLevelStorageProvider.TryGetFolderFromPathAsync(Utils.ModelsDirectory)!;
         var file = await topLevelStorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open ONNX Model",
+            Title = "Select ONNX Model",
             AllowMultiple = false,
             SuggestedStartLocation = suggestedStartLocation, // Falls back to desktop if Models folder hasn't been created yet
             FileTypeFilter = [ONNXAll]
