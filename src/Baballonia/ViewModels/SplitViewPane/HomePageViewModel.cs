@@ -751,7 +751,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
                 Directory.CreateDirectory(Utils.ModelsDirectory);
             }
 
-            var destPath = Path.Combine(Utils.ModelsDirectory, $"tuned_temporal_eye_tracking_{DateTime.Now}.onnx");
+            var destPath = Path.Combine(Utils.ModelsDirectory, $"tuned_temporal_eye_tracking_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.onnx");
             File.Move("tuned_temporal_eye_tracking.onnx", destPath);
             LocalSettingsService.SaveSetting("EyeHome_EyeModel", destPath);
             var eye = await ProcessingLoopService.LoadEyeInferenceAsync();
