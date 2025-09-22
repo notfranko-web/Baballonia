@@ -11,16 +11,19 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Baballonia.Contracts;
+using Baballonia.Factories;
 using Baballonia.Helpers;
 using Baballonia.Services;
 using Baballonia.Services.Inference;
 using Baballonia.Services.Inference.Enums;
 using Baballonia.Services.Inference.Models;
+using Baballonia.Services.Inference.Platforms;
 using Baballonia.Services.Inference.VideoSources;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OpenCvSharp;
 using Buffer = System.Buffer;
 using Rect = Avalonia.Rect;
@@ -52,10 +55,15 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         [ObservableProperty] private float _gamma = 1f;
         [ObservableProperty] private bool _isCropMode = false;
         [ObservableProperty] private bool _isCameraRunning = false;
+        [ObservableProperty] private int _selectedCaptureMethod = -1;
+        [ObservableProperty] private bool _captureMethodVisible = false;
         public ObservableCollection<string> Suggestions { get; set; } = [];
+        public ObservableCollection<string> CaptureMethods { get; set; } = [];
 
         private readonly ILocalSettingsService LocalSettingsService;
         private readonly DefaultProcessingPipeline _processingPipeline;
+
+        private Stopwatch _deviceUpdateDebounce = new();
 
         public CameraControllerModel(ILocalSettingsService localSettingsService, string name,
             DefaultProcessingPipeline processingPipeline, string[] cameras, Camera camera)
@@ -67,16 +75,42 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
             Initialize(cameras);
 
+            _deviceUpdateDebounce.Start();
+
             _processingPipeline.TransformedFrameEvent += ImageUpdateEventHandler;
+        }
+
+
+        partial void OnDisplayAddressChanged(string value)
+        {
+            if (PlatformConnector.Captures.Count <= 0) PlatformConnectorFactory.Create(NullLogger.Instance, "temp");
+
+            var matches = PlatformConnector.Captures.Where(i => i.Key.CanConnect(value)).ToArray();
+
+            var shouldShow = matches.Length >= 2;
+            CaptureMethodVisible = shouldShow;
+
+            CaptureMethods.Clear();
+            if (shouldShow)
+            {
+                CaptureMethods.Add(Assets.Resources.Home_Backend_Default);
+                foreach (var match in matches)
+                    CaptureMethods.Add(match.Value.Name);
+            }
+
+            SelectedCaptureMethod = shouldShow ? 0 : -1;
         }
 
         private void Initialize(string[] cameras)
         {
             var displayAddress = LocalSettingsService.ReadSetting<string>("LastOpened" + Name);
+            var preferredCapture = LocalSettingsService.ReadSetting<string>("LastOpenedPreferredCapture" + Name);
             var camSettings = LocalSettingsService.ReadSetting<CameraSettings>(Name);
 
             UpdateCameraDropDown(cameras);
             DisplayAddress = displayAddress;
+            var selectedIndex = CaptureMethods.IndexOf(preferredCapture);
+            if (selectedIndex != -1) SelectedCaptureMethod = selectedIndex;
             FlipHorizontally = camSettings.UseHorizontalFlip;
             FlipVertically = camSettings.UseVerticalFlip;
             Rotation = camSettings.RotationRadians;
@@ -112,6 +146,16 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             }
 
             IsInitialized.SetResult();
+        }
+
+        public void UpdateCameraDropDown()
+        {
+            if (_deviceUpdateDebounce.Elapsed < TimeSpan.FromSeconds(5)) return;
+            _deviceUpdateDebounce.Restart();
+
+            var cameras = App.DeviceEnumerator.UpdateCameras();
+            var cameraNames = cameras.Keys.ToArray();
+            UpdateCameraDropDown(cameraNames);
         }
 
         public void UpdateCameraDropDown(string[] cameras)
@@ -160,6 +204,10 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
             StopButtonEnabled = false;
         }
 
+        public string SelectedPreferredCapture =>
+            CaptureMethods.Count <= 0 || (SelectedCaptureMethod < 0 || SelectedCaptureMethod >= CaptureMethods.Count)
+                ? "Default"
+                : CaptureMethods[SelectedCaptureMethod];
         void ImageUpdateEventHandler(Mat image)
         {
             if (image == null)
@@ -505,7 +553,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private async Task<IVideoSource?> StartCameraAsync(string address)
+    private async Task<IVideoSource?> StartCameraAsync(string address, string preferredCapture = "")
     {
         var camera = address;
         if (string.IsNullOrEmpty(camera)) return null;
@@ -519,7 +567,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         return await Task.Run<IVideoSource?>(() =>
         {
-            var cameraSource = new SingleCameraSourceFactory().Create(camera);
+            var cameraSource = SingleCameraSourceFactory.Create(camera, preferredCapture);
             if (cameraSource == null)
                 return null;
 
@@ -629,6 +677,7 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
     private void SaveLastOpened(CameraControllerModel model)
     {
         LocalSettingsService.SaveSetting("LastOpened" + model.Name, model.DisplayAddress);
+        LocalSettingsService.SaveSetting("LastOpenedPreferredCapture" + model.Name, model.SelectedPreferredCapture);
     }
 
     private void SetButtons(CameraControllerModel model, bool startEnabled, bool stopEnabled)
@@ -659,11 +708,12 @@ public partial class HomePageViewModel : ViewModelBase, IDisposable
 
         var type = model.Camera;
 
-        var cameraSource = await StartCameraAsync(model.DisplayAddress);
+        var cameraSource = await StartCameraAsync(model.DisplayAddress, model.SelectedPreferredCapture);
 
         if (cameraSource == null)
         {
             SetButtons(model, true, false);
+            SaveLastOpened(model);
             return;
         }
 
