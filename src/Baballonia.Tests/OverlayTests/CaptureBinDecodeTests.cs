@@ -63,15 +63,68 @@ public class CaptureBinDecodeTests
         Directory.CreateDirectory(outDir);
         var outPath = Path.Combine(outDir, "user_cal.generated.bin");
 
-        var frames = new List<Frame>();
-        var rng = new Random();
-
         var frameCount = 8000;
-        var baseTs = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var markRoutineComplete = true;
+        var frames = CreateSyntheticFrames(startIndex: 0, count: frameCount, markRoutineComplete: true, width: 256, height: 256);
 
-        for (var i = 0; i < frameCount; i++)
+        CaptureBin.IO.CaptureBin.WriteAll(outPath, frames);
+        TestContext.WriteLine($"Generated bin: {outPath}");
+
+        Assert.IsTrue(File.Exists(outPath), "Generated file not found");
+        Assert.IsTrue(new FileInfo(outPath).Length > 0, "Generated file is empty");
+
+        // Quickly read back first frame to ensure integrity
+        var readBack = CaptureBin.IO.CaptureBin.ReadAll(outPath);
+        Assert.AreEqual(frameCount, readBack.Count, "Frame count mismatch after roundtrip");
+        using var lg = readBack[0].DecodeLeftGray();
+        using var rg = readBack[0].DecodeRightGray();
+        Assert.IsTrue(lg is { Width: > 0, Height: > 0 }, "Left image failed to decode");
+        Assert.IsTrue(rg is { Width: > 0, Height: > 0 }, "Right image failed to decode");
+
+        // Verify flags pattern
+        Assert.AreEqual(CaptureFlags.FLAG_RESTING, readBack[0].Header.RoutineState, "First frame must be RESTING");
+        var expectedLast = CaptureFlags.FLAG_ROUTINE_COMPLETE;
+        Assert.AreEqual(expectedLast, readBack[^1].Header.RoutineState, "Last frame flag mismatch");
+        for (var j = 1; j < readBack.Count - 1; j++)
         {
+            Assert.AreEqual(CaptureFlags.FLAG_IN_MOVEMENT | CaptureFlags.FLAG_GOOD_DATA, readBack[j].Header.RoutineState, $"Frame {j} must be IN_MOVEMENT | GOOD_DATA");
+        }
+    }
+
+    [TestMethod]
+    public void Concatenate_Bins_ProducesCombinedFrames()
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var outDir = Path.Combine(baseDir, "OverlayTests");
+        Directory.CreateDirectory(outDir);
+
+        string binA = Path.Combine(outDir, "concat_a.bin");
+        string binB = Path.Combine(outDir, "concat_b.bin");
+        string binOut = Path.Combine(outDir, "concat_out.bin");
+
+        // Create two small bins with different frame counts
+        var framesA = CreateSyntheticFrames(startIndex: 0, count: 3);
+        var framesB = CreateSyntheticFrames(startIndex: 3, count: 2);
+
+        CaptureBin.IO.CaptureBin.WriteAll(binA, framesA);
+        CaptureBin.IO.CaptureBin.WriteAll(binB, framesB);
+
+        // Concatenate
+        CaptureBin.IO.CaptureBin.Concatenate(binOut, binA, binB);
+
+        // Validate
+        var combined = CaptureBin.IO.CaptureBin.ReadAll(binOut);
+        Assert.AreEqual(framesA.Count + framesB.Count, combined.Count, "Combined frame count should equal sum of inputs");
+        Assert.IsTrue(combined[0].Header.Timestamp <= combined[^1].Header.Timestamp);
+    }
+
+    private static List<Frame> CreateSyntheticFrames(int startIndex, int count, bool markRoutineComplete = false, int width = 128, int height = 96)
+    {
+        var list = new List<Frame>(count);
+        var rng = new Random(startIndex + 1234);
+        var baseTs = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        for (int i = 0; i < count; i++)
+        {
+            var idx = startIndex + i;
             var header = new CaptureFrameHeader
             {
                 RoutinePitch = (float)(rng.NextDouble() * 60 - 30),
@@ -93,54 +146,25 @@ public class CaptureBinDecodeTests
                 RoutineSquint = (float)rng.NextDouble(),
                 RoutineDilate = (float)rng.NextDouble(),
 
-                Timestamp = baseTs + (ulong)(i * 10),
-                TimestampLeft = baseTs + (ulong)(i * 10 + 1),
-                TimestampRight = baseTs + (ulong)(i * 10 + 2),
+                Timestamp = baseTs + (ulong)(idx * 10),
+                TimestampLeft = baseTs + (ulong)(idx * 10 + 1),
+                TimestampRight = baseTs + (ulong)(idx * 10 + 2),
 
-                // First frame: RESTING. Subsequent: IN_MOVEMENT | GOOD_DATA.
-                // If last frame and markRoutineComplete is true: ROUTINE_COMPLETE instead.
                 RoutineState = i == 0
                     ? CaptureFlags.FLAG_RESTING
-                    : (i == frameCount - 1 && markRoutineComplete
+                    : (i == count - 1 && markRoutineComplete
                         ? CaptureFlags.FLAG_ROUTINE_COMPLETE
                         : (CaptureFlags.FLAG_IN_MOVEMENT | CaptureFlags.FLAG_GOOD_DATA)),
                 JpegDataLeftLength = 0,
                 JpegDataRightLength = 0
             };
 
-            var leftJpeg = CreateRandomJpeg(i, 256, 256);
-            var rightJpeg = CreateRandomJpeg(i, 256, 256);
+            var left = CreateRandomJpeg(idx, width, height);
+            var right = CreateRandomJpeg(idx, width, height);
 
-            frames.Add(new Frame
-            {
-                Header = header,
-                LeftJpeg = leftJpeg,
-                RightJpeg = rightJpeg
-            });
+            list.Add(new Frame { Header = header, LeftJpeg = left, RightJpeg = right });
         }
-
-        CaptureBin.IO.CaptureBin.WriteAll(outPath, frames);
-        TestContext.WriteLine($"Generated bin: {outPath}");
-
-        Assert.IsTrue(File.Exists(outPath), "Generated file not found");
-        Assert.IsTrue(new FileInfo(outPath).Length > 0, "Generated file is empty");
-
-        // Quickly read back first frame to ensure integrity
-        var readBack = CaptureBin.IO.CaptureBin.ReadAll(outPath);
-        Assert.AreEqual(frameCount, readBack.Count, "Frame count mismatch after roundtrip");
-        using var lg = readBack[0].DecodeLeftGray();
-        using var rg = readBack[0].DecodeRightGray();
-        Assert.IsTrue(lg is { Width: > 0, Height: > 0 }, "Left image failed to decode");
-        Assert.IsTrue(rg is { Width: > 0, Height: > 0 }, "Right image failed to decode");
-
-        // Verify flags pattern
-        Assert.AreEqual(CaptureFlags.FLAG_RESTING, readBack[0].Header.RoutineState, "First frame must be RESTING");
-        var expectedLast = (markRoutineComplete ? CaptureFlags.FLAG_ROUTINE_COMPLETE : (CaptureFlags.FLAG_IN_MOVEMENT | CaptureFlags.FLAG_GOOD_DATA));
-        Assert.AreEqual(expectedLast, readBack[^1].Header.RoutineState, "Last frame flag mismatch");
-        for (var j = 1; j < readBack.Count - 1; j++)
-        {
-            Assert.AreEqual(CaptureFlags.FLAG_IN_MOVEMENT | CaptureFlags.FLAG_GOOD_DATA, readBack[j].Header.RoutineState, $"Frame {j} must be IN_MOVEMENT | GOOD_DATA");
-        }
+        return list;
     }
 
     private static byte[] CreateRandomJpeg(int frameNumber, int width, int height)

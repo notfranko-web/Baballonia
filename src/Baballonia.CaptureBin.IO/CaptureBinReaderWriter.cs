@@ -93,6 +93,30 @@ public static class CaptureBin
         Write(fs, frames);
     }
 
+    /// <summary>
+    /// Concatenate multiple .bin files into a single output file by appending raw bytes in order.
+    /// </summary>
+    public static void Concatenate(string outputPath, params string[] inputPaths)
+    {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentNullException.ThrowIfNull(inputPaths);
+        if (inputPaths.Length == 0) throw new ArgumentException(@"No input files provided", nameof(inputPaths));
+
+        using var outStream = File.Open(outputPath, FileMode.Create, FileAccess.Write, FileShare.None);
+        var buffer = new byte[1024 * 1024];
+
+        foreach (var inPath in inputPaths)
+        {
+            if (string.IsNullOrWhiteSpace(inPath)) continue;
+            using var inStream = File.OpenRead(inPath);
+            int read;
+            while ((read = inStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                outStream.Write(buffer, 0, read);
+            }
+        }
+    }
+
     private static int FillBuffer(Stream s, Span<byte> buffer)
     {
         int total = 0;
