@@ -67,7 +67,7 @@
     ;Copy Windows-only Firmware tooling
     CreateDirectory "$INSTDIR\Firmware\Windows"
     SetOutPath "$INSTDIR\Firmware\Windows"
-    File /r "bin\Release\net8.0\win-x64\Firmware\Windows"
+    File /r "bin\Release\net8.0\win-x64\Firmware\Windows\*"
 
     ;Copy firmware over
     CreateDirectory "$INSTDIR\Firmware\Binaries"
