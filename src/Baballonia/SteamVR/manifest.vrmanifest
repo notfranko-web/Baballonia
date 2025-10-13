@@ -1,0 +1,18 @@
+{
+  "applications": [
+    {
+      "app_key": "projectbabble.Baballonia",
+      "launch_type": "binary",
+      "binary_path_windows": "Baballonia.Desktop.exe",
+      "is_dashboard_overlay": true,
+
+      "strings": {
+        "en_us": {
+          "name": "Baballonia",
+          "description": "Baballonia"
+        }
+      }
+    }
+  ],
+  "source": "builtin"
+}

@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:splitViewPane="clr-namespace:Baballonia.ViewModels.SplitViewPane"
+    xmlns:utils="clr-namespace:Baballonia"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="splitViewPane:AppSettingsViewModel"
@@ -354,6 +355,13 @@
           Description="{x:Static assets:Resources.Settings_Updates_Description}"
           IconPath="ArrowSyncRegular"
           SettingToggled="{Binding CheckForUpdates, Mode=TwoWay}" />
+
+      <controls:SettingsToggle
+               IsVisible="{x:Static utils:Utils.IsSupportedDesktopOS}"
+               Title="{x:Static assets:Resources.Settings_SteamVR_Auto_Start_Header}"
+               Description="{x:Static assets:Resources.Settings_SteamVR_Auto_Start_Description}"
+               IconPath="PowerRegular"
+               SettingToggled="{Binding SteamvrAutoStart, Mode=TwoWay}" />
 
       <Border
           Padding="15,5,15,5"

@@ -19,6 +19,7 @@ public partial class AppSettingsViewModel : ViewModelBase
     public ILocalSettingsService SettingsService { get; }
     public GithubService GithubService { get; private set;}
     public ParameterSenderService ParameterSenderService { get; private set;}
+    private OpenVRService OpenVrService { get; } = Ioc.Default.GetService<OpenVRService>();
 
     [ObservableProperty]
     [property: SavedSetting("AppSettings_RecalibrateAddress", "/avatar/parameters/etvr_recalibrate")]
@@ -53,6 +54,10 @@ public partial class AppSettingsViewModel : ViewModelBase
     private bool _useGPU;
 
     [ObservableProperty]
+    [property: SavedSetting("AppSettings_SteamvrAutoStart", true)]
+    private bool _steamvrAutoStart;
+
+    [ObservableProperty]
     [property: SavedSetting("AppSettings_CheckForUpdates", false)]
     private bool _checkForUpdates;
 
@@ -71,27 +76,26 @@ public partial class AppSettingsViewModel : ViewModelBase
     [ObservableProperty] private bool _onboardingEnabled;
 
     private ILogger<AppSettingsViewModel> _logger;
-    private readonly ProcessingLoopService _processingLoopService;
     private readonly FacePipelineManager _facePipelineManager;
     private readonly EyePipelineManager _eyePipelineManager;
     public AppSettingsViewModel(FacePipelineManager facePipelineManager, EyePipelineManager eyePipelineManager)
     {
         _facePipelineManager = facePipelineManager;
         _eyePipelineManager = eyePipelineManager;
+
         // General/Calibration Settings
         OscTarget = Ioc.Default.GetService<IOscTarget>()!;
         GithubService = Ioc.Default.GetService<GithubService>()!;
         SettingsService = Ioc.Default.GetService<ILocalSettingsService>()!;
-        _processingLoopService = Ioc.Default.GetService<ProcessingLoopService>()!;
         _logger = Ioc.Default.GetService<ILogger<AppSettingsViewModel>>()!;
         SettingsService.Load(this);
 
         // Handle edge case where OSC port is used and the system freaks out
         if (OscTarget.OutPort == 0)
         {
-            const int Port = 8888;
-            OscTarget.OutPort = Port;
-            SettingsService.SaveSetting("OSCOutPort", Port);
+            const int port = 8888;
+            OscTarget.OutPort = port;
+            SettingsService.SaveSetting("OSCOutPort", port);
         }
 
         // Risky Settings
@@ -105,6 +109,23 @@ public partial class AppSettingsViewModel : ViewModelBase
             _facePipelineManager.LoadFilter();
             _eyePipelineManager.LoadFilter();
         };
+    }
+
+    partial void OnSteamvrAutoStartChanged(bool value)
+    {
+        var readValue = SettingsService.ReadSetting("AppSettings_SteamvrAutoStart", value);
+        if (readValue == value || OpenVrService == null)
+            return;
+
+        try
+        {
+           OpenVrService.SteamvrAutoStart = value;
+           SettingsService.SaveSetting("AppSettings_SteamvrAutoStart", value);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("DLL not found!", e);
+        }
     }
 
     async partial void OnUseGPUChanged(bool value)

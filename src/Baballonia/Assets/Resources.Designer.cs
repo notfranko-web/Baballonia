@@ -1798,6 +1798,24 @@ namespace Baballonia.Assets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Should the app launch with SteamVR? (Change requires a SteamVR restart.).
+        /// </summary>
+        public static string Settings_SteamVR_Auto_Start_Description {
+            get {
+                return ResourceManager.GetString("Settings_SteamVR_Auto_Start_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto Start with SteamVR.
+        /// </summary>
+        public static string Settings_SteamVR_Auto_Start_Header {
+            get {
+                return ResourceManager.GetString("Settings_SteamVR_Auto_Start_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dark.
         /// </summary>
         public static string Settings_Theme_Dark_Content {

@@ -727,4 +727,10 @@
   <data name="Firmware_Custom_Firmware_Load" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Settings_SteamVR_Auto_Start_Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Settings_SteamVR_Auto_Start_Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
 </root>

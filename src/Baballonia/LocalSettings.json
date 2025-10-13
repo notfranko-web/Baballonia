@@ -2,7 +2,7 @@
   "VRC_UseNativeTracking": false,
   "VRC_SelectedModuleMode": "Face",
   "SecondsWarningRead": false,
-  "ShowOnboardingOnStartup" : true,
+  "ShowOnboardingOnStartup": true,
   "OSCInPort": 8889,
   "OSCOutPort": 8888,
   "OSCAddress": "127.0.0.1",
@@ -368,6 +368,7 @@
   "AppSettings_OneEuroEnabled": true,
   "AppSettings_OneEuroMinFreqCutoff": 1,
   "AppSettings_OneEuroSpeedCutoff": 1,
+  "AppSettings_SteamVRAutoStart": false,
   "AppSettings_UseGPU": true,
   "AppSettings_CheckForUpdates": true,
   "AppSettings_LogLevel": "Information"

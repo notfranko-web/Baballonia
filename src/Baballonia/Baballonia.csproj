@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
@@ -104,6 +104,15 @@
 		<EmbeddedResource Include="faceModel.onnx">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</EmbeddedResource>
+        <EmbeddedResource Include="SteamVR\manifest.vrmanifest" Link ="manifest.vrmanifest">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <EmbeddedResource Include="SteamVR\openvr_api.dll" Link="openvr_api.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <EmbeddedResource Include="SteamVR\libopenvr_api.so" Link="libopenvr_api.so">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
 		<EmbeddedResource Update="Assets\Resources.resx">
 		    <Generator>PublicResXFileCodeGenerator</Generator>
 		    <LastGenOutput>Resources.Designer.cs</LastGenOutput>

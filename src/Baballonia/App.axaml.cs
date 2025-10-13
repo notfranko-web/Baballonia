@@ -139,6 +139,7 @@ public class App : Application
             {
                 services.AddSingleton<ICommandSenderFactory, CommandSenderFactory>();
                 services.AddSingleton<ICommandSender, SerialCommandSender>();
+                services.AddSingleton<OpenVRService>();
                 services.AddTransient<VrcViewModel>();
                 services.AddTransient<VrcView>();
                 services.AddTransient<FirmwareViewModel>();
