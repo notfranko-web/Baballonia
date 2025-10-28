@@ -16,7 +16,7 @@ You may be prompted to download the .NET runtime for desktop apps, install it if
 
 Baballonia currently does not have an installer for macOS or Linux. You will need to follow our build instructions and run it from source.
 
-Baballonia *can* be run through Wine, as documented on the [Linux VR Adventures Wiki](https://lvra.gitlab.io/docs/other/bigscreen-beyond-driver/#bigscreen-beyond-2e-eyetracking-via-baballonia-under-linux).
+Baballonia *can* be run through Wine, as documented on the [Linux VR Adventures Wiki](https://lvra.gitlab.io/docs/other/bigscreen-beyond/#bigscreen-beyond-2e-eyetracking-via-baballonia-under-linux).
 
 #### NixOS (Flakes)
 
